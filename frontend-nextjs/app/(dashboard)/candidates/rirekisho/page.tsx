@@ -1,5 +1,12 @@
 "use client";
 import React, { useMemo, useRef, useState, useEffect } from "react"; // Import useEffect
+import { toast } from "react-hot-toast";
+import AzureOCRUploader from "@/components/AzureOCRUploader";
+import {
+  CheckCircleIcon,
+  DocumentMagnifyingGlassIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/outline";
 
 /**
  * 履歴書（A4横）— 単一ファイル TSX コンポーネント
@@ -79,6 +86,11 @@ export default function Page() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const photoDataUrl = useRef<string>("");
   const [photoPreview, setPhotoPreview] = useState<string>("");
+
+  const [showAzurePanel, setShowAzurePanel] = useState(false);
+  const [azureAppliedFields, setAzureAppliedFields] = useState<{ label: string; value: string }[]>([]);
+  const [lastAzureDocumentType, setLastAzureDocumentType] = useState<string | null>(null);
+  const [lastAzureRaw, setLastAzureRaw] = useState<Record<string, unknown> | null>(null);
 
   // --- Core Functions ---
   function onChange<K extends keyof FormDataState>(key: K, value: FormDataState[K]) {
@@ -197,6 +209,188 @@ export default function Page() {
     a.click();
     URL.revokeObjectURL(a.href);
   }
+
+  const normalizeJapaneseDate = (value: string) => {
+    if (!value) return "";
+    const trimmed = value.trim();
+    if (!trimmed) return "";
+
+    const withoutSuffix = trimmed.replace(/まで$/u, "").trim();
+    const jpMatch = withoutSuffix.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日?$/u);
+    if (jpMatch) {
+      const [, year, month, day] = jpMatch;
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+
+    const normalized = withoutSuffix.replace(/[\.\/]/g, "-");
+    const isoMatch = normalized.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch;
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+
+    return trimmed;
+  };
+
+  const normalizeVisaPeriod = (value: string) => {
+    const normalized = normalizeJapaneseDate(value);
+    return normalized || value.trim();
+  };
+
+  const normalizePhoneNumber = (value: string) => {
+    if (!value) return "";
+    const digits = value.replace(/[^0-9+]/g, "");
+    if (!digits) return "";
+
+    if (digits.startsWith("+81")) {
+      const rest = digits.slice(3);
+      if (!rest) return "";
+      return rest.startsWith("0") ? rest : `0${rest}`;
+    }
+
+    if (digits.startsWith("81") && digits.length >= 4) {
+      return `0${digits.slice(2)}`;
+    }
+
+    return digits;
+  };
+
+  const formatPostalCode = (value: string) => {
+    if (!value) return "";
+    const digits = value.replace(/[^0-9]/g, "");
+    if (digits.length === 7) {
+      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    }
+    return value.trim();
+  };
+
+  const normalizeGender = (value: string) => {
+    if (!value) return "";
+    const normalized = value.trim().toLowerCase();
+    if (!normalized) return "";
+    if (normalized.includes("male") || normalized.includes("男")) return "男性";
+    if (normalized.includes("female") || normalized.includes("女")) return "女性";
+    return value.trim();
+  };
+
+  const ensureDataUrl = (value: string) => {
+    if (!value) return "";
+    return value.startsWith("data:") ? value : `data:image/jpeg;base64,${value}`;
+  };
+
+  const handleAzureOcrComplete = (ocrRaw: Record<string, unknown>) => {
+    if (!ocrRaw || typeof ocrRaw !== "object") {
+      toast.error("Azure OCR の結果を読み取れませんでした。");
+      return;
+    }
+
+    const updates: Partial<FormDataState> = {};
+    const applied: { label: string; value: string }[] = [];
+
+    const applyField = (
+      targetKey: keyof FormDataState,
+      label: string,
+      ...sourceKeys: string[]
+    ) => {
+      const rawValue = sourceKeys
+        .map((key) => ocrRaw[key])
+        .find((value) => {
+          if (value === undefined || value === null) {
+            return false;
+          }
+          if (typeof value === "string") {
+            return value.trim() !== "";
+          }
+          return true;
+        });
+
+      if (rawValue === undefined || rawValue === null) {
+        return;
+      }
+
+      const rawString = typeof rawValue === "string" ? rawValue : String(rawValue);
+      let value = rawString.trim();
+      if (!value) return;
+
+      if (targetKey === "postalCode") {
+        value = formatPostalCode(value);
+      }
+
+      if (targetKey === "phone" || targetKey === "mobile" || targetKey === "emergencyPhone") {
+        value = normalizePhoneNumber(value);
+        if (!value) return;
+      }
+
+      if (targetKey === "birthday" || targetKey === "passportExpiry" || targetKey === "licenseExpiry") {
+        value = normalizeJapaneseDate(value);
+      }
+
+      if (targetKey === "visaPeriod") {
+        value = normalizeVisaPeriod(value);
+      }
+
+      if (targetKey === "gender") {
+        value = normalizeGender(value);
+      }
+
+      if (targetKey === "nationality") {
+        const upper = value.toUpperCase();
+        if (upper === value) {
+          value = `${upper.charAt(0)}${upper.slice(1).toLowerCase()}`;
+        }
+      }
+
+      updates[targetKey] = value as FormDataState[typeof targetKey];
+      applied.push({ label, value });
+    };
+
+    applyField("nameKanji", "氏名（漢字）", "full_name_kanji", "name_kanji", "name_roman");
+    applyField("nameFurigana", "フリガナ", "full_name_kana", "name_kana", "name_katakana");
+    applyField("birthday", "生年月日", "date_of_birth", "birthday");
+    applyField("age", "年齢", "age");
+    applyField("gender", "性別", "gender");
+    applyField("nationality", "国籍", "nationality");
+    applyField("postalCode", "郵便番号", "postal_code", "zip_code");
+    applyField("address", "現住所", "current_address", "address", "registered_address");
+    applyField("mobile", "携帯電話", "mobile", "mobile_phone", "cell_phone");
+    applyField("phone", "電話番号", "phone", "phone_number");
+    applyField("visaType", "在留資格", "residence_status", "visa_status");
+    applyField("visaPeriod", "在留期間", "visa_period", "residence_expiry", "period_of_stay");
+    applyField("residenceCardNo", "在留カード番号", "residence_card_number", "zairyu_card_number");
+    applyField("passportNo", "パスポート番号", "passport_number");
+    applyField("passportExpiry", "パスポート有効期限", "passport_expiry", "passport_expire_date");
+    applyField("licenseNo", "免許証番号", "license_number", "menkyo_number");
+    applyField("licenseExpiry", "免許証有効期限", "license_expiry", "license_expire_date");
+    applyField("emergencyName", "緊急連絡先 氏名", "emergency_contact_name");
+    applyField("emergencyRelation", "緊急連絡先 続柄", "emergency_contact_relation");
+    applyField("emergencyPhone", "緊急連絡先 電話", "emergency_contact_phone");
+
+    const photoCandidate = ["photo_url", "photo", "face_photo"]
+      .map((key) => ocrRaw[key])
+      .find((value): value is string => typeof value === "string" && value.trim() !== "");
+
+    if (photoCandidate) {
+      const safePhoto = ensureDataUrl(photoCandidate);
+      photoDataUrl.current = safePhoto;
+      setPhotoPreview(safePhoto);
+      applied.push({ label: "証明写真", value: "Azure OCR から自動抽出" });
+    }
+
+    if (Object.keys(updates).length > 0) {
+      setData((prev) => ({ ...prev, ...updates }));
+    }
+
+    if (applied.length > 0) {
+      toast.success("Azure OCR の結果をフォームへ反映しました。");
+    } else {
+      toast("Azure OCR から読み取れる項目がありませんでした。", { icon: "ℹ️" });
+    }
+
+    setAzureAppliedFields(applied);
+    setLastAzureDocumentType(typeof ocrRaw.document_type === "string" ? ocrRaw.document_type : null);
+    setLastAzureRaw(ocrRaw);
+    setShowAzurePanel(true);
+  };
 
   const levels = useMemo(
     () => ({
@@ -322,10 +516,93 @@ export default function Page() {
         <button onClick={handlePrint} className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700">
           印刷する
         </button>
+        <button
+          onClick={() => setShowAzurePanel((prev) => !prev)}
+          className={`flex items-center gap-2 rounded-lg border px-4 py-2 font-semibold transition ${
+            showAzurePanel
+              ? "border-sky-500 bg-sky-50 text-sky-700 shadow-inner"
+              : "hover:bg-gray-50"
+          }`}
+        >
+          <DocumentMagnifyingGlassIcon className="h-5 w-5" />
+          Azure OCR 連携
+        </button>
         <button onClick={handleSaveJson} className="rounded-lg border px-4 py-2 font-semibold hover:bg-gray-50">
           保存（JSON）
         </button>
       </div>
+
+      {showAzurePanel && (
+        <div className="mb-6 space-y-4 rounded-2xl border border-sky-100 bg-white/90 p-6 shadow-lg backdrop-blur print:hidden">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3 text-slate-700">
+              <DocumentMagnifyingGlassIcon className="h-6 w-6 text-sky-600" />
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Azure OCR アシスタント</h2>
+                <p className="text-sm text-slate-500">
+                  在留カードや免許証の画像をアップロードして氏名・在留資格・顔写真を自動でフォームに転記します。
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowAzurePanel(false)}
+              className="text-sm font-medium text-slate-500 transition hover:text-slate-800"
+            >
+              パネルを閉じる
+            </button>
+          </div>
+
+          <AzureOCRUploader onResult={handleAzureOcrComplete} />
+
+          {azureAppliedFields.length > 0 ? (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4">
+              <div className="flex items-center gap-2 text-emerald-700">
+                <CheckCircleIcon className="h-5 w-5" />
+                <span className="text-sm font-semibold">フォームに反映された項目</span>
+                {lastAzureDocumentType && (
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                    {lastAzureDocumentType === "zairyu_card"
+                      ? "在留カード"
+                      : lastAzureDocumentType === "license"
+                      ? "運転免許証"
+                      : "履歴書"}
+                  </span>
+                )}
+              </div>
+              <ul className="mt-3 grid gap-2 md:grid-cols-2">
+                {azureAppliedFields.map((field, index) => (
+                  <li
+                    key={`${field.label}-${index}`}
+                    className="rounded-lg bg-white/80 px-3 py-2 text-sm text-slate-700 shadow-sm"
+                  >
+                    <span className="block text-xs text-slate-500">{field.label}</span>
+                    <span className="font-medium text-slate-900">{field.value}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : lastAzureRaw ? (
+            <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+              <InformationCircleIcon className="mt-0.5 h-5 w-5 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Azure OCR から転記できるフィールドが見つかりませんでした。</p>
+                <p className="text-xs text-amber-600">
+                  画像の解像度や明るさを調整して再度お試しください。必要に応じて手入力で補完できます。
+                </p>
+              </div>
+            </div>
+          ) : null}
+
+          {lastAzureRaw && (
+            <details className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+              <summary className="cursor-pointer font-medium text-slate-700">Azure OCR 詳細データを表示</summary>
+              <pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap break-all text-[11px]">
+                {JSON.stringify(lastAzureRaw, null, 2)}
+              </pre>
+            </details>
+          )}
+        </div>
+      )}
 
       {/* A4 Canvas */}
       <div
