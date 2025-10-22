@@ -1,0 +1,142 @@
+"use client";
+
+import { ThemeProvider } from 'next-themes';
+import { useState, useEffect, useMemo, Suspense } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Toaster } from 'react-hot-toast';
+
+// Dynamic imports to prevent chunk loading errors
+import dynamic from 'next/dynamic';
+
+const themes = (() => {
+  try {
+    return require('@/lib/themes').themes;
+  } catch (error) {
+    console.warn('Error loading themes:', error);
+    return [];
+  }
+})();
+
+const getCustomThemes = (() => {
+  try {
+    return require('@/lib/custom-themes').getCustomThemes;
+  } catch (error) {
+    console.warn('Error loading custom themes:', error);
+    return () => [];
+  }
+})();
+
+const ThemeManager = dynamic(() => import('@/components/ThemeManager').then(mod => ({ default: mod.ThemeManager })), {
+  ssr: false,
+  loading: () => null
+});
+
+// Mapa de migración de nombres de temas antiguos a nuevos
+const themesMigration: Record<string, string> = {
+  'Default Light': 'default-light',
+  'Default Dark': 'default-dark',
+  'Ocean Blue': 'ocean-blue',
+  'Mint Green': 'mint-green',
+  'Royal Purple': 'royal-purple',
+  'Vibrant Coral': 'vibrant-coral',
+  'Forest Green': 'forest-green',
+  'Monochrome': 'monochrome',
+  'Espresso': 'espresso',
+  'Industrial': 'industrial',
+  'Sunset': 'sunset',
+};
+
+// Get all available themes (pre-defined + custom)
+const getAllThemeNames = () => {
+  try {
+    const customThemes = getCustomThemes();
+    return [
+      ...themes.map((t: any) => t.name),
+      ...customThemes.map((t: any) => t.name)
+    ];
+  } catch (error) {
+    console.warn('Error loading custom themes:', error);
+    return themes.map((t: any) => t.name);
+  }
+};
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60 * 1000, // 1 minuto
+            gcTime: 5 * 60 * 1000, // 5 minutos (antes cacheTime)
+            refetchOnWindowFocus: true,
+            refetchOnReconnect: true,
+            retry: 1,
+          },
+          mutations: {
+            retry: 1,
+          },
+        },
+      })
+  );
+
+  const [mounted, setMounted] = useState(false);
+
+  // Migrate old theme names on mount
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== 'undefined') {
+      const oldTheme = localStorage.getItem('theme');
+      if (oldTheme && themesMigration[oldTheme]) {
+        localStorage.setItem('theme', themesMigration[oldTheme]);
+      }
+    }
+  }, []);
+
+  // Memoize theme list
+  const allThemes = useMemo(() => getAllThemeNames(), []);
+
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="uns-kikaku"
+        themes={allThemes}
+        disableTransitionOnChange
+        enableSystem={false}
+      >
+        <ThemeManager />
+        <QueryClientProvider client={queryClient}>
+          {children}
+          {mounted && (
+            <>
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: '#333',
+                    color: '#fff',
+                  },
+                  success: {
+                    iconTheme: {
+                      primary: '#10b981',
+                      secondary: '#fff',
+                    },
+                  },
+                  error: {
+                    iconTheme: {
+                      primary: '#ef4444',
+                      secondary: '#fff',
+                    },
+                  },
+                }}
+              />
+              <ReactQueryDevtools initialIsOpen={false} />
+            </>
+          )}
+        </QueryClientProvider>
+      </ThemeProvider>
+    </Suspense>
+  );
+}
