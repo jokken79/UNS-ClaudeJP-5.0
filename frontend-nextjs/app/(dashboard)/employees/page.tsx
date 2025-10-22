@@ -389,7 +389,14 @@ export default function EmployeesPage() {
 
   // Fetch employees with React Query
   const { data, isLoading, error } = useQuery<PaginatedResponse>({
-    queryKey: ['employees', currentPage, searchTerm, filterActive, filterFactory],
+    queryKey: [
+      'employees',
+      currentPage,
+      searchTerm,
+      filterActive,
+      filterFactory,
+      filterContractType,
+    ],
     queryFn: async () => {
       const params: any = {
         page: currentPage,
@@ -1025,7 +1032,7 @@ export default function EmployeesPage() {
                   >
                     <option value="">全て</option>
                     <option value="請負">請負</option>
-                    <option value="派遣社員">派遣社員</option>
+                    <option value="派遣">派遣社員</option>
                     <option value="スタッフ">スタッフ</option>
                   </select>
                 </div>
