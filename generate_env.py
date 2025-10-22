@@ -92,7 +92,7 @@ GOOGLE_CLOUD_VISION_API_KEY=
 # ===========================================
 # NOTIFICATIONS (OPCIONAL)
 # ===========================================
-LINE_NOTIFY_TOKEN=
+LINE_CHANNEL_ACCESS_TOKEN=
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=
@@ -110,6 +110,13 @@ LOG_FILE=/app/logs/uns-claudejp.log
 # ===========================================
 COMPANY_NAME=UNS-Kikaku
 COMPANY_WEBSITE=https://www.uns-kikaku.com
+
+# ===========================================
+# FRONTEND (Next.js)
+# ===========================================
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_APP_VERSION=4.2.0
+NEXT_PUBLIC_APP_NAME=UNS-ClaudeJP 4.2
 """
     
     # Escribir el archivo

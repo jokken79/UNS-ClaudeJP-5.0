@@ -326,7 +326,7 @@ Key variables in `.env` or `docker-compose.yml`:
 **Optional:**
 - `AZURE_COMPUTER_VISION_*` - OCR service credentials
 - `SMTP_*` - Email service configuration
-- `LINE_NOTIFY_TOKEN` - For LINE notifications
+- `LINE_CHANNEL_ACCESS_TOKEN` - For LINE notifications
 - `DEBUG` - Enable debug mode
 - `LOG_LEVEL` - Logging level (default: INFO)
 
