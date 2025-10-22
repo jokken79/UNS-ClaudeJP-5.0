@@ -340,7 +340,7 @@ export default function Page() {
     const applied: { label: string; value: string }[] = [];
 
     const applyField = (
-      targetKey: keyof FormDataState,
+      targetKey: FormDataStringKey,
       label: string,
       ...sourceKeys: string[]
     ) => {
@@ -1349,7 +1349,15 @@ export default function Page() {
                            </select>
                         </td>
                         <td className="border border-black px-2 py-1">
-                          <select value={row.dependent} onChange={(e) => updateFamily(i, { dependent: e.target.value })} className="w-full border-0 p-0 outline-none">
+                          <select
+                            value={row.dependent}
+                            onChange={(e) =>
+                              updateFamily(i, {
+                                dependent: e.target.value as FamilyEntry["dependent"],
+                              })
+                            }
+                            className="w-full border-0 p-0 outline-none"
+                          >
                             <option value="有">有</option>
                             <option value="無">無</option>
                           </select>
@@ -1398,7 +1406,13 @@ export default function Page() {
                         </td>
                         <th className="border border-black bg-gray-100 px-2 py-1 text-left">お弁当（社内食堂）</th>
                         <td className="border border-black px-2 py-1">
-                        <select value={data.lunchPref} onChange={(e) => onChange("lunchPref", e.target.value)} className="w-full border-0 p-0 outline-none">
+                        <select
+                          value={data.lunchPref}
+                          onChange={(e) =>
+                            onChange("lunchPref", e.target.value as FormDataState["lunchPref"])
+                          }
+                          className="w-full border-0 p-0 outline-none"
+                        >
                             {(["昼/夜", "昼のみ", "夜のみ", "持参"] as const).map((v) => (<option key={v} value={v}>{v}</option>))}
                         </select>
                         </td>
@@ -1517,3 +1531,9 @@ type FormDataState = {
   jobs: JobEntry[];
   family: FamilyEntry[]; // Use updated FamilyEntry type
 };
+
+type FormDataStringKey = {
+  [K in keyof FormDataState]: FormDataState[K] extends string
+    ? (string extends FormDataState[K] ? K : never)
+    : never;
+}[keyof FormDataState];

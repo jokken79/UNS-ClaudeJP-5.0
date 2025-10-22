@@ -16,6 +16,8 @@ interface AzureOCRUploaderProps {
   defaultDocumentType?: 'zairyu_card' | 'license' | 'rirekisho';
 }
 
+type DocumentType = NonNullable<AzureOCRUploaderProps['defaultDocumentType']>;
+
 interface AzureOCRResponse {
   success: boolean;
   data?: Record<string, unknown>;
@@ -36,14 +38,15 @@ function isSupportedType(file: File) {
 }
 
 export function AzureOCRUploader({ onResult, defaultDocumentType = 'zairyu_card' }: AzureOCRUploaderProps) {
+  const normalizedDefaultType: DocumentType = defaultDocumentType ?? 'zairyu_card';
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [documentType, setDocumentType] = useState(defaultDocumentType);
+  const [documentType, setDocumentType] = useState<DocumentType>(normalizedDefaultType);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
   const documentOptions = useMemo(
-    () => [
+    (): { value: DocumentType; label: string }[] => [
       { value: 'zairyu_card', label: '在留カード (Zairyu Card)' },
       { value: 'license', label: '運転免許証 (Menkyosho)' },
       { value: 'rirekisho', label: '履歴書 (Rirekisho)' },
@@ -155,7 +158,12 @@ export function AzureOCRUploader({ onResult, defaultDocumentType = 'zairyu_card'
           <select
             id="azure-ocr-document-type"
             value={documentType}
-            onChange={(event) => setDocumentType(event.target.value as AzureOCRUploaderProps['defaultDocumentType'])}
+            onChange={(event) => {
+              const selected = documentOptions.find((option) => option.value === event.target.value);
+              if (selected) {
+                setDocumentType(selected.value);
+              }
+            }}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
             disabled={isUploading}
           >
