@@ -2,7 +2,7 @@
 import React, { useMemo, useRef, useState, useEffect } from "react"; // Import useEffect
 
 /**
- * 履歴書（A4横）— 単一ファイル TSX コンポーネント
+ * 履歴書（A4縦）— 単一ファイル TSX コンポーネント
  * - 画面：入力フォーム（日本語ラベル）＋ツールバー（印刷／保存）
  * - 印刷：入力枠をそのまま表示（公式様式風の枠線を保持）
  * - 注意：在留カード・免許証などの「書類画像」は印刷しません（本フォームは履歴書のみ）
@@ -391,7 +391,7 @@ export default function Page() {
 
   // --- Render ---
   return (
-    <div className="mx-auto max-w-[1200px] px-4 py-6 print:p-0 font-noto-sans-jp">
+    <div id="rirekisho-page-root" className="mx-auto max-w-[1200px] px-4 py-6 print:p-0 font-noto-sans-jp">
       {/* Toolbar */}
       <div className="sticky top-0 z-10 mb-6 flex items-center justify-center gap-3 rounded-xl border bg-white/80 p-3 shadow-md backdrop-blur print:hidden">
         <button
@@ -425,8 +425,9 @@ export default function Page() {
 
       {/* A4 Canvas */}
       <div
-        className="relative mx-auto box-border flex flex-col bg-white p-6 shadow print:p-0 print:shadow-none" // Added print:p-0
-        style={{ width: "297mm", minHeight: "210mm" }}
+        id="rirekisho-print-area"
+        className="relative mx-auto box-border flex flex-col bg-white p-6 shadow print:p-0 print:shadow-none print-canvas"
+        style={{ width: "210mm", minHeight: "297mm" }}
       >
         <h1 className="mb-4 text-center text-3xl font-extrabold tracking-widest">履 歴 書</h1>
 
@@ -1169,9 +1170,22 @@ export default function Page() {
                     </tr>
                 </tbody>
             </table>
-            <div className="mt-4 text-center text-[10pt]">
+            <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+              <div className="text-center text-[10pt]">
                 <div>ユニバーサル企画株式会社</div>
                 <div>TEL 052-938-8840　FAX 052-938-8841</div>
+              </div>
+              <div className="ml-auto min-w-[160px] text-right text-[10pt]">
+                <label htmlFor="rirekishoId" className="block text-[9pt] font-semibold uppercase tracking-wide">
+                  ID-Rirekisho
+                </label>
+                <input
+                  id="rirekishoId"
+                  value={data.applicantId}
+                  onChange={(e) => onChange("applicantId", e.target.value)}
+                  className="mt-1 w-full border border-black px-2 py-1 text-right print-keep-border"
+                />
+              </div>
             </div>
         </div>
       </div>
@@ -1199,7 +1213,7 @@ export default function Page() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
         .font-noto-sans-jp { font-family: 'Noto Sans JP', sans-serif; }
-        @page { size: A4 landscape; margin: 8mm; }
+        @page { size: A4 portrait; margin: 8mm; }
         @media print {
           html, body {
             background: white !important;
@@ -1215,13 +1229,15 @@ export default function Page() {
              margin: 0 !important; /* Override margin */
           }
            /* Specific adjustments for the A4 canvas */
-          div[style*="width: 297mm"] {
+          .print-canvas {
               box-shadow: none !important; /* Remove shadow for print */
               padding: 6mm !important; /* Adjust padding for print if needed */
               margin: 0 auto !important; /* Center the content if needed */
               border: none !important; /* Remove border for print */
               height: auto !important; /* Allow height to adjust */
-              min-height: 194mm !important; /* Adjust min-height based on margins */
+              min-height: 281mm !important; /* Adjust min-height based on margins */
+              width: 210mm !important;
+              min-width: 210mm !important;
           }
 
           input, select, textarea {
@@ -1233,6 +1249,11 @@ export default function Page() {
             padding: 0 !important; /* Reset padding */
             margin: 0 !important; /* Reset margin */
             color: black !important; /* Ensure text color is black */
+          }
+          input.print-keep-border {
+            border: 1px solid black !important;
+            padding: 2mm !important;
+            background-color: white !important;
           }
           select {
              appearance: none; /* Hide dropdown arrow */
