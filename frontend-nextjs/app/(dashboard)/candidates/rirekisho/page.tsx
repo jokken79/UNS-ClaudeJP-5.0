@@ -17,6 +17,8 @@ import {
  * 配置想定：/app/(dashboard)/candidates/rirekisho/page.tsx
  */
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
 export default function Page() {
   // --- State Management ---
   const [data, setData] = useState<FormDataState>(() => ({
@@ -91,6 +93,7 @@ export default function Page() {
   const [azureAppliedFields, setAzureAppliedFields] = useState<{ label: string; value: string }[]>([]);
   const [lastAzureDocumentType, setLastAzureDocumentType] = useState<string | null>(null);
   const [lastAzureRaw, setLastAzureRaw] = useState<Record<string, unknown> | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // --- Core Functions ---
   function onChange<K extends keyof FormDataState>(key: K, value: FormDataState[K]) {
@@ -199,15 +202,64 @@ export default function Page() {
     window.print(); // Just call window.print directly
   }
 
-  function handleSaveJson() {
-    const blob = new Blob([JSON.stringify({ ...data, photo: photoDataUrl.current }, null, 2)], {
-      type: "application/json",
-    });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `rirekisho_${data.applicantId}_${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
+  async function handleSaveToDatabase() {
+    if (isSaving) return;
+
+    try {
+      setIsSaving(true);
+
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) {
+        toast.error("認証トークンが見つかりません。ログインし直してください。");
+        return;
+      }
+
+      const payloadFormData = {
+        ...data,
+        photoDataUrl: photoDataUrl.current || null,
+        azureDocumentType: lastAzureDocumentType,
+        azureAppliedFields,
+        azureRaw: lastAzureRaw,
+      };
+
+      const response = await fetch(`${API_BASE_URL}/api/candidates/rirekisho/form`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          applicantId: data.applicantId,
+          rirekishoId: data.applicantId,
+          formData: payloadFormData,
+          photoDataUrl: photoDataUrl.current || null,
+          azureMetadata: lastAzureRaw,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => ({}));
+        const message = typeof errorPayload.detail === "string" ? errorPayload.detail : "データベースへの保存に失敗しました。";
+        throw new Error(message);
+      }
+
+      const savedForm = (await response.json()) as {
+        rirekisho_id?: string;
+        applicant_id?: string;
+      };
+
+      const resolvedId = savedForm?.rirekisho_id || savedForm?.applicant_id;
+      if (resolvedId) {
+        setData((prev) => ({ ...prev, applicantId: resolvedId }));
+      }
+
+      toast.success(resolvedId ? `履歴書を保存しました (ID: ${resolvedId})` : "履歴書をデータベースに保存しました。");
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : "保存処理で予期せぬエラーが発生しました。");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   const normalizeJapaneseDate = (value: string) => {
@@ -527,8 +579,14 @@ export default function Page() {
           <DocumentMagnifyingGlassIcon className="h-5 w-5" />
           Azure OCR 連携
         </button>
-        <button onClick={handleSaveJson} className="rounded-lg border px-4 py-2 font-semibold hover:bg-gray-50">
-          保存（JSON）
+        <button
+          onClick={handleSaveToDatabase}
+          disabled={isSaving}
+          className={`rounded-lg border px-4 py-2 font-semibold transition ${
+            isSaving ? "cursor-not-allowed bg-gray-100 text-gray-400" : "hover:bg-gray-50"
+          }`}
+        >
+          {isSaving ? "保存中..." : "データベース保存"}
         </button>
       </div>
 

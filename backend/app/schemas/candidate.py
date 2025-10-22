@@ -2,7 +2,7 @@
 Candidate Schemas - Complete Candidate Fields (履歴書/Rirekisho)
 """
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import date, datetime
 from app.models.models import CandidateStatus
 
@@ -23,6 +23,7 @@ class CandidateBase(BaseModel):
     nationality: Optional[str] = None
     marital_status: Optional[str] = None
     hire_date: Optional[date] = None
+    applicant_id: Optional[str] = None
 
     # 住所情報 (Address Information)
     postal_code: Optional[str] = None
@@ -166,6 +167,8 @@ class CandidateBase(BaseModel):
 
     # 作業用品 (Work Equipment)
     safety_shoes: Optional[str] = None
+    lunch_preference: Optional[str] = None
+    glasses: Optional[str] = None
 
     # 読み書き能力 (Reading & Writing Ability)
     read_katakana: Optional[str] = None
@@ -180,6 +183,10 @@ class CandidateBase(BaseModel):
     can_understand: Optional[str] = None
     can_read_kana: Optional[str] = None
     can_write_kana: Optional[str] = None
+
+    # OCR metadata
+    ocr_notes: Optional[str] = None
+    photo_data_url: Optional[str] = None
 
     # Legacy compatibility
     address: Optional[str] = None
@@ -244,3 +251,29 @@ class CandidateApprove(BaseModel):
 class CandidateReject(BaseModel):
     """Reject candidate"""
     reason: str
+
+
+class RirekishoFormCreate(BaseModel):
+    """Payload for saving the raw rirekisho form into the database."""
+
+    applicant_id: Optional[str] = None
+    rirekisho_id: Optional[str] = None
+    form_data: Dict[str, Any]
+    photo_data_url: Optional[str] = None
+    azure_metadata: Optional[Dict[str, Any]] = None
+
+
+class CandidateFormResponse(BaseModel):
+    """Response model for stored rirekisho form snapshots."""
+
+    id: int
+    candidate_id: Optional[int] = None
+    applicant_id: Optional[str] = None
+    rirekisho_id: Optional[str] = None
+    form_data: Dict[str, Any]
+    photo_data_url: Optional[str] = None
+    azure_metadata: Optional[Dict[str, Any]] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)

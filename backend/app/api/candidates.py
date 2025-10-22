@@ -7,14 +7,18 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 import os
 import shutil
-from typing import Optional
+from typing import Optional, Dict, Any
+from datetime import datetime, date
+import re
+import json
 
 from app.core.database import get_db
 from app.core.config import settings
-from app.models.models import Candidate, Document, Employee, User, CandidateStatus, DocumentType
+from app.models.models import Candidate, Document, Employee, User, CandidateStatus, DocumentType, CandidateForm
 from app.schemas.candidate import (
     CandidateCreate, CandidateUpdate, CandidateResponse,
-    CandidateApprove, CandidateReject, DocumentUpload, OCRData
+    CandidateApprove, CandidateReject, DocumentUpload, OCRData,
+    RirekishoFormCreate, CandidateFormResponse
 )
 from app.schemas.base import PaginatedResponse
 from app.services.auth_service import auth_service
@@ -43,6 +47,218 @@ import threading
 
 # Lock for thread-safe Rirekisho ID generation
 id_generation_lock = threading.Lock()
+
+
+def _clean_string(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        cleaned = value.strip()
+        return cleaned or None
+    return str(value)
+
+
+def _parse_int(value: Any) -> Optional[int]:
+    if value is None:
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        digits = re.sub(r"[^0-9]", "", value)
+        if not digits:
+            return None
+        try:
+            return int(digits)
+        except ValueError:
+            return None
+    return None
+
+
+def _parse_date_value(value: Any) -> Optional[date]:
+    if not value:
+        return None
+    if isinstance(value, date):
+        return value
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, str):
+        candidate_value = value.strip()
+        if not candidate_value:
+            return None
+        # Remove Japanese suffixes like "まで"
+        candidate_value = re.sub(r"まで$", "", candidate_value)
+        # Japanese era-like format YYYY年MM月DD日
+        jp_match = re.findall(r"\d+", candidate_value)
+        if len(jp_match) >= 3:
+            try:
+                year, month, day = (int(jp_match[0]), int(jp_match[1]), int(jp_match[2]))
+                if 1 <= month <= 12 and 1 <= day <= 31:
+                    return date(year, month, day)
+            except ValueError:
+                pass
+        # Try known date formats
+        for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%Y.%m.%d", "%Y-%m-%dT%H:%M:%S", "%Y/%m/%d %H:%M:%S"):
+            try:
+                return datetime.strptime(candidate_value[:len(fmt)], fmt).date()
+            except ValueError:
+                continue
+    return None
+
+
+def _bool_to_flag(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return "有" if value else "無"
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"有", "あり", "true", "yes", "1"}:
+            return "有"
+        if lowered in {"無", "なし", "false", "no", "0"}:
+            return "無"
+    return None
+
+
+def _map_family_entries(updates: Dict[str, Any], family_entries: Any) -> None:
+    if not isinstance(family_entries, list):
+        return
+    for idx, member in enumerate(family_entries[:5]):
+        if not isinstance(member, dict):
+            continue
+        base_index = idx + 1
+        name = _clean_string(member.get("name"))
+        relation = _clean_string(member.get("relation"))
+        age = _parse_int(member.get("age"))
+        residence = _clean_string(member.get("residence"))
+        if not any([name, relation, age, residence]):
+            continue
+        updates[f"family_name_{base_index}"] = name
+        updates[f"family_relation_{base_index}"] = relation
+        if age is not None:
+            updates[f"family_age_{base_index}"] = age
+        if residence is not None:
+            updates[f"family_residence_{base_index}"] = residence
+
+
+def _summarize_jobs(jobs: Any) -> Optional[str]:
+    if not isinstance(jobs, list) or not jobs:
+        return None
+    summaries = []
+    for entry in jobs:
+        if not isinstance(entry, dict):
+            continue
+        start = _clean_string(entry.get("start"))
+        end = _clean_string(entry.get("end"))
+        hakenmoto = _clean_string(entry.get("hakenmoto"))
+        hakensaki = _clean_string(entry.get("hakensaki"))
+        content = _clean_string(entry.get("content"))
+        reason = _clean_string(entry.get("reason"))
+        parts = []
+        if start or end:
+            parts.append(f"{start or ''}〜{end or ''}")
+        if hakenmoto or hakensaki:
+            parts.append(f"派遣元:{hakenmoto or '-'}→派遣先:{hakensaki or '-'}")
+        if content:
+            parts.append(f"業務:{content}")
+        if reason:
+            parts.append(f"備考:{reason}")
+        if parts:
+            summaries.append(" / ".join(parts))
+    return "\n".join(summaries) if summaries else None
+
+
+def _map_form_to_candidate(form_data: Dict[str, Any], applicant_id: Optional[str], photo_data_url: Optional[str]) -> Dict[str, Any]:
+    updates: Dict[str, Any] = {}
+
+    if applicant_id:
+        updates["applicant_id"] = applicant_id
+
+    updates["reception_date"] = _parse_date_value(form_data.get("receptionDate"))
+    updates["full_name_kanji"] = _clean_string(form_data.get("nameKanji"))
+    updates["full_name_kana"] = _clean_string(form_data.get("nameFurigana"))
+    updates["date_of_birth"] = _parse_date_value(form_data.get("birthday"))
+    updates["gender"] = _clean_string(form_data.get("gender"))
+    updates["nationality"] = _clean_string(form_data.get("nationality"))
+    updates["postal_code"] = _clean_string(form_data.get("postalCode"))
+    updates["current_address"] = _clean_string(form_data.get("address"))
+    updates["address"] = _clean_string(form_data.get("address"))
+    updates["mobile"] = _clean_string(form_data.get("mobile"))
+    updates["phone"] = _clean_string(form_data.get("phone"))
+    updates["emergency_contact_name"] = _clean_string(form_data.get("emergencyName"))
+    updates["emergency_contact_relation"] = _clean_string(form_data.get("emergencyRelation"))
+    updates["emergency_contact_phone"] = _clean_string(form_data.get("emergencyPhone"))
+    updates["residence_status"] = _clean_string(form_data.get("visaType"))
+    updates["residence_expiry"] = _parse_date_value(form_data.get("visaPeriod"))
+    updates["residence_card_number"] = _clean_string(form_data.get("residenceCardNo"))
+    updates["passport_number"] = _clean_string(form_data.get("passportNo"))
+    updates["passport_expiry"] = _parse_date_value(form_data.get("passportExpiry"))
+    updates["license_number"] = _clean_string(form_data.get("licenseNo"))
+    updates["license_expiry"] = _parse_date_value(form_data.get("licenseExpiry"))
+    updates["car_ownership"] = _clean_string(form_data.get("carOwner"))
+    updates["voluntary_insurance"] = _clean_string(form_data.get("insurance"))
+    updates["speaking_level"] = _clean_string(form_data.get("speakLevel"))
+    updates["listening_level"] = _clean_string(form_data.get("listenLevel"))
+    updates["read_kanji"] = _clean_string(form_data.get("kanjiReadLevel"))
+    updates["write_kanji"] = _clean_string(form_data.get("kanjiWriteLevel"))
+    updates["read_hiragana"] = _clean_string(form_data.get("hiraganaReadLevel"))
+    updates["write_hiragana"] = _clean_string(form_data.get("hiraganaWriteLevel"))
+    updates["read_katakana"] = _clean_string(form_data.get("katakanaReadLevel"))
+    updates["write_katakana"] = _clean_string(form_data.get("katakanaWriteLevel"))
+    updates["major"] = _clean_string(form_data.get("major"))
+    updates["blood_type"] = _clean_string(form_data.get("bloodType"))
+    updates["dominant_hand"] = _clean_string(form_data.get("dominantArm"))
+    updates["allergy_exists"] = _clean_string(form_data.get("allergy"))
+    updates["safety_shoes"] = _clean_string(form_data.get("safetyShoes"))
+    updates["covid_vaccine_status"] = _clean_string(form_data.get("vaccine"))
+    updates["forklift_license"] = _bool_to_flag(form_data.get("forkliftLicense"))
+    updates["jlpt_taken"] = _bool_to_flag(form_data.get("jlpt"))
+    updates["japanese_level"] = _clean_string(form_data.get("jlptLevel"))
+    updates["qualification_1"] = _clean_string(form_data.get("otherQualifications"))
+    updates["lunch_preference"] = _clean_string(form_data.get("lunchPref"))
+    updates["bento_lunch_dinner"] = _clean_string(form_data.get("lunchPref"))
+    updates["commute_method"] = _clean_string(form_data.get("commuteMethod"))
+    commute_time = _parse_int(form_data.get("commuteTimeMin"))
+    if commute_time is not None:
+        updates["commute_time_oneway"] = commute_time
+    updates["glasses"] = _clean_string(form_data.get("glasses"))
+
+    _map_family_entries(updates, form_data.get("family"))
+
+    notes_payload: Dict[str, Any] = {}
+    jobs = form_data.get("jobs")
+    jobs_summary = _summarize_jobs(jobs)
+    if jobs_summary:
+        notes_payload["jobs"] = jobs
+        updates["work_history_company_7"] = jobs_summary
+        first_job = next((item for item in jobs if isinstance(item, dict)), None)
+        if first_job:
+            entry_company = _clean_string(first_job.get("hakenmoto"))
+            exit_company = _clean_string(first_job.get("hakensaki"))
+            updates["work_history_entry_company_7"] = entry_company or jobs_summary
+            if exit_company:
+                updates["work_history_exit_company_7"] = exit_company
+    if form_data.get("education"):
+        notes_payload["education"] = form_data.get("education")
+    if form_data.get("azureRaw"):
+        notes_payload["azureRaw"] = form_data.get("azureRaw")
+    if form_data.get("azureAppliedFields"):
+        notes_payload["azureAppliedFields"] = form_data.get("azureAppliedFields")
+    if form_data.get("family"):
+        notes_payload.setdefault("family", form_data.get("family"))
+    if notes_payload:
+        updates["ocr_notes"] = json.dumps(notes_payload, ensure_ascii=False)
+
+    if photo_data_url:
+        updates["photo_data_url"] = photo_data_url
+        updates["photo_url"] = photo_data_url
+
+    return updates
+
+
+def _apply_candidate_updates(candidate: Candidate, updates: Dict[str, Any]) -> None:
+    for field, value in updates.items():
+        if value is not None and hasattr(candidate, field):
+            setattr(candidate, field, value)
 
 def generate_rirekisho_id(db: Session) -> str:
     """Generate next Rirekisho ID in a thread-safe manner."""
@@ -96,11 +312,79 @@ async def create_candidate(
         **candidate.model_dump(exclude_unset=True)
     )
 
+    if not getattr(new_candidate, "applicant_id", None):
+        new_candidate.applicant_id = rirekisho_id
+    if getattr(new_candidate, "photo_data_url", None) and not getattr(new_candidate, "photo_url", None):
+        new_candidate.photo_url = new_candidate.photo_data_url
+
     db.add(new_candidate)
     db.commit()
     db.refresh(new_candidate)
 
     return new_candidate
+
+
+@router.post("/rirekisho/form", response_model=CandidateFormResponse, status_code=status.HTTP_201_CREATED)
+async def save_rirekisho_form(
+    payload: RirekishoFormCreate,
+    current_user: User = Depends(auth_service.get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Persist a raw rirekisho form snapshot and sync key fields into candidates."""
+
+    if not payload.form_data:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="form_data is required."
+        )
+
+    applicant_id = _clean_string(payload.applicant_id) or _clean_string(payload.form_data.get("applicantId"))
+    if not applicant_id:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="applicantId is required."
+        )
+
+    rirekisho_id = _clean_string(payload.rirekisho_id)
+
+    candidate = None
+    if rirekisho_id:
+        candidate = db.query(Candidate).filter(Candidate.rirekisho_id == rirekisho_id).first()
+
+    if not candidate:
+        candidate = db.query(Candidate).filter(Candidate.applicant_id == applicant_id).first()
+
+    photo_data_url = payload.photo_data_url or payload.form_data.get("photoDataUrl")
+    updates = _map_form_to_candidate(payload.form_data, applicant_id, photo_data_url)
+
+    if candidate:
+        _apply_candidate_updates(candidate, updates)
+        db.add(candidate)
+    else:
+        candidate_kwargs = {key: value for key, value in updates.items() if value is not None}
+        candidate = Candidate(
+            rirekisho_id=rirekisho_id or generate_rirekisho_id(db),
+            **candidate_kwargs
+        )
+        if not getattr(candidate, "applicant_id", None):
+            candidate.applicant_id = candidate.rirekisho_id
+        db.add(candidate)
+
+    form_entry = CandidateForm(
+        candidate=candidate,
+        rirekisho_id=candidate.rirekisho_id,
+        applicant_id=applicant_id,
+        form_data=payload.form_data,
+        photo_data_url=photo_data_url,
+        azure_metadata=payload.azure_metadata,
+    )
+
+    db.add(form_entry)
+    db.commit()
+    db.refresh(candidate)
+    db.refresh(form_entry)
+
+    return form_entry
 
 
 @router.get("/", response_model=PaginatedResponse)

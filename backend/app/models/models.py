@@ -83,6 +83,7 @@ class Candidate(Base):
     # Primary Key & IDs
     id = Column(Integer, primary_key=True, index=True)
     rirekisho_id = Column(String(20), unique=True, nullable=False, index=True)  # 履歴書ID
+    applicant_id = Column(String(50), index=True)  # フォームで生成された応募者ID
 
     # 受付日・来日 (Reception & Arrival Dates)
     reception_date = Column(Date)  # 受付日
@@ -95,6 +96,7 @@ class Candidate(Base):
     gender = Column(String(10))  # 性別
     date_of_birth = Column(Date)  # 生年月日
     photo_url = Column(String(255))  # 写真
+    photo_data_url = Column(Text)  # Base64データURLの証明写真
     nationality = Column(String(50))  # 国籍
     marital_status = Column(String(20))  # 配偶者
     hire_date = Column(Date)  # 入社日
@@ -196,6 +198,7 @@ class Candidate(Base):
     bento_lunch_only = Column(String(10))  # お弁当　昼のみ
     bento_dinner_only = Column(String(10))  # お弁当　夜のみ
     bento_bring_own = Column(String(10))  # お弁当　持参
+    lunch_preference = Column(String(50))  # お弁当（社内食堂）
 
     # 通勤 (Commute)
     commute_method = Column(String(50))  # 通勤方法
@@ -232,6 +235,7 @@ class Candidate(Base):
     blood_type = Column(String(5))  # 血液型
     dominant_hand = Column(String(10))  # 利き腕
     allergy_exists = Column(String(10))  # アレルギー有無
+    glasses = Column(String(100))  # 眼（メガネ、コンタクト使用）
 
     # 日本語能力詳細 (Japanese Ability Details)
     listening_level = Column(String(20))  # 聞く選択
@@ -263,6 +267,8 @@ class Candidate(Base):
     email = Column(String(100))
     # phone y address ya están definidos arriba, no duplicar
 
+    ocr_notes = Column(Text)  # OCR処理に関するメモ
+
     # Status & Audit Fields
     status = Column(SQLEnum(CandidateStatus, name='candidate_status'), default=CandidateStatus.PENDING)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -272,6 +278,25 @@ class Candidate(Base):
 
     # Relationships
     documents = relationship("Document", back_populates="candidate", foreign_keys="Document.candidate_id")
+    form_submissions = relationship("CandidateForm", back_populates="candidate", cascade="all, delete-orphan")
+
+
+class CandidateForm(Base):
+    """Raw rirekisho form submissions stored as JSON snapshots."""
+
+    __tablename__ = "candidate_forms"
+
+    id = Column(Integer, primary_key=True, index=True)
+    candidate_id = Column(Integer, ForeignKey("candidates.id", ondelete="SET NULL"))
+    rirekisho_id = Column(String(20), index=True)
+    applicant_id = Column(String(50), index=True)
+    form_data = Column(JSON, nullable=False)
+    photo_data_url = Column(Text)
+    azure_metadata = Column(JSON)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    candidate = relationship("Candidate", back_populates="form_submissions")
 
 
 class Document(Base):
