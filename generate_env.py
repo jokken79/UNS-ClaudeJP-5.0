@@ -114,7 +114,8 @@ COMPANY_WEBSITE=https://www.uns-kikaku.com
 # ===========================================
 # FRONTEND (Next.js)
 # ===========================================
-NEXT_PUBLIC_API_URL=http://localhost:8000
+# NOTE: Must include the /api suffix and no trailing slash
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
 NEXT_PUBLIC_APP_VERSION=4.2.0
 NEXT_PUBLIC_APP_NAME=UNS-ClaudeJP 4.2
 """

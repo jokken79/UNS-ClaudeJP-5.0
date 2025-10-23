@@ -1,12 +1,12 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-title UNS-ClaudeJP - Reinstalar Sistema (Mejorado)
+title UNS-ClaudeJP - Reinstalar Sistema (Corregido)
 
 echo.
 echo ========================================================
 echo       UNS-CLAUDEJP - SISTEMA DE GESTION
-echo       REINSTALAR SISTEMA (VERSION MEJORADA)
+echo       REINSTALAR SISTEMA (VERSION CORREGIDA)
 echo ========================================================
 echo.
 
@@ -14,7 +14,7 @@ REM Función para pausar en caso de error
 :pause_on_error
 if %errorlevel% neq 0 (
     echo.
-    echo ERROR: La operacion fallo. Codigo de error: %errorlevel%
+    echo ❌ ERROR: La operacion fallo con codigo %errorlevel%.
     echo Presiona cualquier tecla para salir...
     pause >nul
     exit /b %errorlevel%
@@ -24,42 +24,31 @@ goto :eof
 REM Función para verificar Python
 :verificar_python
 echo [DIAGNOSTICO] Verificando Python...
-set "PYTHON_CMD="
-
-REM Primero intentar con 'python'
-python --version >nul 2>&1
-if %errorlevel% EQU 0 (
-    set "PYTHON_CMD=python"
-    for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
-    echo ✅ Python encontrado: Version %PYTHON_VERSION% (comando: python)
-    goto :python_found
-)
-
-REM Si no funciona, intentar con 'py'
 py --version >nul 2>&1
-if %errorlevel% EQU 0 (
-    set "PYTHON_CMD=py"
+if %errorlevel% neq 0 (
+    python --version >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo.
+        echo ❌ ADVERTENCIA: Python NO esta instalado o no esta en el PATH
+        echo.
+        echo SOLUCION:
+        echo 1. Descarga Python desde: https://www.python.org/downloads/
+        echo 2. Durante la instalacion, MARCA "Add Python to PATH"
+        echo 3. Reinicia tu computadora
+        echo 4. Vuelve a ejecutar este script
+        echo.
+        set "PYTHON_CMD=python"
+        echo Intentaremos continuar con 'python'...
+    ) else (
+        for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
+        echo ✅ Python encontrado: Version %PYTHON_VERSION%
+        set "PYTHON_CMD=python"
+    )
+) else (
     for /f "tokens=2" %%i in ('py --version 2^>^&1') do set PYTHON_VERSION=%%i
-    echo ✅ Python encontrado: Version %PYTHON_VERSION% (comando: py)
-    goto :python_found
+    echo ✅ Python encontrado: Version %PYTHON_VERSION%
+    set "PYTHON_CMD=py"
 )
-
-REM Si ninguno funciona
-echo.
-echo ❌ ADVERTENCIA: Python NO esta instalado o no esta en el PATH
-echo.
-echo SOLUCION:
-echo 1. Descarga Python desde: https://www.python.org/downloads/
-echo 2. Durante la instalacion, MARCA "Add Python to PATH"
-echo 3. Reinicia tu computadora
-echo 4. Vuelve a ejecutar este script
-echo.
-echo Presiona cualquier tecla para continuar sin Python...
-pause >nul
-REM Continuar sin salir
-goto :eof
-
-:python_found
 goto :eof
 
 REM Función para verificar Docker
@@ -68,7 +57,7 @@ echo [DIAGNOSTICO] Verificando Docker Desktop...
 docker --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
-    echo ❌ ADVERTENCIA: Docker Desktop NO esta instalado
+    echo ❌ ERROR CRITICO: Docker Desktop NO esta instalado
     echo.
     echo SOLUCION:
     echo 1. Descarga Docker Desktop desde: https://www.docker.com/products/docker-desktop
@@ -76,9 +65,8 @@ if %errorlevel% neq 0 (
     echo 3. Inicia Docker Desktop
     echo 4. Vuelve a ejecutar este script
     echo.
-    echo Presiona cualquier tecla para continuar sin Docker...
-    pause >nul
-    REM Continuar sin salir
+    pause
+    exit /b 1
 ) else (
     echo ✅ Docker Desktop encontrado
 )
@@ -86,16 +74,15 @@ if %errorlevel% neq 0 (
 docker ps >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
-    echo ❌ ADVERTENCIA: Docker Desktop NO esta corriendo
+    echo ❌ ERROR CRITICO: Docker Desktop NO esta corriendo
     echo.
     echo SOLUCION:
     echo 1. Abre Docker Desktop desde el menu Inicio
-    echo 2. Espera a que inicie completamente
+    echo 2. Espera a que inicie completamente (hasta ver "Docker Desktop is ready")
     echo 3. Vuelve a ejecutar este script
     echo.
-    echo Presiona cualquier tecla para continuar con Docker detenido...
-    pause >nul
-    REM Continuar sin salir
+    pause
+    exit /b 1
 ) else (
     echo ✅ Docker Desktop esta corriendo
 )
@@ -119,13 +106,7 @@ if %errorlevel% EQU 0 (
         echo ❌ ERROR CRITICO: Docker Compose no esta disponible
         echo Docker Compose deberia venir con Docker Desktop.
         echo.
-        echo SOLUCION:
-        echo 1. Asegurate de que Docker Desktop este instalado y corriendo
-        echo 2. Reinicia Docker Desktop
-        echo 3. Vuelve a ejecutar este script
-        echo.
-        echo Presiona cualquier tecla para salir...
-        pause >nul
+        pause
         exit /b 1
     )
 )
@@ -135,51 +116,39 @@ REM Función para verificar archivos del proyecto
 :verificar_proyecto
 echo [DIAGNOSTICO] Verificando archivos del proyecto...
 
-REM Verificar que estamos en el directorio correcto
-if not exist "%~dp0\.." (
-    echo.
-    echo ❌ ADVERTENCIA: No se puede encontrar el directorio raiz del proyecto
-    echo Presiona cualquier tecla para continuar...
-    pause >nul
-    REM Continuar sin salir
-)
-
+REM Cambiar al directorio raiz del proyecto
 cd /d "%~dp0\.."
 
 if not exist "docker-compose.yml" (
     echo.
-    echo ❌ ADVERTENCIA: No se encuentra docker-compose.yml
+    echo ❌ ERROR CRITICO: No se encuentra docker-compose.yml
     echo Asegurate de estar ejecutando este script desde la carpeta correcta
-    echo Presiona cualquier tecla para continuar...
-    pause >nul
-    REM Continuar sin salir
+    pause
+    exit /b 1
 )
 
 if not exist "backend" (
     echo.
-    echo ❌ ADVERTENCIA: No se encuentra la carpeta 'backend'
-    echo Presiona cualquier tecla para continuar...
-    pause >nul
-    REM Continuar sin salir
+    echo ❌ ERROR CRITICO: No se encuentra la carpeta 'backend'
+    pause
+    exit /b 1
 )
 
 if not exist "frontend-nextjs" (
     echo.
-    echo ❌ ADVERTENCIA: No se encuentra la carpeta 'frontend-nextjs'
-    echo Presiona cualquier tecla para continuar...
-    pause >nul
-    REM Continuar sin salir
+    echo ❌ ERROR CRITICO: No se encuentra la carpeta 'frontend-nextjs'
+    pause
+    exit /b 1
 )
 
 if not exist "generate_env.py" (
     echo.
-    echo ❌ ADVERTENCIA: No se encuentra generate_env.py
-    echo Presiona cualquier tecla para continuar...
-    pause >nul
-    REM Continuar sin salir
+    echo ❌ ERROR CRITICO: No se encuentra generate_env.py
+    pause
+    exit /b 1
 )
 
-echo ✅ Estructura del proyecto verificada (con posibles advertencias)
+echo ✅ Estructura del proyecto verificada
 goto :eof
 
 REM Inicio del script principal
@@ -207,22 +176,19 @@ if /i NOT "%CONFIRMAR%"=="S" goto :cancelled
 :continue
 
 echo.
+echo ========================================================
+echo       INICIANDO PROCESO DE REINSTALACION...
+echo ========================================================
+
+echo.
 echo [0/6] Verificando archivo .env...
 echo.
 
 if not exist .env (
     echo      .env no encontrado. Generando automaticamente...
-    if defined PYTHON_CMD (
-        echo      Ejecutando: %PYTHON_CMD% generate_env.py
-        %PYTHON_CMD% generate_env.py
-        call :pause_on_error
-        echo      ✅ OK - Archivo .env generado.
-    ) else (
-        echo      ❌ ERROR: Python no disponible para generar .env
-        echo      Por favor instala Python y ejecuta nuevamente
-        pause
-        exit /b 1
-    )
+    %PYTHON_CMD% generate_env.py
+    call :pause_on_error
+    echo      ✅ OK - Archivo .env generado.
 ) else (
     echo      ✅ OK - Archivo .env ya existe.
 )
@@ -230,65 +196,31 @@ if not exist .env (
 echo.
 echo [1/6] Deteniendo servicios completamente...
 echo.
-echo      Ejecutando: %DOCKER_COMPOSE_CMD% down
 %DOCKER_COMPOSE_CMD% down
-if %errorlevel% neq 0 (
-    echo      ADVERTENCIA: Error al detener servicios, continuando...
-    echo      Codigo de error: %errorlevel%
-    pause
-) else (
-    echo      ✅ OK - Servicios detenidos.
-)
+call :pause_on_error
+echo      ✅ OK - Servicios detenidos.
 echo.
 echo      Esperando 10 segundos para asegurar cierre limpio...
 timeout /t 10 /nobreak >nul
 
 echo.
 echo [2/6] Eliminando volumenes antiguos...
-echo      Ejecutando: %DOCKER_COMPOSE_CMD% down -v
 %DOCKER_COMPOSE_CMD% down -v
-if %errorlevel% neq 0 (
-    echo      ADVERTENCIA: Error al eliminar volumenes, continuando...
-    echo      Codigo de error: %errorlevel%
-    pause
-) else (
-    echo      ✅ OK - Volumenes eliminados.
-)
+call :pause_on_error
+echo      ✅ OK - Volumenes eliminados.
 
 echo.
 echo [3/6] Limpiando imagenes antiguas...
-echo      Ejecutando: docker system prune -f
 docker system prune -f
-if %errorlevel% neq 0 (
-    echo      ADVERTENCIA: Error al limpiar imagenes, continuando...
-    echo      Codigo de error: %errorlevel%
-    pause
-) else (
-    echo      ✅ OK - Imagenenes antiguas eliminadas.
-)
+echo      ✅ OK - Imagenes antiguas eliminadas.
 
 echo.
 echo [4/6] Reconstruyendo imagenes desde cero...
 echo      (Esto puede tardar 3-5 minutos)
 echo.
-echo      Ejecutando: %DOCKER_COMPOSE_CMD% build --no-cache
 %DOCKER_COMPOSE_CMD% build --no-cache
-if %errorlevel% neq 0 (
-    echo.
-    echo ❌ ERROR CRITICO: Fallo al construir las imagenes
-    echo      Codigo de error: %errorlevel%
-    echo.
-    echo SOLUCIONES POSIBLES:
-    echo 1. Verifica que Docker Desktop este corriendo
-    echo 2. Verifica que tienes suficiente espacio en disco
-    echo 3. Revisa los logs de Docker para mas detalles
-    echo.
-    echo Presiona cualquier tecla para salir...
-    pause >nul
-    exit /b %errorlevel%
-) else (
-    echo      ✅ OK - Imagenes construidas.
-)
+call :pause_on_error
+echo      ✅ OK - Imagenes reconstruidas.
 
 echo.
 echo [5/6] Iniciando servicios nuevos...
@@ -296,19 +228,8 @@ echo.
 
 REM Primero iniciar solo la base de datos
 echo      [5.1] Iniciando PostgreSQL primero...
-echo      Ejecutando: %DOCKER_COMPOSE_CMD% up -d db
 %DOCKER_COMPOSE_CMD% up -d db
-if %errorlevel% neq 0 (
-    echo.
-    echo ❌ ERROR CRITICO: Fallo al iniciar PostgreSQL
-    echo      Codigo de error: %errorlevel%
-    echo.
-    echo Presiona cualquier tecla para salir...
-    pause >nul
-    exit /b %errorlevel%
-) else (
-    echo      ✅ OK - PostgreSQL iniciado.
-)
+call :pause_on_error
 
 echo      [5.2] Esperando 30 segundos a que PostgreSQL este saludable...
 timeout /t 30 /nobreak >nul
@@ -317,32 +238,23 @@ REM Verificar que la DB este healthy antes de continuar
 echo      [5.3] Verificando salud de PostgreSQL...
 docker inspect --format="{{.State.Health.Status}}" uns-claudejp-db 2>nul | findstr "healthy" >nul
 if %errorlevel% NEQ 0 (
-    echo      ADVERTENCIA: PostgreSQL aun no esta 'healthy', esperando 30 segundos mas...
+    echo      ⚠️  PostgreSQL aun no esta 'healthy', esperando 30 segundos mas...
     timeout /t 30 /nobreak >nul
 
     REM Verificar de nuevo
     docker inspect --format="{{.State.Health.Status}}" uns-claudejp-db 2>nul | findstr "healthy" >nul
     if %errorlevel% NEQ 0 (
-        echo      ADVERTENCIA: PostgreSQL aun en recovery, esperando 30 segundos adicionales...
+        echo      ⚠️  PostgreSQL aun en recovery, esperando 30 segundos adicionales...
         timeout /t 30 /nobreak >nul
     )
 )
 
 REM Ahora iniciar el resto de servicios
 echo      [5.4] Iniciando el resto de servicios (importer, backend, frontend, adminer)...
-echo      Ejecutando: %DOCKER_COMPOSE_CMD% up -d
 %DOCKER_COMPOSE_CMD% up -d
-if %errorlevel% neq 0 (
-    echo.
-    echo ❌ ERROR CRITICO: Fallo al iniciar los servicios
-    echo      Codigo de error: %errorlevel%
-    echo.
-    echo Presiona cualquier tecla para salir...
-    pause >nul
-    exit /b %errorlevel%
-) else (
-    echo      ✅ OK - Servicios iniciados.
-)
+call :pause_on_error
+
+echo      ✅ OK - Servicios iniciados.
 
 echo.
 echo [6/6] Esperando a que los servicios esten completamente listos...
@@ -388,38 +300,38 @@ echo.
 
 echo.
 echo ========================================================
-echo       ✅ OK - REINSTALACION COMPLETADA
+echo       ✅ REINSTALACION COMPLETADA EXITOSAMENTE
 echo ========================================================
 echo.
 echo El sistema ha sido reinstalado con exito.
 echo.
-echo URLs de Acceso:
+echo 🌐 URLs de Acceso:
 echo   Frontend:  http://localhost:3000
 echo   Backend:   http://localhost:8000
 echo   Adminer:   http://localhost:8080
 echo.
-echo Credenciales:
+echo 🔑 Credenciales:
 echo   Usuario:   admin
 echo   Password:  admin123
 echo.
-echo Nota: El frontend puede tardar unos minutos en compilar.
+echo ℹ️  Nota: El frontend puede tardar unos minutos en compilar completamente.
 echo.
 
 set /p ABRIR="¿Abrir el frontend en el navegador? (S/N): "
 if /i "%ABRIR%"=="S" (
     echo.
-    echo Abriendo http://localhost:3000 en tu navegador...
+    echo 🚀 Abriendo http://localhost:3000 en tu navegador...
     start http://localhost:3000
 )
 
 echo.
-echo Presiona cualquier tecla para salir...
-pause >nul
+echo ✅ Todo listo! El sistema esta funcionando.
+pause
 exit /b 0
 
 :cancelled
 echo.
-echo Reinstalacion cancelada.
+echo ❌ Reinstalacion cancelada por el usuario.
 echo.
 pause
 exit /b 0

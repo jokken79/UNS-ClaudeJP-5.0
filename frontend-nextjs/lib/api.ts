@@ -2,7 +2,14 @@ import axios from 'axios';
 
 import { useAuthStore } from '@/stores/auth-store';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+// Normalize base URL to ensure it includes `/api` and no trailing slash
+const normalizeBaseUrl = (url: string): string => {
+  if (!url) return 'http://localhost:8000/api';
+  const trimmed = url.replace(/\/+$/, '');
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+};
+
+const API_BASE_URL = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
 
 // Create axios instance
 const api = axios.create({
@@ -26,9 +33,15 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Dinámicamente ajustar la baseURL para renderizado del lado del servidor (SSR) en Docker
+    // Ajustar baseURL para SSR si se define un endpoint interno (Docker, etc.)
     if (typeof window === 'undefined') {
-      config.baseURL = 'http://backend:8000/api';
+      const internal = process.env.INTERNAL_API_URL;
+      if (internal) {
+        config.baseURL = normalizeBaseUrl(internal);
+      } else {
+        // Por defecto, mantén la misma base URL normalizada
+        config.baseURL = API_BASE_URL;
+      }
     }
 
     return config;
@@ -42,11 +55,20 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // Only log meaningful errors (not network errors during initial load)
+    // Log detallado para depurar errores de red y respuesta
     if (error.response) {
       console.error('Response error:', error.response.status);
     } else if (error.request) {
-      console.error('Network error:', error.message);
+      const url = (() => {
+        try {
+          const base = error.config?.baseURL ?? '';
+          const path = error.config?.url ?? '';
+          return `${base}${path}`;
+        } catch {
+          return undefined;
+        }
+      })();
+      console.error('Network error:', error.message, '| code:', error.code, '| url:', url);
     }
 
     if (error.response?.status === 401) {
