@@ -8,22 +8,26 @@ export function middleware(request: NextRequest) {
   const publicRoutes = ['/login', '/'];
 
   // Protected routes
-  const protectedRoutes = [
+  const protectedRoutes = new Set([
     '/dashboard',
     '/candidates',
     '/employees',
     '/factories',
     '/timercards',
-    '/timer-cards',
     '/salary',
     '/requests',
-    '/database',
     '/database-management',
     '/adminer',
     '/settings',
     '/profile',
-  ];
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  ]);
+  let isProtectedRoute = false;
+  for (const route of protectedRoutes) {
+    if (pathname.startsWith(route)) {
+      isProtectedRoute = true;
+      break;
+    }
+  }
 
   // Check for token in cookies (we'll set this on login)
   const token = request.cookies.get('token')?.value || request.cookies.get('auth_token')?.value;

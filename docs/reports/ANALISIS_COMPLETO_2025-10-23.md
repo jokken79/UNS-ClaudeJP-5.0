@@ -29,6 +29,15 @@ El sistema UNS-ClaudeJP 4.2 está **completamente funcional** y sirviendo todas 
 - ⚠️ Azure OCR no configurado (funcionalidad opcional)
 - ⚠️ Código legacy sin usar acumulándose
 
+## ✅ Acciones de Corrección (2025-10-24)
+- Se implementó `removeFamily` en el formulario de Rirekisho para resolver el error de TypeScript.
+- El middleware ahora protege las rutas correctas (`/timercards`, `/database-management`) y elimina las entradas obsoletas.
+- La versión expuesta por Next.js refleja `4.2.0` y puede sincronizarse con `NEXT_PUBLIC_APP_VERSION` sin ediciones manuales.
+- `CandidatesFormularioGemini.tsx` y otros activos históricos se movieron a carpetas de legado documentadas.
+- El reporte Playwright con nombre inválido fue reubicado en `docs/reports/playwright-mcphomepage.html`.
+- La documentación de scripts incluye las variantes `REINSTALAR_MEJORADO*` y `DEBUG_REINSTALAR.bat`.
+- Se añadió la guía `docs/guides/AZURE_OCR_SETUP.md` para configurar credenciales de Azure y eliminar las advertencias en los logs.
+
 ---
 
 ## Problemas Identificados

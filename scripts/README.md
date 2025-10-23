@@ -102,6 +102,36 @@ docker compose up --build -d
 docker exec -i uns-claudejp-db psql -U uns_admin uns_claudejp < backend/backups/production_backup.sql
 ```
 
+### REINSTALAR_MEJORADO.bat
+**Reinstalación guiada con restauración automática de backups**
+
+```batch
+scripts\REINSTALAR_MEJORADO.bat
+```
+
+Incluye validaciones adicionales, crea un respaldo previo y automatiza la restauración del último
+backup disponible. Úsalo cuando necesites reinstalar sin perder cambios recientes.
+
+### REINSTALAR_MEJORADO_DEBUG.bat
+**Versión detallada para depuración**
+
+```batch
+scripts\REINSTALAR_MEJORADO_DEBUG.bat
+```
+
+Muestra cada comando ejecutado, conserva trazas en `logs/reinstalar_debug.log` y permite revisar
+paso a paso dónde ocurre cualquier error.
+
+### DEBUG_REINSTALAR.bat
+**Analiza fallos durante la reinstalación**
+
+```batch
+scripts\DEBUG_REINSTALAR.bat
+```
+
+Recopila información de contenedores, verifica backups y sugiere acciones correctivas antes de
+volver a ejecutar el proceso de reinstalación.
+
 ### CLEAN.bat
 **Limpieza profunda del sistema (⚠️ borra datos y cachés)**
 
