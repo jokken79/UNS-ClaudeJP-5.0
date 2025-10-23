@@ -6,7 +6,6 @@ import {
   CurrencyYenIcon,
   MagnifyingGlassIcon,
   UserIcon,
-  ClockIcon,
   BanknotesIcon,
   ChartBarIcon,
   CheckCircleIcon,

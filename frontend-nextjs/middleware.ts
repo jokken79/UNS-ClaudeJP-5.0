@@ -6,7 +6,6 @@ export function middleware(request: NextRequest) {
 
   // Public routes that don't require authentication
   const publicRoutes = ['/login', '/'];
-  const isPublicRoute = publicRoutes.some(route => pathname === route);
 
   // Protected routes
   const protectedRoutes = [

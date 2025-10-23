@@ -20,7 +20,7 @@ import {
   AlertCircle,
   BookOpen,
   Video,
-  ExternalLink,
+  ExternalLink
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';

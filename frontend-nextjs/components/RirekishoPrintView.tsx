@@ -128,7 +128,7 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
       </div>
 
       {/* Documents */}
-      <div className="form-section">
+      <div className="form-section documents-section">
         <h2>書類関係</h2>
         <table className="info-table">
           <tbody>
@@ -406,6 +406,12 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
           margin-top: 0;
         }
 
+        .documents-section .info-table th,
+        .documents-section .info-table td {
+          padding-top: 3px;
+          padding-bottom: 3px;
+        }
+
         .form-section h2 {
           font-size: 11pt;
           font-weight: bold;
@@ -416,8 +422,8 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
 
         .photo-container {
           flex-shrink: 0;
-          width: 40mm;
-          height: 50mm;
+          width: 30mm;
+          height: 40mm;
         }
 
         .photo-frame {
