@@ -30,7 +30,7 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    
+
     /* RGB equivalents for visual editors */
     --rgb-background: 255, 255, 255;
     --rgb-foreground: 8, 10, 37;
@@ -38,6 +38,27 @@
     --rgb-secondary: 240, 244, 248;
     --rgb-accent: 99, 102, 241;
     --rgb-destructive: 239, 68, 68;
+
+    /* Premium template defaults */
+    --layout-card-radius: 18px;
+    --layout-card-shadow: 0 28px 70px rgba(15, 23, 42, 0.15);
+    --layout-card-border: rgba(148, 163, 184, 0.28);
+    --layout-card-surface: linear-gradient(145deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.92) 100%);
+    --layout-button-radius: 22px;
+    --layout-button-shadow: 0 18px 45px rgba(59, 130, 246, 0.25);
+    --layout-surface-gradient: radial-gradient(circle at 25% -10%, rgba(14, 165, 233, 0.22), transparent 55%), radial-gradient(circle at 80% 0%, rgba(236, 72, 153, 0.2), transparent 60%);
+    --layout-surface-overlay: rgba(255, 255, 255, 0.35);
+    --layout-panel-blur: 18px;
+    --layout-hero-gradient: linear-gradient(135deg, rgba(59,130,246,0.85) 0%, rgba(56,189,248,0.85) 45%, rgba(236,72,153,0.8) 100%);
+    --layout-hero-glow: 0 45px 120px rgba(14, 116, 144, 0.35);
+    --layout-container-max: 1240px;
+    --layout-section-gap: 3.5rem;
+    --layout-navbar-background: rgba(15, 23, 42, 0.55);
+    --layout-navbar-shadow: 0 15px 60px rgba(15, 23, 42, 0.22);
+    --layout-divider-glow: linear-gradient(90deg, rgba(14, 165, 233, 0) 0%, rgba(59, 130, 246, 0.35) 45%, rgba(236, 72, 153, 0) 100%);
+    --layout-list-stripe: linear-gradient(90deg, rgba(148, 163, 184, 0.08) 0%, rgba(148, 163, 184, 0.18) 100%);
+    --layout-focus-ring: 0 0 0 4px rgba(59, 130, 246, 0.35);
+    --layout-badge-glow: 0 0 0 3px rgba(56, 189, 248, 0.35);
   }
 
   .dark {
@@ -73,6 +94,27 @@
     --rgb-secondary: 30, 41, 59;
     --rgb-accent: 51, 65, 85;
     --rgb-destructive: 153, 27, 27;
+
+    /* Premium template defaults (dark baseline) */
+    --layout-card-radius: 20px;
+    --layout-card-shadow: 0 35px 80px rgba(15, 23, 42, 0.45);
+    --layout-card-border: rgba(59, 130, 246, 0.22);
+    --layout-card-surface: linear-gradient(155deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 64, 175, 0.78) 100%);
+    --layout-button-radius: 24px;
+    --layout-button-shadow: 0 26px 55px rgba(56, 189, 248, 0.38);
+    --layout-surface-gradient: radial-gradient(circle at 20% -5%, rgba(59, 130, 246, 0.35), transparent 60%), radial-gradient(circle at 75% -8%, rgba(236, 72, 153, 0.32), transparent 62%);
+    --layout-surface-overlay: rgba(15, 23, 42, 0.65);
+    --layout-panel-blur: 16px;
+    --layout-hero-gradient: linear-gradient(135deg, rgba(15,23,42,0.92) 0%, rgba(30,64,175,0.9) 50%, rgba(236,72,153,0.8) 100%);
+    --layout-hero-glow: 0 55px 130px rgba(30, 64, 175, 0.45);
+    --layout-container-max: 1260px;
+    --layout-section-gap: 3.8rem;
+    --layout-navbar-background: rgba(15, 23, 42, 0.75);
+    --layout-navbar-shadow: 0 25px 75px rgba(15, 23, 42, 0.35);
+    --layout-divider-glow: linear-gradient(90deg, rgba(56, 189, 248, 0) 0%, rgba(56, 189, 248, 0.55) 45%, rgba(236, 72, 153, 0) 100%);
+    --layout-list-stripe: linear-gradient(90deg, rgba(30, 64, 175, 0.25) 0%, rgba(30, 64, 175, 0.42) 100%);
+    --layout-focus-ring: 0 0 0 4px rgba(56, 189, 248, 0.4);
+    --layout-badge-glow: 0 0 0 4px rgba(236, 72, 153, 0.45);
   }
 }
 
@@ -82,6 +124,30 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: var(--layout-surface-gradient);
+    background-size: cover;
+    background-attachment: fixed;
+    min-height: 100vh;
+    position: relative;
+    transition: background 0.6s ease, box-shadow 0.6s ease;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: var(--layout-surface-overlay);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    backdrop-filter: blur(var(--layout-panel-blur));
+    pointer-events: none;
+    z-index: -2;
   }
 }
 

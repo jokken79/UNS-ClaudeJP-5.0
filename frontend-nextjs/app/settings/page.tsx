@@ -7,11 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Check, Palette, Sparkles, Paintbrush, Grid3x3, Layers, ArrowLeft, Home } from 'lucide-react';
+import { Check, Palette, Sparkles, Paintbrush, Grid3x3, Layers, ArrowLeft, Home, Gem, PenTool } from 'lucide-react';
 import { themes } from '@/lib/themes';
 import { cn } from '@/lib/utils';
 import { CustomThemeBuilder } from './components/custom-theme-builder';
 import { CustomThemesList } from './components/custom-themes-list';
+import { PremiumTemplateGallery } from './components/premium-template-gallery';
+import { CustomTemplateDesigner } from './components/custom-template-designer';
+import { CustomTemplateCollection } from './components/custom-template-collection';
 
 // Theme metadata with emojis and descriptions
 const themeMetadata: Record<string, { emoji: string; label: string; description: string; category: string }> = {
@@ -119,6 +122,7 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [templatesRefreshKey, setTemplatesRefreshKey] = useState(0);
 
   useEffect(() => {
     setMounted(true);
@@ -406,6 +410,58 @@ export default function SettingsPage() {
             <CustomThemesList key={refreshKey} onThemeDeleted={handleThemeChange} />
           </TabsContent>
         </Tabs>
+
+        <section className="mt-16 space-y-6">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-1">
+              <h2 className="flex items-center gap-2 text-2xl font-bold">
+                <Gem className="h-6 w-6 text-primary" /> Colección de plantillas premium
+              </h2>
+              <p className="text-muted-foreground">
+                Activa formatos de interfaz de nivel profesional diseñados para impresionar a tus clientes.
+              </p>
+            </div>
+            <Badge variant="outline" className="text-xs uppercase tracking-[0.3em]">
+              Selección 2024
+            </Badge>
+          </div>
+
+          <PremiumTemplateGallery />
+        </section>
+
+        <section className="space-y-6">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-1">
+              <h2 className="flex items-center gap-2 text-2xl font-bold">
+                <PenTool className="h-6 w-6 text-primary" /> Diseña tu formato a medida
+              </h2>
+              <p className="text-muted-foreground">
+                Personaliza gradientes, difuminados y sombras para crear plantillas exclusivas sin escribir código.
+              </p>
+            </div>
+            <Badge variant="secondary" className="bg-primary/10 text-primary">
+              Toolkit visual avanzado
+            </Badge>
+          </div>
+
+          <CustomTemplateDesigner onTemplateSaved={() => setTemplatesRefreshKey((value) => value + 1)} />
+        </section>
+
+        <section className="space-y-6">
+          <div className="space-y-2">
+            <h2 className="flex items-center gap-2 text-2xl font-bold">
+              <Layers className="h-6 w-6 text-primary" /> Mis plantillas personalizadas
+            </h2>
+            <p className="text-muted-foreground">
+              Gestiona tu biblioteca de formatos personalizados, actívalos en un clic o elimínalos cuando ya no los necesites.
+            </p>
+          </div>
+
+          <CustomTemplateCollection
+            refreshKey={templatesRefreshKey}
+            onTemplatesChange={() => setTemplatesRefreshKey((value) => value + 1)}
+          />
+        </section>
 
         {/* Footer Info */}
         <div className="mt-12 text-center text-muted-foreground">
