@@ -19,28 +19,28 @@ export default function DashboardPage() {
   }, []);
 
   // Fetch statistics with React Query - only if authenticated and mounted
-  const { data: employeesData, isLoading: loadingEmployees, error: employeesError } = useQuery({
+  const { data: employeesData, isLoading: loadingEmployees } = useQuery({
     queryKey: ['employees'],
     queryFn: () => employeeService.getEmployees(),
     enabled: isAuthenticated && mounted,
     retry: false,
   });
 
-  const { data: candidates, isLoading: loadingCandidates, error: candidatesError } = useQuery({
+  const { data: candidates, isLoading: loadingCandidates } = useQuery({
     queryKey: ['candidates'],
     queryFn: () => candidateService.getCandidates(),
     enabled: isAuthenticated && mounted,
     retry: false,
   });
 
-  const { data: factories, isLoading: loadingFactories, error: factoriesError } = useQuery({
+  const { data: factories, isLoading: loadingFactories } = useQuery({
     queryKey: ['factories'],
     queryFn: () => factoryService.getFactories(),
     enabled: isAuthenticated && mounted,
     retry: false,
   });
 
-  const { data: timerCards, isLoading: loadingTimerCards, error: timerCardsError } = useQuery({
+  const { data: timerCards, isLoading: loadingTimerCards } = useQuery({
     queryKey: ['timerCards'],
     queryFn: () => timerCardService.getTimerCards(),
     enabled: isAuthenticated && mounted,

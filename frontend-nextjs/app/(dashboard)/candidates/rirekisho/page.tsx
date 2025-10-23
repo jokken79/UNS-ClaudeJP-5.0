@@ -167,10 +167,6 @@ export default function Page() {
     }));
   }
 
-  function removeFamily(idx: number) {
-    setData((prev) => ({ ...prev, family: prev.family.filter((_, i) => i !== idx) }));
-  }
-
   function updateFamily(idx: number, patch: Partial<FamilyEntry>) {
     setData((prev) => ({
       ...prev,
@@ -470,10 +466,6 @@ export default function Page() {
     }),
     []
   );
-
-  const isPredefinedRelation = (relationValue: string) => {
-    return levels.relationOptions.includes(relationValue) && relationValue !== 'その他';
-  };
 
   useEffect(() => {
     const handleAfterPrint = () => {

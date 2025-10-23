@@ -7,8 +7,6 @@ import {
   PencilIcon,
   UserCircleIcon,
   PhoneIcon,
-  EnvelopeIcon,
-  MapPinIcon,
   IdentificationIcon,
   DocumentTextIcon,
   GlobeAltIcon,
