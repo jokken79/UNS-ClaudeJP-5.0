@@ -17,6 +17,7 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
+import { candidateService } from '@/lib/api';
 
 interface Candidate {
   id: number;
@@ -87,16 +88,7 @@ export default function CandidateDetailPage() {
 
   const { data: candidate, isLoading, error } = useQuery<Candidate>({
     queryKey: ['candidate', id],
-    queryFn: async () => {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/candidates/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch candidate');
-      return response.json();
-    },
+    queryFn: () => candidateService.getCandidate(id),
   });
 
   if (isLoading) {

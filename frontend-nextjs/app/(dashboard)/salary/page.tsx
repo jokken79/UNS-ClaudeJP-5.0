@@ -12,6 +12,7 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline';
+import { salaryService } from '@/lib/api';
 
 interface SalaryCalculation {
   id: number;
@@ -53,22 +54,15 @@ export default function SalaryPage() {
 
   const { data, isLoading } = useQuery<SalaryResponse>({
     queryKey: ['salary', searchTerm, selectedMonth, selectedYear, currentPage],
-    queryFn: async () => {
-      const token = localStorage.getItem('token');
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        page_size: pageSize.toString(),
-        month: selectedMonth.toString(),
-        year: selectedYear.toString(),
-      });
-
-      if (searchTerm) params.append('search', searchTerm);
-
-      const response = await fetch(`http://localhost:8000/api/salary/?${params}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!response.ok) throw new Error('Failed to fetch salary calculations');
-      return response.json();
+    queryFn: () => {
+      const params: any = {
+        page: currentPage,
+        page_size: pageSize,
+        month: selectedMonth,
+        year: selectedYear,
+      };
+      if (searchTerm) params.search = searchTerm;
+      return salaryService.getSalaries(params);
     },
   });
 

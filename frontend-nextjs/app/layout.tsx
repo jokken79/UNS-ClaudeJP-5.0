@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { ErrorBoundaryWrapper } from "@/components/error-boundary-wrapper";
+import { ChunkErrorHandler } from "@/components/global-error-handler";
 
 export const metadata: Metadata = {
   title: {
@@ -47,6 +48,7 @@ export default function RootLayout({
       <body className="font-sans antialiased" suppressHydrationWarning>
         <ErrorBoundaryWrapper>
           <Providers>
+            <ChunkErrorHandler />
             {children}
           </Providers>
         </ErrorBoundaryWrapper>

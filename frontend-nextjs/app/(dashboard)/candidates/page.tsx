@@ -12,6 +12,7 @@ import {
   PrinterIcon,
   PlusIcon
 } from '@heroicons/react/24/outline';
+import { candidateService } from '@/lib/api';
 
 interface Candidate {
   id: number;
@@ -46,28 +47,20 @@ export default function CandidatesPage() {
   const { data, isLoading, refetch } = useQuery<CandidatesResponse>({
     queryKey: ['candidates', currentPage, statusFilter, searchTerm],
     queryFn: async () => {
-      const token = localStorage.getItem('token');
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        page_size: pageSize.toString(),
-      });
+      const params: any = {
+        page: currentPage,
+        page_size: pageSize,
+      };
 
       if (statusFilter !== 'all') {
-        params.append('status_filter', statusFilter);
+        params.status_filter = statusFilter;
       }
 
       if (searchTerm) {
-        params.append('search', searchTerm);
+        params.search = searchTerm;
       }
 
-      const response = await fetch(`http://localhost:8000/api/candidates/?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch candidates');
-      return response.json();
+      return candidateService.getCandidates(params);
     },
   });
 

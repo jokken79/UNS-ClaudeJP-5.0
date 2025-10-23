@@ -9,23 +9,23 @@ import { Toaster } from 'react-hot-toast';
 // Dynamic imports to prevent chunk loading errors
 import dynamic from 'next/dynamic';
 
-const themes = (() => {
-  try {
-    return require('@/lib/themes').themes;
-  } catch (error) {
-    console.warn('Error loading themes:', error);
-    return [];
-  }
-})();
+// Import themes with error handling
+let themes: any[] = [];
+let getCustomThemes: () => any[] = () => [];
 
-const getCustomThemes = (() => {
-  try {
-    return require('@/lib/custom-themes').getCustomThemes;
-  } catch (error) {
-    console.warn('Error loading custom themes:', error);
-    return () => [];
-  }
-})();
+try {
+  const themesModule = require('@/lib/themes');
+  themes = themesModule.themes || [];
+} catch (error) {
+  console.warn('Error loading themes:', error);
+}
+
+try {
+  const customThemesModule = require('@/lib/custom-themes');
+  getCustomThemes = customThemesModule.getCustomThemes || (() => []);
+} catch (error) {
+  console.warn('Error loading custom themes:', error);
+}
 
 const ThemeManager = dynamic(() => import('@/components/ThemeManager').then(mod => ({ default: mod.ThemeManager })), {
   ssr: false,
@@ -86,15 +86,26 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMounted(true);
     if (typeof window !== 'undefined') {
-      const oldTheme = localStorage.getItem('theme');
-      if (oldTheme && themesMigration[oldTheme]) {
-        localStorage.setItem('theme', themesMigration[oldTheme]);
+      try {
+        const oldTheme = localStorage.getItem('theme');
+        if (oldTheme && themesMigration[oldTheme]) {
+          localStorage.setItem('theme', themesMigration[oldTheme]);
+        }
+      } catch (error) {
+        console.warn('Error migrating theme:', error);
       }
     }
   }, []);
 
-  // Memoize theme list
-  const allThemes = useMemo(() => getAllThemeNames(), []);
+  // Memoize theme list with error handling
+  const allThemes = useMemo(() => {
+    try {
+      return getAllThemeNames();
+    } catch (error) {
+      console.warn('Error getting theme names:', error);
+      return ['uns-kikaku']; // Fallback theme
+    }
+  }, []);
 
   return (
     <Suspense fallback={<div>Loading...</div>}>

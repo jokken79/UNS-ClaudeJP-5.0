@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import OCRUploader from './OCRUploader';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
+import { candidateService } from '@/lib/api';
 
 // shadcn/ui components
 import { Button } from '@/components/ui/button';
@@ -82,16 +83,7 @@ export default function CandidateFormModern({ candidateId, isEdit = false }: Can
   // Fetch candidate data if editing
   const { data: candidate, isLoading } = useQuery<CandidateFormData>({
     queryKey: ['candidate', candidateId],
-    queryFn: async () => {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/candidates/${candidateId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch candidate');
-      return response.json();
-    },
+    queryFn: () => candidateService.getCandidate(candidateId!),
     enabled: !!candidateId && isEdit,
   });
 
@@ -125,27 +117,14 @@ export default function CandidateFormModern({ candidateId, isEdit = false }: Can
 
     try {
       setSubmitting(true);
-      const token = localStorage.getItem('token');
-      const url = isEdit
-        ? `http://localhost:8000/api/candidates/${candidateId}`
-        : 'http://localhost:8000/api/candidates/';
-      const method = isEdit ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'サーバーエラーが発生しました。');
+      let savedCandidate;
+      if (isEdit && candidateId) {
+        savedCandidate = await candidateService.updateCandidate(candidateId, formData);
+      } else {
+        savedCandidate = await candidateService.createCandidate(formData);
       }
 
-      const savedCandidate = await response.json();
       toast.success(isEdit ? '候補者を正常に更新しました。' : '候補者を正常に作成しました。');
 
       if (!isEdit) {
@@ -154,7 +133,7 @@ export default function CandidateFormModern({ candidateId, isEdit = false }: Can
         router.push(`/candidates/${candidateId}`);
       }
     } catch (err: any) {
-      toast.error(`保存に失敗しました: ${err.message}`);
+      toast.error(`保存に失敗しました: ${err.message || err.response?.data?.detail || 'サーバーエラーが発生しました。'}`);
       console.error(err);
     } finally {
       setSubmitting(false);

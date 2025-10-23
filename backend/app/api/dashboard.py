@@ -1,7 +1,7 @@
 """
 Dashboard API Endpoints
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
 from datetime import datetime, date
@@ -266,6 +266,68 @@ async def get_admin_dashboard(
     )
 
 
+@router.get("/recent-activity", response_model=list[RecentActivity])
+async def get_recent_activity(
+    limit: int = Query(default=20, le=100),
+    current_user: User = Depends(auth_service.get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get recent system activity from audit logs and recent changes.
+    Returns last N activities across all entities.
+    """
+    activities = []
+
+    # Recent candidates
+    recent_candidates = db.query(Candidate).order_by(Candidate.created_at.desc()).limit(5).all()
+    for candidate in recent_candidates:
+        activities.append(RecentActivity(
+            activity_type="candidate_created",
+            description=f"New candidate registered: {candidate.full_name_kanji or candidate.rirekisho_id}",
+            timestamp=candidate.created_at.isoformat(),
+            user=None
+        ))
+
+    # Recent employees
+    recent_employees = db.query(Employee).order_by(Employee.created_at.desc()).limit(5).all()
+    for employee in recent_employees:
+        activities.append(RecentActivity(
+            activity_type="employee_hired",
+            description=f"Employee hired: {employee.full_name_kanji}",
+            timestamp=employee.created_at.isoformat(),
+            user=None
+        ))
+
+    # Recent requests
+    recent_requests = db.query(Request).order_by(Request.created_at.desc()).limit(5).all()
+    for request in recent_requests:
+        employee = db.query(Employee).filter(Employee.id == request.employee_id).first()
+        employee_name = employee.full_name_kanji if employee else f"Employee #{request.employee_id}"
+        status_text = "approved" if request.status == RequestStatus.APPROVED else "rejected" if request.status == RequestStatus.REJECTED else "submitted"
+        activities.append(RecentActivity(
+            activity_type=f"request_{status_text}",
+            description=f"{employee_name} {status_text} {request.request_type.value} request",
+            timestamp=request.created_at.isoformat(),
+            user=None
+        ))
+
+    # Recent salary calculations
+    recent_salaries = db.query(SalaryCalculation).order_by(SalaryCalculation.created_at.desc()).limit(5).all()
+    for salary in recent_salaries:
+        employee = db.query(Employee).filter(Employee.id == salary.employee_id).first()
+        employee_name = employee.full_name_kanji if employee else f"Employee #{salary.employee_id}"
+        activities.append(RecentActivity(
+            activity_type="salary_calculated",
+            description=f"Salary calculated for {employee_name} ({salary.year}-{salary.month:02d})",
+            timestamp=salary.created_at.isoformat(),
+            user=None
+        ))
+
+    # Sort all activities by timestamp (newest first) and limit
+    activities.sort(key=lambda x: x.timestamp, reverse=True)
+    return activities[:limit]
+
+
 @router.get("/employee/{employee_id}", response_model=EmployeeDashboard)
 async def get_employee_dashboard(
     employee_id: int,
@@ -276,17 +338,17 @@ async def get_employee_dashboard(
     employee = db.query(Employee).filter(Employee.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
-    
+
     # Get factory name
     factory = db.query(Factory).filter(Factory.factory_id == employee.factory_id).first()
     factory_name = factory.name if factory else employee.factory_id
-    
+
     # Last payment
     last_salary = db.query(SalaryCalculation).filter(
         SalaryCalculation.employee_id == employee_id,
         SalaryCalculation.is_paid == True
     ).order_by(SalaryCalculation.created_at.desc()).first()
-    
+
     # Current month hours
     now = datetime.now()
     timer_cards = db.query(TimerCard).filter(
@@ -294,18 +356,18 @@ async def get_employee_dashboard(
         extract('month', TimerCard.work_date) == now.month,
         extract('year', TimerCard.work_date) == now.year
     ).all()
-    
+
     current_hours = sum(
         float(tc.regular_hours + tc.overtime_hours + tc.night_hours + tc.holiday_hours)
         for tc in timer_cards
     )
-    
+
     # Pending requests
     pending_requests = db.query(Request).filter(
         Request.employee_id == employee_id,
         Request.status == RequestStatus.PENDING
     ).count()
-    
+
     return EmployeeDashboard(
         employee_id=employee.id,
         employee_name=employee.full_name_kanji,

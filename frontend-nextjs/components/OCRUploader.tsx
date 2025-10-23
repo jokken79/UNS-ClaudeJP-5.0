@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { DocumentTextIcon, ArrowUpTrayIcon, XCircleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
 interface OCRUploaderProps {
   onOCRComplete: (ocrData: any) => void;
 }
@@ -73,7 +75,7 @@ export default function OCRUploader({ onOCRComplete }: OCRUploaderProps) {
       formData.append('document_type', documentType);
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/candidates/ocr/process', {
+      const response = await fetch(`${API_BASE_URL}/candidates/ocr/process`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -144,6 +144,67 @@ async def review_request(
     return request
 
 
+@router.post("/{request_id}/approve", response_model=RequestResponse)
+async def approve_request(
+    request_id: int,
+    current_user: User = Depends(auth_service.require_role("admin")),
+    db: Session = Depends(get_db)
+):
+    """
+    Approve a request (convenience endpoint).
+    Shortcut for /review with status=APPROVED.
+    """
+    request = db.query(Request).filter(Request.id == request_id).first()
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    if request.status != RequestStatus.PENDING:
+        raise HTTPException(status_code=400, detail="Request already reviewed")
+
+    request.status = RequestStatus.APPROVED
+    request.reviewed_by = current_user.id
+    request.reviewed_at = func.now()
+
+    # Update yukyu balance if approved
+    if request.request_type in [RequestType.YUKYU, RequestType.HANKYU]:
+        employee = db.query(Employee).filter(Employee.id == request.employee_id).first()
+        if employee:
+            employee.yukyu_used += float(request.total_days)
+            employee.yukyu_remaining -= float(request.total_days)
+
+    db.commit()
+    db.refresh(request)
+    return request
+
+
+@router.post("/{request_id}/reject", response_model=RequestResponse)
+async def reject_request_endpoint(
+    request_id: int,
+    reason: str,
+    current_user: User = Depends(auth_service.require_role("admin")),
+    db: Session = Depends(get_db)
+):
+    """
+    Reject a request with reason (convenience endpoint).
+    Shortcut for /review with status=REJECTED.
+    """
+    request = db.query(Request).filter(Request.id == request_id).first()
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    if request.status != RequestStatus.PENDING:
+        raise HTTPException(status_code=400, detail="Request already reviewed")
+
+    request.status = RequestStatus.REJECTED
+    request.reviewed_by = current_user.id
+    request.reviewed_at = func.now()
+    request.review_notes = reason
+
+    db.commit()
+    db.refresh(request)
+    return request
+
+
 @router.delete("/{request_id}")
 async def delete_request(
     request_id: int,
@@ -154,10 +215,10 @@ async def delete_request(
     request = db.query(Request).filter(Request.id == request_id).first()
     if not request:
         raise HTTPException(status_code=404, detail="Request not found")
-    
+
     if request.status != RequestStatus.PENDING:
         raise HTTPException(status_code=400, detail="Can only delete pending requests")
-    
+
     db.delete(request)
     db.commit()
     return {"message": "Request deleted"}

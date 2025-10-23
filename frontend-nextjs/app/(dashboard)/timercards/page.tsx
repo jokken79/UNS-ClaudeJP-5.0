@@ -12,6 +12,7 @@ import {
   MoonIcon,
   CloudIcon
 } from '@heroicons/react/24/outline';
+import { timerCardService } from '@/lib/api';
 
 interface TimerCard {
   id: number;
@@ -45,21 +46,14 @@ export default function TimerCardsPage() {
 
   const { data, isLoading } = useQuery<TimerCardsResponse>({
     queryKey: ['timercards', searchTerm, selectedDate, currentPage],
-    queryFn: async () => {
-      const token = localStorage.getItem('token');
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        page_size: pageSize.toString(),
-      });
-
-      if (searchTerm) params.append('search', searchTerm);
-      if (selectedDate) params.append('work_date', selectedDate);
-
-      const response = await fetch(`http://localhost:8000/api/timer-cards/?${params}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!response.ok) throw new Error('Failed to fetch timer cards');
-      return response.json();
+    queryFn: () => {
+      const params: any = {
+        page: currentPage,
+        page_size: pageSize,
+      };
+      if (searchTerm) params.search = searchTerm;
+      if (selectedDate) params.work_date = selectedDate;
+      return timerCardService.getTimerCards(params);
     },
   });
 

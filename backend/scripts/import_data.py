@@ -6,6 +6,8 @@ import sys
 from pathlib import Path
 from datetime import datetime
 import pandas as pd
+import re
+import unicodedata
 
 # Add parent directory to path
 sys.path.insert(0, '/app')
@@ -13,6 +15,127 @@ sys.path.insert(0, '/app')
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
 from app.models.models import Factory, Employee, ContractWorker, Staff
+
+
+def normalize_text(text: str) -> str:
+    """
+    Normalize Japanese text for better matching:
+    - Convert to lowercase
+    - Remove extra whitespace
+    - Normalize unicode (半角/全角)
+    - Remove common suffixes
+    """
+    if not text:
+        return ""
+
+    # Normalize unicode characters (NFKC handles 半角/全角)
+    text = unicodedata.normalize('NFKC', text)
+
+    # Convert to lowercase (for ASCII)
+    text = text.lower()
+
+    # Remove extra whitespace
+    text = re.sub(r'\s+', ' ', text).strip()
+
+    # Remove common company suffixes for better matching
+    suffixes = ['株式会社', '(株)', '有限会社', '(有)']
+    for suffix in suffixes:
+        text = text.replace(suffix, '')
+
+    return text.strip()
+
+
+def get_manual_factory_mapping():
+    """
+    Manual mapping for factory names that require special handling.
+    """
+    return {
+        '高雄工業 本社': 'Factory-39',
+        '高雄工業 岡山': 'Factory-39',
+        '高雄工業 静岡': 'Factory-39',
+        '高雄工業 海南第一': 'Factory-48',
+        '高雄工業 海南第二': 'Factory-62',
+        'ﾌｪﾆﾃｯｸｾﾐｺﾝﾀﾞｸﾀｰ 岡山': 'Factory-06',
+        'ﾌｪﾆﾃｯｸｾﾐｺﾝﾀﾞｸﾀｰ 鹿児島': 'Factory-06',
+        'オーツカ': 'Factory-30',
+        'アサヒフォージ': 'Factory-37',
+    }
+
+
+def find_factory_match(factory_name_excel: str, db: Session) -> str:
+    """
+    Find the best matching factory in the database using multiple strategies.
+
+    Strategies (in order):
+    0. Manual mapping (for known problematic cases)
+    1. Exact match (normalized)
+    2. Bidirectional substring match (Excel name in DB or vice versa)
+    3. Word-based matching (split by spaces, match significant words)
+
+    Args:
+        factory_name_excel: Factory name from Excel file
+        db: Database session
+
+    Returns:
+        factory_id if match found, None otherwise
+    """
+    if not factory_name_excel:
+        return None
+
+    excel_norm = normalize_text(factory_name_excel)
+
+    # Strategy 0: Check manual mapping first
+    manual_map = get_manual_factory_mapping()
+    for excel_pattern, factory_id in manual_map.items():
+        if normalize_text(excel_pattern) == excel_norm or normalize_text(excel_pattern) in excel_norm:
+            # Verify the factory exists
+            factory = db.query(Factory).filter(Factory.factory_id == factory_id).first()
+            if factory:
+                return factory.factory_id
+
+    # Get all factories from DB (cache this if performance is an issue)
+    all_factories = db.query(Factory).all()
+
+    # Strategy 1: Exact match (normalized)
+    for factory in all_factories:
+        db_norm = normalize_text(factory.name)
+        if excel_norm == db_norm:
+            return factory.factory_id
+
+    # Strategy 2: Bidirectional substring match
+    for factory in all_factories:
+        db_norm = normalize_text(factory.name)
+
+        # Check if Excel name is in DB name (e.g., "ユアサ工機 本社" in "ユアサ工機株式会社 - 本社工場")
+        if excel_norm in db_norm:
+            return factory.factory_id
+
+        # Check if DB name is in Excel name (rare but possible)
+        if db_norm in excel_norm:
+            return factory.factory_id
+
+    # Strategy 3: Word-based matching for Japanese factories
+    # Split both names into words and check if key words match
+    excel_words = set(excel_norm.split())
+
+    best_match = None
+    best_score = 0
+
+    for factory in all_factories:
+        db_norm = normalize_text(factory.name)
+        db_words = set(db_norm.split())
+
+        # Count matching words (excluding very short words)
+        matching_words = excel_words.intersection(db_words)
+        significant_matches = [w for w in matching_words if len(w) >= 2]
+
+        if len(significant_matches) >= 2:  # At least 2 significant words match
+            score = len(significant_matches)
+            if score > best_score:
+                best_score = score
+                best_match = factory.factory_id
+
+    return best_match
 
 
 def import_factories(db: Session):
@@ -166,11 +289,9 @@ def import_haken_employees(db: Session):
                 factory_name_from_excel = get_str('派遣先')
                 db_factory_id = None
                 if factory_name_from_excel:
-                    # Use a LIKE query to find the factory, as names might not be exact
-                    factory_record = db.query(Factory).filter(Factory.name.like(f'%{factory_name_from_excel}%')).first()
-                    if factory_record:
-                        db_factory_id = factory_record.factory_id
-                    else:
+                    # Use improved matching function
+                    db_factory_id = find_factory_match(factory_name_from_excel, db)
+                    if not db_factory_id:
                         print(f"  [WARN] Factory '{factory_name_from_excel}' not found for employee {hakenmoto_id}. Skipping factory link.")
 
                 # Create employee record with ALL fields

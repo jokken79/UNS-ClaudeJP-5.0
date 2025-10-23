@@ -518,14 +518,16 @@ BEGIN
     PERFORM log_message('✓ Requests: ' || requests_count);
     PERFORM log_message('✓ Timer Cards: ' || timer_count);
     
-    IF factories_count = 0 OR candidates_count = 0 OR employees_count = 0 THEN
-        RAISE EXCEPTION 'ERROR: No se insertaron todos los datos correctamente';
+    -- Solo validar factories ya que candidates/employees se importan por separado
+    IF factories_count = 0 THEN
+        RAISE EXCEPTION 'ERROR: No se insertaron las factories correctamente';
     ELSE
         PERFORM log_message('========================================');
         PERFORM log_message('✅ INICIALIZACIÓN COMPLETADA EXITOSAMENTE');
         PERFORM log_message('========================================');
         PERFORM log_message('');
         PERFORM log_message('📝 Nota: Los usuarios se crearán mediante el script create_admin_user.py');
+        PERFORM log_message('📝 Nota: Los candidatos y empleados se importarán mediante import_data.py');
         PERFORM log_message('');
         PERFORM log_message('🎉 Base de datos lista para usar');
     END IF;

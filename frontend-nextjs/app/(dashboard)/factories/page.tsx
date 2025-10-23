@@ -15,6 +15,7 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline';
+import { factoryService } from '@/lib/api';
 
 interface Factory {
   id: number;
@@ -43,33 +44,11 @@ export default function FactoriesPage() {
 
   const { data, isLoading } = useQuery<FactoriesResponse>({
     queryKey: ['factories', searchTerm],
-    queryFn: async () => {
-      const token = localStorage.getItem('token');
-      const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-
-      const response = await fetch(`http://localhost:8000/api/factories/?${params}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!response.ok) throw new Error('Failed to fetch factories');
-      return response.json();
-    },
+    queryFn: () => factoryService.getFactories(searchTerm ? { search: searchTerm } : undefined),
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: Partial<Factory>) => {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/factories/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error('Failed to create factory');
-      return response.json();
-    },
+    mutationFn: (data: Partial<Factory>) => factoryService.createFactory(data),
     onSuccess: () => {
       toast.success('工場を作成しました');
       queryClient.invalidateQueries({ queryKey: ['factories'] });
@@ -79,19 +58,8 @@ export default function FactoriesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: Partial<Factory> }) => {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/factories/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error('Failed to update factory');
-      return response.json();
-    },
+    mutationFn: ({ id, data }: { id: number; data: Partial<Factory> }) =>
+      factoryService.updateFactory(id.toString(), data),
     onSuccess: () => {
       toast.success('工場を更新しました');
       queryClient.invalidateQueries({ queryKey: ['factories'] });

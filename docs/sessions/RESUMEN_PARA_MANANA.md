@@ -275,3 +275,63 @@ Usuario reportó:
 
 _Última actualización: 2025-10-20 00:30 JST_
 _Generado automáticamente por Claude Code_
+
+---
+
+## 📊 ANÁLISIS COMPARATIVO DE FORMULARIOS DE CANDIDATOS (2025-10-23)
+
+### Resumen del Análisis
+
+Se realizó comparación exhaustiva entre **CandidateFormModern.tsx** y **Rirekisho/page.tsx**:
+
+- **CandidateFormModern**: 47 campos (formulario simplificado, optimizado para OCR)
+- **Rirekisho**: 84 campos + 2 arrays dinámicos (formulario oficial japonés completo)
+- **Campos compartidos**: 28 campos (~33% de cobertura)
+- **Campos exclusivos CandidateFormModern**: 19 (skills técnicas específicas)
+- **Campos exclusivos Rirekisho**: 56 (información laboral, familiar, física, médica)
+
+### Conclusión Técnica
+
+**NO son intercambiables:**
+- CandidateFormModern: Entrada rápida por OCR de documentos de inmigración
+- Rirekisho: Formulario oficial A4 imprimible estándar japonés
+
+**Recomendación**: Mantener ambos con migración automática de datos donde sea posible.
+
+**Documento completo**: Ver archivo de análisis detallado en:
+`docs/sessions/COMPARACION_FORMULARIOS_CANDIDATOS_2025-10-23.md` (pendiente de crear)
+
+### Campos Críticos Que Faltan en CandidateFormModern
+
+Si se necesita editar candidatos de Rirekisho usando CandidateFormModern, se perderían:
+
+**Impacto Alto:**
+- education, major (historial educativo)
+- height, weight, bloodType (obligatorio para fábricas japonesas)
+- jobs[] (historial laboral completo con 6 campos dinámicos)
+- family[] (composición familiar - crítico para beneficios)
+
+**Impacto Medio:**
+- forkliftLicense, jlpt, jlptLevel (calificaciones oficiales)
+- vaccine, allergy, safetyShoes (requisitos de salud)
+- kanjiReadLevel, kanjiWriteLevel, etc. (evaluación detallada de idioma)
+
+**Impacto Bajo:**
+- carOwner, insurance, lunchPref, commuteMethod, commuteTimeMin
+- applicantId, receptionDate, timeInJapan
+
+### Recomendación de Acción
+
+1. **Mantener CandidateFormModern** para entrada rápida por OCR
+2. **Mantener Rirekisho** como formulario oficial completo
+3. **Implementar migración automática** de campos comunes:
+   - full_name_kanji → nameKanji
+   - date_of_birth → birthday
+   - gender, nationality, phone, mobile → directos
+   - etc.
+4. **Crear formulario de edición post-Rirekisho** para campos faltantes si se necesita actualizar
+
+---
+
+_Análisis agregado: 2025-10-23_
+

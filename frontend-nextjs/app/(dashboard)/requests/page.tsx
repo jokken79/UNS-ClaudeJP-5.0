@@ -11,6 +11,7 @@ import {
   XCircleIcon,
   ClockIcon
 } from '@heroicons/react/24/outline';
+import { requestService } from '@/lib/api';
 
 interface Request {
   id: number;
@@ -43,22 +44,15 @@ export default function RequestsPage() {
 
   const { data, isLoading } = useQuery<RequestsResponse>({
     queryKey: ['requests', searchTerm, statusFilter, typeFilter, currentPage],
-    queryFn: async () => {
-      const token = localStorage.getItem('token');
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        page_size: pageSize.toString(),
-      });
-
-      if (searchTerm) params.append('search', searchTerm);
-      if (statusFilter !== 'all') params.append('status', statusFilter);
-      if (typeFilter !== 'all') params.append('request_type', typeFilter);
-
-      const response = await fetch(`http://localhost:8000/api/requests/?${params}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!response.ok) throw new Error('Failed to fetch requests');
-      return response.json();
+    queryFn: () => {
+      const params: any = {
+        page: currentPage,
+        page_size: pageSize,
+      };
+      if (searchTerm) params.search = searchTerm;
+      if (statusFilter !== 'all') params.status = statusFilter;
+      if (typeFilter !== 'all') params.request_type = typeFilter;
+      return requestService.getRequests(params);
     },
   });
 

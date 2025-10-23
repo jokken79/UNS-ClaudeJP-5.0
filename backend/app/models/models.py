@@ -594,6 +594,8 @@ class TimerCard(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     hakenmoto_id = Column(Integer, ForeignKey("employees.hakenmoto_id", ondelete="CASCADE"), nullable=True)
+    employee_id = Column(Integer, nullable=True)  # For easier querying
+    factory_id = Column(String(20), nullable=True)  # For easier querying
     work_date = Column(Date, nullable=False)
 
     # Shift type
@@ -605,8 +607,15 @@ class TimerCard(Base):
     break_minutes = Column(Integer, default=0)
     overtime_minutes = Column(Integer, default=0)
 
+    # Calculated hours
+    regular_hours = Column(Numeric(5, 2), default=0)
+    overtime_hours = Column(Numeric(5, 2), default=0)
+    night_hours = Column(Numeric(5, 2), default=0)
+    holiday_hours = Column(Numeric(5, 2), default=0)
+
     # Notes and approval
     notes = Column(Text)
+    is_approved = Column(Boolean, default=False)
     approved_by = Column(Integer, ForeignKey("users.id"))
     approved_at = Column(DateTime(timezone=True))
 

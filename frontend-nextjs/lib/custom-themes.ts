@@ -1,5 +1,4 @@
 import { Theme } from './themes';
-import { generateThemeId, hexToHsl, getContrastColor } from './color-utils';
 
 export interface CustomTheme extends Theme {
   id: string;
@@ -55,7 +54,13 @@ export function saveCustomTheme(theme: Omit<CustomTheme, 'id' | 'isCustom' | 'cr
   };
 
   themes.push(newTheme);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(themes));
+  
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(themes));
+  } catch (error) {
+    console.error('Error saving custom theme:', error);
+    throw new Error('Failed to save custom theme');
+  }
 
   return newTheme;
 }
@@ -83,7 +88,13 @@ export function updateCustomTheme(id: string, updates: Partial<Omit<CustomTheme,
   };
 
   themes[index] = updatedTheme;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(themes));
+  
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(themes));
+  } catch (error) {
+    console.error('Error updating custom theme:', error);
+    throw new Error('Failed to update custom theme');
+  }
 
   return updatedTheme;
 }
@@ -99,18 +110,28 @@ export function deleteCustomTheme(id: string): void {
     throw new Error('Theme not found');
   }
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+  } catch (error) {
+    console.error('Error deleting custom theme:', error);
+    throw new Error('Failed to delete custom theme');
+  }
 }
 
 /**
  * Apply a custom theme to the document
  */
 export function applyCustomTheme(theme: CustomTheme): void {
-  const root = document.documentElement;
+  try {
+    const root = document.documentElement;
 
-  Object.entries(theme.colors).forEach(([key, value]) => {
-    root.style.setProperty(key, value);
-  });
+    Object.entries(theme.colors).forEach(([key, value]) => {
+      root.style.setProperty(key, value as string);
+    });
+  } catch (error) {
+    console.error('Error applying custom theme:', error);
+    throw new Error('Failed to apply custom theme');
+  }
 }
 
 /**
@@ -129,39 +150,57 @@ export interface ThemeColorInputs {
 }
 
 export function createThemeFromColors(name: string, colors: ThemeColorInputs): Omit<CustomTheme, 'id' | 'isCustom' | 'createdAt' | 'updatedAt'> {
-  // Get contrasting foreground colors
-  const primaryFg = getContrastColor(colors.primary);
-  const secondaryFg = getContrastColor(colors.secondary);
-  const accentFg = getContrastColor(colors.accent);
-  const destructiveFg = '#FFFFFF';
+  try {
+    // Import color utilities with error handling
+    let hexToHsl: (hex: string) => string;
+    let getContrastColor: (hex: string) => string;
+    
+    try {
+      const colorUtils = require('./color-utils');
+      hexToHsl = colorUtils.hexToHsl;
+      getContrastColor = colorUtils.getContrastColor;
+    } catch (error) {
+      console.error('Error loading color utilities:', error);
+      throw new Error('Failed to load color utilities');
+    }
 
-  // Convert hex to HSL
-  const themeColors = {
-    "--background": hexToHsl(colors.background),
-    "--foreground": hexToHsl(colors.foreground),
-    "--card": hexToHsl(colors.card),
-    "--card-foreground": hexToHsl(colors.foreground),
-    "--popover": hexToHsl(colors.card),
-    "--popover-foreground": hexToHsl(colors.foreground),
-    "--primary": hexToHsl(colors.primary),
-    "--primary-foreground": hexToHsl(primaryFg),
-    "--secondary": hexToHsl(colors.secondary),
-    "--secondary-foreground": hexToHsl(secondaryFg),
-    "--muted": hexToHsl(colors.muted),
-    "--muted-foreground": hexToHsl(colors.foreground).replace(/\d+%\s+\d+%$/, '50% 50%'), // Make muted-fg lighter
-    "--accent": hexToHsl(colors.accent),
-    "--accent-foreground": hexToHsl(accentFg),
-    "--destructive": colors.destructive ? hexToHsl(colors.destructive) : "0 84.2% 60.2%",
-    "--destructive-foreground": hexToHsl(destructiveFg),
-    "--border": hexToHsl(colors.border),
-    "--input": hexToHsl(colors.border),
-    "--ring": hexToHsl(colors.primary),
-  };
+    // Get contrasting foreground colors
+    const primaryFg = getContrastColor(colors.primary);
+    const secondaryFg = getContrastColor(colors.secondary);
+    const accentFg = getContrastColor(colors.accent);
+    const destructiveFg = '#FFFFFF';
 
-  return {
-    name,
-    colors: themeColors,
-  };
+    // Convert hex to HSL
+    const themeColors = {
+      "--background": hexToHsl(colors.background),
+      "--foreground": hexToHsl(colors.foreground),
+      "--card": hexToHsl(colors.card),
+      "--card-foreground": hexToHsl(colors.foreground),
+      "--popover": hexToHsl(colors.card),
+      "--popover-foreground": hexToHsl(colors.foreground),
+      "--primary": hexToHsl(colors.primary),
+      "--primary-foreground": hexToHsl(primaryFg),
+      "--secondary": hexToHsl(colors.secondary),
+      "--secondary-foreground": hexToHsl(secondaryFg),
+      "--muted": hexToHsl(colors.muted),
+      "--muted-foreground": hexToHsl(colors.foreground).replace(/\d+%\s+\d+%$/, '50% 50%'), // Make muted-fg lighter
+      "--accent": hexToHsl(colors.accent),
+      "--accent-foreground": hexToHsl(accentFg),
+      "--destructive": colors.destructive ? hexToHsl(colors.destructive) : "0 84.2% 60.2%",
+      "--destructive-foreground": hexToHsl(destructiveFg),
+      "--border": hexToHsl(colors.border),
+      "--input": hexToHsl(colors.border),
+      "--ring": hexToHsl(colors.primary),
+    };
+
+    return {
+      name,
+      colors: themeColors,
+    };
+  } catch (error) {
+    console.error('Error creating theme from colors:', error);
+    throw new Error('Failed to create theme from colors');
+  }
 }
 
 /**
@@ -184,7 +223,12 @@ export function getDefaultColorInputs(): ThemeColorInputs {
  * Check if theme limit is reached
  */
 export function isThemeLimitReached(): boolean {
-  return getCustomThemes().length >= MAX_CUSTOM_THEMES;
+  try {
+    return getCustomThemes().length >= MAX_CUSTOM_THEMES;
+  } catch (error) {
+    console.error('Error checking theme limit:', error);
+    return false;
+  }
 }
 
 /**
@@ -192,4 +236,11 @@ export function isThemeLimitReached(): boolean {
  */
 export function getMaxThemes(): number {
   return MAX_CUSTOM_THEMES;
+}
+
+/**
+ * Generate a unique ID for themes
+ */
+function generateThemeId(): string {
+  return `custom-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }

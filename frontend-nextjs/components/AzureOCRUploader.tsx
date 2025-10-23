@@ -11,6 +11,8 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
 interface AzureOCRUploaderProps {
   onResult: (data: Record<string, unknown>) => void;
   defaultDocumentType?: 'zairyu_card' | 'license' | 'rirekisho';
@@ -105,7 +107,7 @@ export function AzureOCRUploader({ onResult, defaultDocumentType = 'zairyu_card'
     formData.append('document_type', documentType);
 
     try {
-      const response = await fetch('http://localhost:8000/api/azure-ocr/process', {
+      const response = await fetch(`${API_BASE_URL}/azure-ocr/process`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
