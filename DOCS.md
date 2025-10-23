@@ -50,6 +50,7 @@
 |-----------|-------------|
 | [INSTALACION_RAPIDA.md](docs/guides/INSTALACION_RAPIDA.md) | Guía rápida de instalación (Windows/Linux/macOS) |
 | [TROUBLESHOOTING.md](docs/guides/TROUBLESHOOTING.md) | Solución de problemas comunes por plataforma |
+| [AZURE_OCR_SETUP.md](docs/guides/AZURE_OCR_SETUP.md) | Configuración paso a paso de Azure Computer Vision |
 
 ### Git y GitHub
 
@@ -111,6 +112,9 @@
 | [STOP.bat](scripts/STOP.bat) | Detener todos los servicios (Windows) |
 | [LOGS.bat](scripts/LOGS.bat) | Ver logs de servicios (Windows) |
 | [REINSTALAR.bat](scripts/REINSTALAR.bat) | Reinstalación completa (⚠️ borra datos) |
+| [REINSTALAR_MEJORADO.bat](scripts/REINSTALAR_MEJORADO.bat) | Reinstalación guiada con backup automático |
+| [REINSTALAR_MEJORADO_DEBUG.bat](scripts/REINSTALAR_MEJORADO_DEBUG.bat) | Reinstalación guiada con logs detallados |
+| [DEBUG_REINSTALAR.bat](scripts/DEBUG_REINSTALAR.bat) | Diagnóstico de reinstalaciones fallidas |
 | [CLEAN.bat](scripts/CLEAN.bat) | Limpieza completa del sistema |
 | [INSTALAR.bat](scripts/INSTALAR.bat) | Instalación inicial |
 | [DIAGNOSTICO.bat](scripts/DIAGNOSTICO.bat) | Diagnóstico del sistema |
