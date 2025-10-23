@@ -1275,7 +1275,7 @@ export default function Page() {
                                   setEditingRelationIndex(null);
                                 }
                               }}
-                              onClick={(e) => {
+                              onClick={() => {
                                 if (row.relation && !levels.relationOptions.includes(row.relation)) {
                                   setEditingRelationIndex(i);
                                 }

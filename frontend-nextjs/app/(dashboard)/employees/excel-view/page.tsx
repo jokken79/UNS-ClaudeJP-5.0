@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { employeeService } from '@/lib/api';
 import {
-  XMarkIcon,
   ArrowLeftIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
 
@@ -98,15 +96,14 @@ export default function ExcelViewPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState<boolean | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 1000; // Load all employees for Excel view
 
   // Fetch ALL employees
   const { data, isLoading } = useQuery<PaginatedResponse>({
-    queryKey: ['employees-excel', currentPage, searchTerm, filterActive],
+    queryKey: ['employees-excel', searchTerm, filterActive],
     queryFn: async () => {
       const params: any = {
-        page: currentPage,
+        page: 1,
         page_size: pageSize,
       };
 

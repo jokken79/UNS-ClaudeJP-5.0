@@ -1,14 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import {
   BuildingOffice2Icon,
   MagnifyingGlassIcon,
   PencilIcon,
-  EyeIcon,
   PlusIcon,
   PhoneIcon,
   MapPinIcon,
@@ -35,7 +33,6 @@ interface FactoriesResponse {
 }
 
 export default function FactoriesPage() {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingFactory, setEditingFactory] = useState<Factory | null>(null);

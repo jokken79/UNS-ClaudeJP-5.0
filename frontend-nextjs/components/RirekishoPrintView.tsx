@@ -58,7 +58,7 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
         <h1>履歴書</h1>
       </div>
 
-      {/* Basic Info & Contact - Layout corregido para impresión */}
+      {/* Basic Info & Emergency Contact - Combined Layout */}
       <div className="form-section basic-info-layout">
         <div className="photo-container">
           <div className="photo-frame">
@@ -69,61 +69,62 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
             )}
           </div>
         </div>
-        <table className="info-table">
-          <tbody>
-            <tr>
-              <th>受付日</th>
-              <td colSpan={3}>{formatDateToJapanese(data.receptionDate)}</td>
-              <th>来日</th>
-              <td colSpan={3}>{data.timeInJapan}</td>
-            </tr>
-            <tr>
-              <th>氏名</th>
-              <td colSpan={3}>{data.nameKanji}</td>
-              <th>フリガナ</th>
-              <td colSpan={3}>{data.nameFurigana}</td>
-            </tr>
-            <tr>
-              <th>生年月日</th>
-              <td>{formatDateToJapanese(data.birthday)}</td>
-              <th>年齢</th>
-              <td>{data.age}</td>
-              <th>性別</th>
-              <td>{data.gender}</td>
-              <th>国籍</th>
-              <td>{data.nationality}</td>
-            </tr>
-            <tr>
-              <th>郵便番号</th>
-              <td>{data.postalCode}</td>
-              <th>携帯電話</th>
-              <td>{data.mobile}</td>
-              <th>電話番号</th>
-              <td colSpan={3}>{data.phone}</td>
-            </tr>
-            <tr>
-              <th>住所</th>
-              <td colSpan={7}>{data.address}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Emergency Contact */}
-      <div className="form-section">
-        <h2>緊急連絡先</h2>
-        <table className="info-table">
-          <tbody>
-            <tr>
-              <th>氏名</th>
-              <td>{data.emergencyName}</td>
-              <th>続柄</th>
-              <td>{data.emergencyRelation}</td>
-              <th>電話番号</th>
-              <td>{data.emergencyPhone}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div className="info-column">
+          <table className="info-table">
+            <tbody>
+              <tr>
+                <th>受付日</th>
+                <td colSpan={3}>{formatDateToJapanese(data.receptionDate)}</td>
+                <th>来日</th>
+                <td colSpan={3}>{data.timeInJapan}</td>
+              </tr>
+              <tr>
+                <th>氏名</th>
+                <td colSpan={3}>{data.nameKanji}</td>
+                <th>フリガナ</th>
+                <td colSpan={3}>{data.nameFurigana}</td>
+              </tr>
+              <tr>
+                <th>生年月日</th>
+                <td>{formatDateToJapanese(data.birthday)}</td>
+                <th>年齢</th>
+                <td>{data.age}</td>
+                <th>性別</th>
+                <td>{data.gender}</td>
+                <th>国籍</th>
+                <td>{data.nationality}</td>
+              </tr>
+              <tr>
+                <th>郵便番号</th>
+                <td>{data.postalCode}</td>
+                <th>携帯電話</th>
+                <td>{data.mobile}</td>
+                <th>電話番号</th>
+                <td colSpan={3}>{data.phone}</td>
+              </tr>
+              <tr>
+                <th>住所</th>
+                <td colSpan={7}>{data.address}</td>
+              </tr>
+            </tbody>
+          </table>
+          {/* Emergency Contact (Moved) */}
+          <div className="form-section moved-emergency-contact">
+            <h2>緊急連絡先</h2>
+            <table className="info-table">
+              <tbody>
+                <tr>
+                  <th>氏名</th>
+                  <td>{data.emergencyName}</td>
+                  <th>続柄</th>
+                  <td>{data.emergencyRelation}</td>
+                  <th>電話番号</th>
+                  <td>{data.emergencyPhone}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Documents */}
@@ -380,14 +381,29 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
         .basic-info-layout {
           display: flex;
           flex-direction: row;
-          align-items: flex-start;
+          align-items: stretch; /* Make children (photo and info-column) same height */
           gap: 4mm;
           page-break-inside: avoid; /* Keep this section from breaking */
         }
         
-        .basic-info-layout .info-table {
-          flex: 1; /* Make table fill remaining space */
+        .info-column {
+          flex: 1; /* Make column fill remaining space */
           min-width: 0; /* Prevent overflow in flex context */
+          display: flex;
+          flex-direction: column;
+        }
+
+        .info-column > .info-table {
+          flex-grow: 1; /* Allow the main table to grow vertically */
+        }
+
+        .moved-emergency-contact {
+          margin-top: 4px;
+          margin-bottom: 0;
+        }
+
+        .moved-emergency-contact h2 {
+          margin-top: 0;
         }
 
         .form-section h2 {
