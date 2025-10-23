@@ -68,7 +68,7 @@ const nextConfig: NextConfig = {
   // Configuración de variables de entorno
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_APP_VERSION: '4.0.0',
+    NEXT_PUBLIC_APP_VERSION: '4.2.0',
   },
 
   // Optimizaciones de producción

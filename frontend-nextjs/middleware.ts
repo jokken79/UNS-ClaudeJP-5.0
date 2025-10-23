@@ -14,14 +14,10 @@ export function middleware(request: NextRequest) {
     '/employees',
     '/factories',
     '/timercards',
-    '/timer-cards',
     '/salary',
     '/requests',
-    '/database',
     '/database-management',
-    '/adminer',
     '/settings',
-    '/profile',
   ];
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
