@@ -1,8 +1,47 @@
 import type { Metadata } from "next";
+import {
+  DM_Sans,
+  Inter,
+  Lora,
+  Manrope,
+  Montserrat,
+  Playfair_Display,
+  Plus_Jakarta_Sans,
+  Poppins,
+  Sora,
+  Space_Grotesk,
+  Urbanist,
+} from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { ErrorBoundaryWrapper } from "@/components/error-boundary-wrapper";
 import { ChunkErrorHandler } from "@/components/global-error-handler";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap" });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk", display: "swap" });
+const urbanist = Urbanist({ subsets: ["latin"], variable: "--font-urbanist", display: "swap" });
+const lora = Lora({ subsets: ["latin"], variable: "--font-lora", display: "swap" });
+const poppins = Poppins({ subsets: ["latin"], variable: "--font-poppins", display: "swap" });
+const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", display: "swap" });
+const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", display: "swap" });
+const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-plus-jakarta", display: "swap" });
+const sora = Sora({ subsets: ["latin"], variable: "--font-sora", display: "swap" });
+const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat", display: "swap" });
+
+const fontVariables = [
+  inter.variable,
+  manrope.variable,
+  spaceGrotesk.variable,
+  urbanist.variable,
+  lora.variable,
+  poppins.variable,
+  playfair.variable,
+  dmSans.variable,
+  plusJakarta.variable,
+  sora.variable,
+  montserrat.variable,
+].join(" ");
 
 export const metadata: Metadata = {
   title: {
@@ -45,7 +84,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className="font-sans antialiased" suppressHydrationWarning>
+      <body className={`${fontVariables} font-sans antialiased`} suppressHydrationWarning>
         <ErrorBoundaryWrapper>
           <Providers>
             <ChunkErrorHandler />
