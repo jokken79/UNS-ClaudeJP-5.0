@@ -2,7 +2,7 @@
 
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { StatsChart } from '@/components/dashboard/stats-chart';
-import { Users, UserCheck, Building2, Clock, Menu, Bell, Search, Sun, Moon } from 'lucide-react';
+import { Users, UserCheck, Building2, Clock, Bell, Search, Sun, Moon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

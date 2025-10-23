@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { employeeService } from '@/lib/api';
 import { ArrowLeftIcon, UserPlusIcon, PencilIcon, UserCircleIcon } from '@heroicons/react/24/outline';
@@ -129,13 +130,7 @@ export default function EmployeeForm({ employeeId, isEdit = false }: EmployeeFor
     notes: '',
   });
 
-  useEffect(() => {
-    if (isEdit && employeeId) {
-      fetchEmployee();
-    }
-  }, [employeeId, isEdit]);
-
-  const fetchEmployee = async () => {
+  const fetchEmployee = useCallback(async () => {
     try {
       setLoading(true);
       const employee = await employeeService.getEmployee(employeeId!);
@@ -197,7 +192,13 @@ export default function EmployeeForm({ employeeId, isEdit = false }: EmployeeFor
     } finally {
       setLoading(false);
     }
-  };
+  }, [employeeId]);
+
+  useEffect(() => {
+    if (isEdit && employeeId) {
+      void fetchEmployee();
+    }
+  }, [employeeId, fetchEmployee, isEdit]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -365,10 +366,13 @@ export default function EmployeeForm({ employeeId, isEdit = false }: EmployeeFor
             <div className="px-6 py-5">
               <div className="flex items-center gap-6">
                 {photoPreview ? (
-                  <img
+                  <Image
                     src={photoPreview}
                     alt="Preview"
+                    width={128}
+                    height={128}
                     className="w-32 h-32 rounded-full object-cover border-4 border-blue-200 shadow-lg"
+                    unoptimized
                   />
                 ) : (
                   <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center">

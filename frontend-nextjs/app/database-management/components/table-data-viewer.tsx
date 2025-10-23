@@ -31,12 +31,6 @@ interface TableRow {
   [key: string]: any;
 }
 
-interface TableData {
-  columns: string[];
-  rows: TableRow[];
-  total: number;
-}
-
 export default function TableDataViewer({ tableName, onClose }: TableDataViewerProps) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -46,7 +40,7 @@ export default function TableDataViewer({ tableName, onClose }: TableDataViewerP
   const queryClient = useQueryClient();
 
   // Fetch table data
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['table-data', tableName, page, pageSize, search],
     queryFn: () => databaseService.getTableData(tableName, {
       limit: pageSize,

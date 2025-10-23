@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import { LockClosedIcon, UserIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { authService } from '@/lib/api';
@@ -15,7 +15,6 @@ const setCookie = (name: string, value: string, days: number = 7) => {
 };
 
 export default function LoginPage() {
-  const router = useRouter();
   const login = useAuthStore((state) => state.login);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -123,10 +122,13 @@ export default function LoginPage() {
 
         {/* Background Logo - Giant Watermark with Parallax - Inclinado 300 grados MÁS VISIBLE */}
         <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none overflow-hidden">
-          <img
+          <Image
             src="/logo-uns-corto-negro.png"
-            alt="Background"
-            className="min-w-[150%] h-auto object-contain"
+            alt="UNS-Kikaku background watermark"
+            fill
+            priority
+            className="object-contain"
+            sizes="100vw"
             style={{
               transform: mounted ? `translate(${parallaxX * -0.5}px, ${parallaxY * -0.5}px) scale(1.2) rotate(300deg)` : 'translate(0, 0) scale(1.2) rotate(300deg)',
               transition: mounted ? 'transform 0.3s ease-out' : 'none',
@@ -160,10 +162,13 @@ export default function LoginPage() {
                 transition: 'transform 0.2s ease-out'
               }}
             >
-              <img
+              <Image
                 src="/logo-uns-corto-negro.png"
-                alt="UNS-kikaku Logo"
+                alt="UNS-Kikaku logo"
+                width={320}
+                height={80}
                 className="h-20 w-auto drop-shadow-2xl"
+                priority
               />
             </div>
 
@@ -282,10 +287,13 @@ export default function LoginPage() {
           {/* Mobile Logo */}
           <div className="lg:hidden mb-10 text-center">
             <div className="inline-block mb-4">
-              <img
+              <Image
                 src="/logo-uns-corto-negro.png"
-                alt="UNS-kikaku Logo"
+                alt="UNS-Kikaku logo"
+                width={240}
+                height={96}
                 className="h-16 w-auto drop-shadow-lg"
+                priority
               />
             </div>
             <div className="flex items-center justify-center gap-2">
@@ -318,6 +326,7 @@ export default function LoginPage() {
                 </div>
                 <input
                   id="username"
+                  name="username"
                   type="text"
                   required
                   value={username}
@@ -340,6 +349,7 @@ export default function LoginPage() {
                 </div>
                 <input
                   id="password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}

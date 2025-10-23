@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import {
   ArrowUpTrayIcon,
@@ -216,7 +217,14 @@ export function AzureOCRUploader({ onResult, defaultDocumentType = 'zairyu_card'
                   <XMarkIcon className="h-5 w-5" />
                 </button>
                 {previewUrl ? (
-                  <img src={previewUrl} alt="ドキュメントプレビュー" className="h-48 w-full object-contain bg-white" />
+                  <Image
+                    src={previewUrl}
+                    alt="ドキュメントプレビュー"
+                    width={600}
+                    height={384}
+                    className="h-48 w-full object-contain bg-white"
+                    unoptimized
+                  />
                 ) : (
                   <div className="flex h-48 items-center justify-center bg-slate-100 text-sm text-slate-500">
                     <PhotoIcon className="mr-2 h-6 w-6" /> プレビューなし

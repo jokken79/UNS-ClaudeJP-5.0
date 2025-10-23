@@ -140,10 +140,6 @@ export function NetworkError({ reset }: { reset?: () => void }) {
 
 // Componente para errores de autenticación
 export function AuthError({ reset }: { reset?: () => void }) {
-  const handleLogin = () => {
-    window.location.href = '/login';
-  };
-
   return (
     <ErrorDisplay
       title="Error de autenticación"

@@ -30,11 +30,9 @@ interface TableInfo {
 
 export default function DatabaseManagementPage() {
   const router = useRouter();
-  const [selectedTable, setSelectedTable] = useState<string | null>(null);
   const [showTruncateConfirm, setShowTruncateConfirm] = useState(false);
   const [tableToTruncate, setTableToTruncate] = useState<string | null>(null);
   const [viewingTable, setViewingTable] = useState<string | null>(null);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch all tables
@@ -47,10 +45,10 @@ export default function DatabaseManagementPage() {
   const exportMutation = useMutation({
     mutationFn: (tableName: string) => databaseService.exportTable(tableName),
     onSuccess: () => {
-      alert('✅ Tabla exportada exitosamente');
+      alert('笨・Tabla exportada exitosamente');
     },
     onError: (error: any) => {
-      alert(`❌ Error al exportar: ${error.response?.data?.detail || error.message}`);
+      alert(`笶・Error al exportar: ${error.response?.data?.detail || error.message}`);
     }
   });
 
@@ -59,12 +57,11 @@ export default function DatabaseManagementPage() {
     mutationFn: ({ tableName, file }: { tableName: string; file: File }) =>
       databaseService.importTable(tableName, file),
     onSuccess: (data) => {
-      alert(`✅ ${data.message}`);
+      alert(`笨・${data.message}`);
       queryClient.invalidateQueries({ queryKey: ['database-tables'] });
-      setUploadFile(null);
     },
     onError: (error: any) => {
-      alert(`❌ Error al importar: ${error.response?.data?.detail || error.message}`);
+      alert(`笶・Error al importar: ${error.response?.data?.detail || error.message}`);
     }
   });
 
@@ -72,13 +69,13 @@ export default function DatabaseManagementPage() {
   const truncateMutation = useMutation({
     mutationFn: (tableName: string) => databaseService.truncateTable(tableName),
     onSuccess: (data) => {
-      alert(`✅ ${data.message}\n🗑️ Filas eliminadas: ${data.rowsDeleted}`);
+      alert(`笨・${data.message}\n卵・・Filas eliminadas: ${data.rowsDeleted}`);
       queryClient.invalidateQueries({ queryKey: ['database-tables'] });
       setShowTruncateConfirm(false);
       setTableToTruncate(null);
     },
     onError: (error: any) => {
-      alert(`❌ Error al borrar: ${error.response?.data?.detail || error.message}`);
+      alert(`笶・Error al borrar: ${error.response?.data?.detail || error.message}`);
       setShowTruncateConfirm(false);
     }
   });
@@ -135,7 +132,7 @@ export default function DatabaseManagementPage() {
         <div className="flex items-center gap-3 mb-2">
           <Database className="w-8 h-8 text-blue-600" />
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Gestión de Base de Datos
+            Gestiﾃｳn de Base de Datos
           </h1>
         </div>
         <p className="text-gray-600 dark:text-gray-400">
@@ -194,7 +191,7 @@ export default function DatabaseManagementPage() {
                 ))}
                 {table.columns.length > 5 && (
                   <span className="text-xs px-2 py-1 text-gray-500">
-                    +{table.columns.length - 5} más
+                    +{table.columns.length - 5} mﾃ｡s
                   </span>
                 )}
               </div>
@@ -258,19 +255,19 @@ export default function DatabaseManagementPage() {
                 <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                ¿Confirmar borrado?
+                ﾂｿConfirmar borrado?
               </h3>
             </div>
 
             <div className="mb-6">
               <p className="text-gray-700 dark:text-gray-300 mb-3">
-                Estás a punto de <strong className="text-red-600">borrar TODAS las filas</strong> de la tabla:
+                Estﾃ｡s a punto de <strong className="text-red-600">borrar TODAS las filas</strong> de la tabla:
               </p>
               <p className="text-xl font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg text-center">
                 {tableToTruncate}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
-                ⚠️ Esta acción NO se puede deshacer. La estructura de la tabla se mantendrá, pero todos los datos se perderán.
+                笞・・Esta acciﾃｳn NO se puede deshacer. La estructura de la tabla se mantendrﾃ｡, pero todos los datos se perderﾃ｡n.
               </p>
             </div>
 
@@ -289,7 +286,7 @@ export default function DatabaseManagementPage() {
                 disabled={truncateMutation.isPending}
                 className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium disabled:opacity-50"
               >
-                {truncateMutation.isPending ? 'Borrando...' : 'Sí, borrar todo'}
+                {truncateMutation.isPending ? 'Borrando...' : 'Sﾃｭ, borrar todo'}
               </button>
             </div>
           </div>

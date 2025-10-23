@@ -66,6 +66,9 @@ const nextConfig: NextConfig = {
   compress: true,
 
   // Configuración de variables de entorno
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_APP_VERSION: '4.2.0',

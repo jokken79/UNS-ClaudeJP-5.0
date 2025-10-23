@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import { DocumentTextIcon, ArrowUpTrayIcon, XCircleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
@@ -179,7 +180,14 @@ export default function OCRUploader({ onOCRComplete }: OCRUploaderProps) {
 
           {previewUrl && (
             <div className="mt-2 mb-4 max-w-xs max-h-40 overflow-hidden">
-              <img src={previewUrl} alt="Preview" className="object-contain" />
+              <Image
+                src={previewUrl}
+                alt="Preview"
+                width={400}
+                height={300}
+                className="object-contain"
+                unoptimized
+              />
             </div>
           )}
 
