@@ -34,6 +34,14 @@ const ThemeManager = dynamic(
   }
 );
 
+const TemplateManager = dynamic(
+  () => import('@/components/TemplateManager').then(mod => ({ default: mod.TemplateManager })),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
+
 const IS_DEV = process.env.NODE_ENV === 'development';
 
 const ReactQueryDevtools = IS_DEV
@@ -133,6 +141,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem={false}
       >
         <ThemeManager />
+        <TemplateManager />
         <QueryClientProvider client={queryClient}>
           {children}
           {mounted && (
