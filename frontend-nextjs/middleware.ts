@@ -6,7 +6,7 @@ export function middleware(request: NextRequest) {
 
 
   // Protected routes
-  const protectedRoutes = [
+  const protectedRoutes = new Set([
     '/dashboard',
     '/candidates',
     '/employees',
@@ -16,7 +16,8 @@ export function middleware(request: NextRequest) {
     '/requests',
     '/database-management',
     '/settings',
-  ];
+    '/profile',
+  ]);
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
   // Check for token in cookies (we'll set this on login)

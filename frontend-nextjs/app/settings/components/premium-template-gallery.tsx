@@ -18,7 +18,7 @@ import {
   type TemplateSelection,
 } from '@/lib/templates';
 import toast from 'react-hot-toast';
-import { Check, Sparkles, Star, Wand2 } from 'lucide-react';
+import { Check, MousePointerClick, Sparkles, Star, Type, Wand2 } from 'lucide-react';
 
 const formatFeatures = (features: string[]) => {
   if (features.length <= 3) {
@@ -158,6 +158,44 @@ export function PremiumTemplateGallery() {
                     </span>
                   </div>
                 ))}
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Tipografías</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {Object.entries(template.fonts).map(([role, font]) => (
+                      <Badge key={`${template.id}-${role}`} variant="outline" className="flex items-center gap-1">
+                        <Type className="h-3.5 w-3.5 text-primary" />
+                        <span className="capitalize">{role}</span>
+                        <span className="text-muted-foreground">• {font}</span>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Iconografía</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {template.iconography.map((icon) => (
+                      <Badge key={`${template.id}-${icon}`} variant="secondary" className="flex items-center gap-1 bg-muted/60">
+                        <Wand2 className="h-3.5 w-3.5 text-primary" />
+                        <span>{icon}</span>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Variantes de botón</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {template.buttonStyles.map((style) => (
+                    <Badge key={`${template.id}-${style}`} variant="outline" className="flex items-center gap-1">
+                      <MousePointerClick className="h-3.5 w-3.5 text-primary" />
+                      <span>{style}</span>
+                    </Badge>
+                  ))}
+                </div>
               </div>
 
               <Button
