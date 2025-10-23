@@ -7,33 +7,44 @@ import { MetricCard } from '@/components/dashboard/metric-card';
 import { StatsChart } from '@/components/dashboard/stats-chart';
 import { Users, UserCheck, Building2, Clock } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
   const { isAuthenticated } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
 
-  // Fetch statistics with React Query - only if authenticated
-  const { data: employeesData, isLoading: loadingEmployees } = useQuery({
+  // Ensure component is mounted before making API calls
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Fetch statistics with React Query - only if authenticated and mounted
+  const { data: employeesData, isLoading: loadingEmployees, error: employeesError } = useQuery({
     queryKey: ['employees'],
     queryFn: () => employeeService.getEmployees(),
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && mounted,
+    retry: false,
   });
 
-  const { data: candidates, isLoading: loadingCandidates } = useQuery({
+  const { data: candidates, isLoading: loadingCandidates, error: candidatesError } = useQuery({
     queryKey: ['candidates'],
     queryFn: () => candidateService.getCandidates(),
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && mounted,
+    retry: false,
   });
 
-  const { data: factories, isLoading: loadingFactories } = useQuery({
+  const { data: factories, isLoading: loadingFactories, error: factoriesError } = useQuery({
     queryKey: ['factories'],
     queryFn: () => factoryService.getFactories(),
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && mounted,
+    retry: false,
   });
 
-  const { data: timerCards, isLoading: loadingTimerCards } = useQuery({
+  const { data: timerCards, isLoading: loadingTimerCards, error: timerCardsError } = useQuery({
     queryKey: ['timerCards'],
     queryFn: () => timerCardService.getTimerCards(),
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && mounted,
+    retry: false,
   });
 
   // Safely access items from API responses
@@ -53,6 +64,32 @@ export default function DashboardPage() {
   };
 
   const isLoading = loadingEmployees || loadingCandidates || loadingFactories || loadingTimerCards;
+
+  // Show loading state while mounting or authenticating
+  if (!mounted) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show authentication required message
+  if (!isAuthenticated) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Acceso no autorizado. Por favor, inicie sesión.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Prepare data for charts - using correct format
   const chartData = [
