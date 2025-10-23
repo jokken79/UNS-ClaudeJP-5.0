@@ -152,7 +152,7 @@ services:
     container_name: uns-claudejp-frontend
     restart: always
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api
       NEXT_PUBLIC_APP_VERSION: 4.2.0
       NEXT_PUBLIC_APP_NAME: UNS-ClaudeJP 4.2
       NODE_ENV: development
@@ -163,7 +163,8 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - uns-network
     stdin_open: true

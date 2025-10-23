@@ -58,7 +58,7 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
         <h1>履歴書</h1>
       </div>
 
-      {/* Basic Info & Emergency Contact - Combined Layout */}
+      {/* Basic Info - Photo and Personal Details */}
       <div className="form-section basic-info-layout">
         <div className="photo-container">
           <div className="photo-frame">
@@ -70,21 +70,21 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
           </div>
         </div>
         <div className="info-column">
-          <table className="info-table">
+          <table className="info-table personal-info-table">
             <tbody>
-              <tr>
+              <tr className="tall-row">
                 <th>受付日</th>
                 <td colSpan={3}>{formatDateToJapanese(data.receptionDate)}</td>
                 <th>来日</th>
                 <td colSpan={3}>{data.timeInJapan}</td>
               </tr>
-              <tr>
+              <tr className="tall-row">
                 <th>氏名</th>
                 <td colSpan={3}>{data.nameKanji}</td>
                 <th>フリガナ</th>
                 <td colSpan={3}>{data.nameFurigana}</td>
               </tr>
-              <tr>
+              <tr className="tall-row">
                 <th>生年月日</th>
                 <td>{formatDateToJapanese(data.birthday)}</td>
                 <th>年齢</th>
@@ -94,7 +94,7 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
                 <th>国籍</th>
                 <td>{data.nationality}</td>
               </tr>
-              <tr>
+              <tr className="tall-row">
                 <th>郵便番号</th>
                 <td>{data.postalCode}</td>
                 <th>携帯電話</th>
@@ -102,29 +102,30 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
                 <th>電話番号</th>
                 <td colSpan={3}>{data.phone}</td>
               </tr>
-              <tr>
+              <tr className="tall-row">
                 <th>住所</th>
                 <td colSpan={7}>{data.address}</td>
               </tr>
             </tbody>
           </table>
-          {/* Emergency Contact (Moved) */}
-          <div className="form-section moved-emergency-contact">
-            <h2>緊急連絡先</h2>
-            <table className="info-table">
-              <tbody>
-                <tr>
-                  <th>氏名</th>
-                  <td>{data.emergencyName}</td>
-                  <th>続柄</th>
-                  <td>{data.emergencyRelation}</td>
-                  <th>電話番号</th>
-                  <td>{data.emergencyPhone}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
         </div>
+      </div>
+
+      {/* Emergency Contact - Separate Section */}
+      <div className="form-section emergency-contact-section">
+        <h2>緊急連絡先</h2>
+        <table className="info-table">
+          <tbody>
+            <tr>
+              <th>氏名</th>
+              <td>{data.emergencyName}</td>
+              <th>続柄</th>
+              <td>{data.emergencyRelation}</td>
+              <th>電話番号</th>
+              <td>{data.emergencyPhone}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       {/* Documents */}
@@ -198,22 +199,16 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
       <div className="form-section">
         <h2>有資格取得</h2>
         <div className="qualifications-container">
-          <div className="qualification-item">
+          <div className="qualification-row">
             <span className="qualification-label">
               {data.forkliftLicense ? "✓" : "□"} フォークリフト資格
             </span>
-          </div>
-          <div className="qualification-item">
             <span className="qualification-label">
               {data.jlpt ? "✓" : "□"} 日本語検定
             </span>
             {data.jlpt && <span className="qualification-level">({data.jlptLevel})</span>}
+            {data.otherQualifications && <span className="qualification-label">その他: {data.otherQualifications}</span>}
           </div>
-          {data.otherQualifications && (
-            <div className="qualification-item">
-              <span className="qualification-label">その他: {data.otherQualifications}</span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -263,14 +258,15 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
       {/* Work History */}
       <div className="form-section">
         <h2>職務経歴</h2>
-        <table className="info-table">
+        <table className="info-table work-history-table">
           <thead>
             <tr>
               <th>開始</th>
               <th>終了</th>
               <th>派遣元</th>
-              <th>退職理由</th>
-              <th>派遣先 / 内容</th>
+              <th>派遣先</th>
+              <th>勤務地</th>
+              <th>内容</th>
             </tr>
           </thead>
           <tbody>
@@ -280,13 +276,14 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
                   <td>{formatMonthToJapanese(row.start)}</td>
                   <td>{formatMonthToJapanese(row.end)}</td>
                   <td>{row.hakenmoto}</td>
+                  <td>{row.hakensaki}</td>
                   <td>{row.reason}</td>
-                  <td>{`${row.hakensaki || ''} / ${row.content || ''}`}</td>
+                  <td>{row.content}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="text-center">職務経歴はありません</td>
+                <td colSpan={6} className="text-center">職務経歴はありません</td>
               </tr>
             )}
           </tbody>
@@ -296,7 +293,7 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
       {/* Family Composition */}
       <div className="form-section">
         <h2>家族構成</h2>
-        <table className="info-table">
+        <table className="info-table family-table">
           <thead>
             <tr>
               <th>氏名</th>
@@ -340,10 +337,19 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
             </tr>
           </tbody>
         </table>
-        <div className="company-info">
-          <div>ユニバーサル企画株式会社</div>
-          <div>TEL 052-938-8840　FAX 052-938-8841</div>
+        <div className="site-footer-content">
+          <div className="footer-logo-container">
+            <img src="/LOGAOUNSJP3.png" alt="ユニバーサル企画株式会社 Logo" />
+            <div className="company-name">ユニバーサル企画株式会社</div>
+          </div>
+          <div className="company-details">
+            <span>TEL 052-938-8840　FAX 052-938-8841</span>
+          </div>
         </div>
+      </div>
+
+      <div className="applicant-id-footer">
+        ID: {data.applicant_id}
       </div>
 
       <style jsx>{`
@@ -359,6 +365,15 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
           color: black;
           box-sizing: border-box;
           display: block; /* Changed from flex for better page break handling */
+          position: relative; /* Added for positioning context */
+        }
+
+        .applicant-id-footer {
+          position: absolute;
+          bottom: 8mm;
+          right: 8mm;
+          font-size: 8pt;
+          color: #555;
         }
 
         .print-header {
@@ -422,8 +437,8 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
 
         .photo-container {
           flex-shrink: 0;
-          width: 30mm;
-          height: 40mm;
+          width: 35mm;
+          height: 45mm;
         }
 
         .photo-frame {
@@ -456,11 +471,27 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
         .info-table th,
         .info-table td {
           border: 1px solid black;
-          padding: 2px 4px;
+          padding: 4px 6px;
           font-size: 8.5pt; /* Slightly adjusted font size */
           text-align: left;
           vertical-align: middle;
           word-wrap: break-word;
+          height: 18px; /* Increased row height */
+        }
+
+        /* Taller rows for personal info next to photo */
+        .personal-info-table .tall-row th,
+        .personal-info-table .tall-row td {
+          height: 22px; /* Even taller for personal info */
+          padding: 6px 8px;
+        }
+
+        /* Taller rows for work history and family sections */
+        .work-history-table th,
+        .work-history-table td,
+        .family-table th,
+        .family-table td {
+          height: 20px; /* Slightly taller rows */
         }
 
         .info-table th {
@@ -488,6 +519,47 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
           page-break-inside: avoid;
         }
 
+        .qualification-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 15px;
+          align-items: center;
+        }
+
+        .qualification-label {
+          font-size: 9pt;
+          white-space: nowrap;
+        }
+
+        .qualification-level {
+          font-size: 8pt;
+          color: #666;
+        }
+
+        /* Company name styling */
+        .company-name {
+          font-size: 11pt;
+          font-weight: bold;
+          font-family: 'Helvetica Neue', Arial, sans-serif;
+          margin-top: 5px;
+          text-align: center;
+        }
+
+        /* Footer logo container */
+        .footer-logo-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
+        }
+
+        .footer-logo-container img {
+          max-height: 45px; /* Larger logo */
+          width: auto;
+          background: transparent !important;
+          mix-blend-mode: multiply;
+        }
+
         .form-footer {
           margin-top: auto;
           padding-top: 10px;
@@ -495,10 +567,40 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
           page-break-inside: avoid; /* Keep footer from breaking */
         }
 
-        .company-info {
+        /* Emergency contact section styling */
+        .emergency-contact-section {
+          margin-bottom: 10px;
+          page-break-inside: avoid;
+        }
+
+        .emergency-contact-section h2 {
+          font-size: 11pt;
+          font-weight: bold;
+          margin-bottom: 4px;
+          margin-top: 8px;
+          page-break-after: avoid;
+        }
+
+        .site-footer-content {
           margin-top: 10px;
-          text-align: center;
-          font-size: 9pt;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 15px; /* Reduced gap for compactness */
+        }
+
+        .company-details {
+          font-size: 10pt; /* Slightly larger font */
+          display: flex;
+          flex-direction: column;
+          text-align: right;
+        }
+
+        .footer-logo-container img {
+          max-height: 45px; /* Larger logo */
+          width: auto;
+          background: transparent !important;
+          mix-blend-mode: multiply;
         }
 
         .text-center {
@@ -507,7 +609,7 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
 
         @page {
           size: A4 portrait;
-          margin: 12mm; /* Adjusted margin */
+          margin: 0; /* Remove browser default header/footer */
         }
 
         @media print {
@@ -518,19 +620,120 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
             print-color-adjust: exact !important;
           }
           .rirekisho-print-container {
-            margin: 0;
-            padding: 0;
-            border: none;
-            box-shadow: none;
+            margin: 0 !important;
+            padding: 12mm !important; /* Create our own margin */
+            border: none !important;
+            box-shadow: none !important;
             width: 100% !important;
           }
           .info-table th,
           .info-table td {
             font-size: 8pt !important;
-            padding: 1.5px 3px !important;
+            padding: 3px 5px !important; /* Increased padding for print */
+            height: 16px !important; /* Explicit row height for print */
+            line-height: 1.4 !important; /* Better line spacing */
+          }
+
+          /* Taller rows for personal info next to photo in print */
+          .personal-info-table .tall-row th,
+          .personal-info-table .tall-row td {
+            height: 20px !important; /* Even taller for personal info in print */
+            padding: 5px 7px !important;
           }
           .info-table th {
              background-color: #f0f0f0 !important;
+          }
+          
+          /* Footer specific print styles */
+          .site-footer-content {
+            justify-content: center !important;
+            align-items: center !important;
+            gap: 12px !important; /* Compact gap for print */
+          }
+          
+          .company-details {
+            text-align: right !important;
+            font-size: 9pt !important; /* Slightly larger for print */
+          }
+          
+          .footer-logo-container img {
+            background: transparent !important;
+            mix-blend-mode: multiply !important;
+            opacity: 1 !important;
+            max-height: 40px !important; /* Optimized size for print */
+          }
+
+          /* Emergency contact section print styles */
+          .emergency-contact-section {
+            margin-bottom: 8px !important;
+            page-break-inside: avoid !important;
+          }
+
+          .emergency-contact-section h2 {
+            font-size: 10pt !important;
+            font-weight: bold !important;
+            margin-bottom: 3px !important;
+            margin-top: 6px !important;
+            page-break-after: avoid !important;
+          }
+
+          /* Qualifications row styling for print */
+          .qualification-row {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 12px !important;
+            align-items: center !important;
+          }
+
+          .qualification-label {
+            font-size: 8pt !important;
+            white-space: nowrap !important;
+          }
+
+          .qualification-level {
+            font-size: 7pt !important;
+            color: #666 !important;
+          }
+
+          /* Company name styling for print */
+          .company-name {
+            font-size: 10pt !important;
+            font-weight: bold !important;
+            font-family: 'Helvetica Neue', Arial, sans-serif !important;
+            margin-top: 4px !important;
+            text-align: center !important;
+          }
+
+          /* Footer logo container for print */
+          .footer-logo-container {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 4px !important;
+          }
+
+          .footer-logo-container img {
+            max-height: 40px !important; /* Larger logo for print */
+            width: auto !important;
+            background: transparent !important;
+            mix-blend-mode: multiply !important;
+          }
+
+          /* Taller rows for work history and family sections in print */
+          .work-history-table th,
+          .work-history-table td,
+          .family-table th,
+          .family-table td {
+            height: 18px !important; /* Slightly taller rows for print */
+          }
+
+          /* Applicant ID styling for print */
+          .applicant-id-footer {
+            position: absolute !important;
+            bottom: 8mm !important;
+            right: 8mm !important;
+            font-size: 8pt !important;
+            color: #555 !important;
           }
         }
       `}</style>

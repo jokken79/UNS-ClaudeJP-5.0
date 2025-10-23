@@ -25,7 +25,8 @@ export function Header() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    router.push('/login');
+    // Forzar un refresco completo para asegurar que todo el estado se limpie
+    window.location.href = '/login';
   };
 
   const handleSearch = (e: React.FormEvent) => {

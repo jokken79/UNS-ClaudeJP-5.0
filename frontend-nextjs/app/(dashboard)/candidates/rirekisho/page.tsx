@@ -162,7 +162,7 @@ export default function Page() {
       ...prev,
       family: [
         ...prev.family,
-        { name: "", relation: "", age: "", residence: "", dependent: "有" },
+        { name: "", relation: "", age: "", residence: "", dependent: "" },
       ],
     }));
   }
@@ -1218,7 +1218,7 @@ export default function Page() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[600px] table-fixed border-collapse border border-black text-[11pt]">
-              <colgroup><col className="w-[30%]" /><col className="w-[20%]" /><col className="w-[15%]" /><col className="w-[20%]" /><col className="w-[15%]" /></colgroup>
+              <colgroup><col className="w-[25%]" /><col className="w-[20%]" /><col className="w-[15%]" /><col className="w-[20%]" /><col className="w-[10%]" /><col className="w-[10%]" /></colgroup>
               <thead>
                 <tr className="bg-gray-100">
                   <th className="border border-black px-2 py-1 text-left">氏名</th>
@@ -1226,6 +1226,7 @@ export default function Page() {
                   <th className="border border-black px-2 py-1 text-left">年齢</th>
                   <th className="border border-black px-2 py-1 text-left">居住</th>
                   <th className="border border-black px-2 py-1 text-left">扶養</th>
+                  <th className="border border-black px-2 py-1 text-left"></th>
                 </tr>
               </thead>
               <tbody>
@@ -1310,9 +1311,13 @@ export default function Page() {
                           }
                           className="w-full border-0 p-0 outline-none"
                         >
+                          <option value="">選択</option>
                           <option value="有">有</option>
                           <option value="無">無</option>
                         </select>
+                      </td>
+                      <td className="border border-black px-2 py-1 align-middle text-center">
+                        <button type="button" onClick={() => removeFamily(i)} className="h-7 w-7 shrink-0 rounded-full bg-red-100 text-red-600 print:hidden" title="行を削除">×</button>
                       </td>
                     </tr>
                   );
@@ -1413,6 +1418,9 @@ export default function Page() {
           .dashboard-footer,
           .toaster,
           .react-query-devtools,
+          [class*="react-query"],
+          [class*="tanstack"],
+          [data-testid*="devtools"],
           .theme-selector,
           .dropdown-menu,
           .notification-badge,

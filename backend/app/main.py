@@ -97,7 +97,7 @@ app.add_middleware(
 
 # Trusted hosts configuration
 ALLOWED_HOSTS = (
-    ["localhost", "127.0.0.1", "0.0.0.0"]
+    ["localhost", "127.0.0.1", "0.0.0.0", "backend"]
     if settings.DEBUG
     else ["uns-kikaku.com", "api.uns-kikaku.com", "www.uns-kikaku.com"]
 )

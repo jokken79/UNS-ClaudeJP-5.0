@@ -84,3 +84,21 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hide React Query DevTools during printing */
+@media print {
+  .react-query-devtools,
+  [class*="react-query"],
+  [class*="tanstack"],
+  [data-testid*="devtools"],
+  [class*="devtools"] {
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+}

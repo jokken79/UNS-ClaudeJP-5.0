@@ -260,6 +260,14 @@ def _apply_candidate_updates(candidate: Candidate, updates: Dict[str, Any]) -> N
         if value is not None and hasattr(candidate, field):
             setattr(candidate, field, value)
 
+from sqlalchemy import func, cast, Integer
+
+# ... (other imports)
+
+# Lock for thread-safe Applicant ID generation
+applicant_id_generation_lock = threading.Lock()
+
+
 def generate_rirekisho_id(db: Session) -> str:
     """Generate next Rirekisho ID in a thread-safe manner."""
     with id_generation_lock:
@@ -285,6 +293,19 @@ def generate_rirekisho_id(db: Session) -> str:
             next_num = start_num
 
         return f"{prefix}{next_num}"
+
+
+def generate_applicant_id(db: Session) -> str:
+    """Generate next numeric Applicant ID starting from 2000."""
+    with applicant_id_generation_lock:
+        max_id = db.query(func.max(cast(Candidate.applicant_id, Integer))).scalar()
+        
+        if max_id is None or max_id < 2000:
+            next_id = 2000
+        else:
+            next_id = max_id + 1
+            
+        return str(next_id)
 
 
 @router.post("/", response_model=CandidateResponse, status_code=status.HTTP_201_CREATED)
@@ -338,42 +359,46 @@ async def save_rirekisho_form(
             detail="form_data is required."
         )
 
+    # Applicant ID is now optional from the frontend
     applicant_id = _clean_string(payload.applicant_id) or _clean_string(payload.form_data.get("applicantId"))
-    if not applicant_id:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="applicantId is required."
-        )
-
     rirekisho_id = _clean_string(payload.rirekisho_id)
 
     candidate = None
     if rirekisho_id:
         candidate = db.query(Candidate).filter(Candidate.rirekisho_id == rirekisho_id).first()
-
-    if not candidate:
+    
+    if not candidate and applicant_id:
         candidate = db.query(Candidate).filter(Candidate.applicant_id == applicant_id).first()
 
     photo_data_url = payload.photo_data_url or payload.form_data.get("photoDataUrl")
+    
+    # Pass applicant_id if it exists, otherwise it will be generated for new candidates
     updates = _map_form_to_candidate(payload.form_data, applicant_id, photo_data_url)
 
     if candidate:
+        # Updating an existing candidate
         _apply_candidate_updates(candidate, updates)
         db.add(candidate)
     else:
+        # Creating a new candidate
+        new_applicant_id = generate_applicant_id(db)
+        updates['applicant_id'] = new_applicant_id
+        
         candidate_kwargs = {key: value for key, value in updates.items() if value is not None}
-        candidate = Candidate(
-            rirekisho_id=rirekisho_id or generate_rirekisho_id(db),
-            **candidate_kwargs
-        )
-        if not getattr(candidate, "applicant_id", None):
-            candidate.applicant_id = candidate.rirekisho_id
+        
+        if 'rirekisho_id' not in candidate_kwargs or not candidate_kwargs['rirekisho_id']:
+            candidate_kwargs['rirekisho_id'] = generate_rirekisho_id(db)
+
+        candidate = Candidate(**candidate_kwargs)
         db.add(candidate)
+
+    # Ensure the applicant_id for the form entry is consistent
+    final_applicant_id = candidate.applicant_id
 
     form_entry = CandidateForm(
         candidate=candidate,
         rirekisho_id=candidate.rirekisho_id,
-        applicant_id=applicant_id,
+        applicant_id=final_applicant_id,
         form_data=payload.form_data,
         photo_data_url=photo_data_url,
         azure_metadata=payload.azure_metadata,

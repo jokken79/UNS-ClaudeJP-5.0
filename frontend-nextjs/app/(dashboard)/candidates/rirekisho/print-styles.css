@@ -35,6 +35,9 @@
   .dashboard-footer,
   .toaster,
   .react-query-devtools,
+  [class*="react-query"],
+  [class*="tanstack"],
+  [data-testid*="devtools"],
   .theme-selector,
   .dropdown-menu,
   .notification-badge,
@@ -163,12 +166,14 @@
 
   th, td {
     border: 1px solid black !important;
-    padding: 1.5px 3px !important;
+    padding: 3px 5px !important; /* Increased padding for better readability */
     font-size: 8pt !important;
     vertical-align: middle !important;
     background: transparent !important;
     color: black !important;
     word-wrap: break-word !important;
+    height: 16px !important; /* Explicit row height */
+    line-height: 1.4 !important; /* Better line spacing */
   }
 
   th {
@@ -412,6 +417,33 @@
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  /* Footer logo transparency */
+  .footer-logo-container img,
+  .site-footer-content img {
+    background: transparent !important;
+    mix-blend-mode: multiply !important;
+    opacity: 1 !important;
+    filter: brightness(1) contrast(1) !important;
+  }
+
+  /* Footer alignment and sizing */
+  .site-footer-content {
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 12px !important; /* Compact gap for print */
+  }
+
+  .company-details {
+    text-align: right !important;
+    font-size: 9pt !important; /* Slightly larger for print */
+  }
+
+  .footer-logo-container img,
+  .site-footer-content img {
+    max-height: 40px !important; /* Optimized size for print */
+    width: auto !important;
   }
 }
 

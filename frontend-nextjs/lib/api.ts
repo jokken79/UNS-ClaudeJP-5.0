@@ -25,6 +25,12 @@ api.interceptors.request.use(
       config.headers = config.headers ?? {};
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Dinámicamente ajustar la baseURL para renderizado del lado del servidor (SSR) en Docker
+    if (typeof window === 'undefined') {
+      config.baseURL = 'http://backend:8000/api';
+    }
+
     return config;
   },
   (error) => {
@@ -118,7 +124,9 @@ export const employeeService = {
 // Candidate services
 export const candidateService = {
   getCandidates: async (params?: any) => {
+    console.time("getCandidates API call");
     const response = await api.get('/candidates', { params });
+    console.timeEnd("getCandidates API call");
     return response.data;
   },
 

@@ -3,7 +3,6 @@
 import { ThemeProvider } from 'next-themes';
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
 
 // Dynamic imports to prevent chunk loading errors
@@ -27,10 +26,27 @@ try {
   console.warn('Error loading custom themes:', error);
 }
 
-const ThemeManager = dynamic(() => import('@/components/ThemeManager').then(mod => ({ default: mod.ThemeManager })), {
-  ssr: false,
-  loading: () => null
-});
+const ThemeManager = dynamic(
+  () => import('@/components/ThemeManager').then(mod => ({ default: mod.ThemeManager })),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
+
+const IS_DEV = process.env.NODE_ENV === 'development';
+
+const ReactQueryDevtools = IS_DEV
+  ? dynamic(
+      () =>
+        import('@tanstack/react-query-devtools').then(mod => ({
+          default: mod.ReactQueryDevtools,
+        })),
+      {
+        ssr: false,
+      }
+    )
+  : null;
 
 // Mapa de migración de nombres de temas antiguos a nuevos
 const themesMigration: Record<string, string> = {
@@ -143,7 +159,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   },
                 }}
               />
-              <ReactQueryDevtools initialIsOpen={false} />
+              {IS_DEV && ReactQueryDevtools && (
+                <div className="print:hidden">
+                  <ReactQueryDevtools initialIsOpen={false} />
+                </div>
+              )}
             </>
           )}
         </QueryClientProvider>
