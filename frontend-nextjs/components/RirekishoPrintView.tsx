@@ -348,7 +348,7 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
       <style jsx>{`
         .rirekisho-print-container {
           width: 210mm;
-          min-height: 297mm;
+          /* min-height: 297mm; */ /* Removed to allow natural content flow and pagination */
           margin: 0 auto;
           padding: 8mm;
           background: white;
@@ -383,6 +383,11 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
           align-items: flex-start;
           gap: 4mm;
           page-break-inside: avoid; /* Keep this section from breaking */
+        }
+        
+        .basic-info-layout .info-table {
+          flex: 1; /* Make table fill remaining space */
+          min-width: 0; /* Prevent overflow in flex context */
         }
 
         .form-section h2 {
@@ -495,6 +500,7 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
             padding: 0;
             border: none;
             box-shadow: none;
+            width: 100% !important;
           }
           .info-table th,
           .info-table td {
