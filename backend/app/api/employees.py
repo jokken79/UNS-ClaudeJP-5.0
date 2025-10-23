@@ -9,12 +9,20 @@ from datetime import datetime
 import io
 
 from app.core.database import get_db
-from app.models.models import Employee, Candidate, User, CandidateStatus, Factory, Document
+from app.models.models import (
+    Employee,
+    Candidate,
+    User,
+    CandidateStatus,
+    Factory,
+    Document,
+    ContractWorker,
+    Staff,
+)
 from app.schemas.employee import (
     EmployeeCreate, EmployeeUpdate, EmployeeResponse,
     EmployeeTerminate, YukyuUpdate
 )
-from app.schemas.base import PaginatedResponse
 from app.services.auth_service import auth_service
 
 router = APIRouter()
@@ -79,6 +87,200 @@ async def create_employee(
     return new_employee
 
 
+def _paginate_response(items, total, page, page_size):
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (total + page_size - 1) // page_size,
+    }
+
+
+def _list_contract_workers(
+    *,
+    page: int,
+    page_size: int,
+    factory_id: Optional[str],
+    is_active: Optional[bool],
+    search: Optional[str],
+    db: Session,
+):
+    query = db.query(ContractWorker)
+
+    if factory_id:
+        query = query.filter(ContractWorker.factory_id == factory_id)
+    if is_active is not None:
+        query = query.filter(ContractWorker.is_active == is_active)
+    if search:
+        from sqlalchemy import or_, cast, String
+
+        search_conditions = [
+            ContractWorker.full_name_kanji.ilike(f"%{search}%"),
+            ContractWorker.full_name_kana.ilike(f"%{search}%"),
+            ContractWorker.rirekisho_id.ilike(f"%{search}%"),
+            ContractWorker.factory_id.ilike(f"%{search}%"),
+            ContractWorker.hakensaki_shain_id.ilike(f"%{search}%"),
+            ContractWorker.gender.ilike(f"%{search}%"),
+            ContractWorker.nationality.ilike(f"%{search}%"),
+            ContractWorker.address.ilike(f"%{search}%"),
+            ContractWorker.phone.ilike(f"%{search}%"),
+            ContractWorker.email.ilike(f"%{search}%"),
+            ContractWorker.postal_code.ilike(f"%{search}%"),
+            ContractWorker.assignment_location.ilike(f"%{search}%"),
+            ContractWorker.assignment_line.ilike(f"%{search}%"),
+            ContractWorker.job_description.ilike(f"%{search}%"),
+            ContractWorker.position.ilike(f"%{search}%"),
+            ContractWorker.contract_type.ilike(f"%{search}%"),
+            ContractWorker.notes.ilike(f"%{search}%"),
+            cast(ContractWorker.hakenmoto_id, String).ilike(f"%{search}%"),
+        ]
+
+        try:
+            search_num = int(search)
+            search_conditions.extend(
+                [
+                    ContractWorker.jikyu == search_num,
+                    ContractWorker.hourly_rate_charged == search_num,
+                    ContractWorker.profit_difference == search_num,
+                    ContractWorker.apartment_id == search_num,
+                ]
+            )
+        except ValueError:
+            pass
+
+        query = query.filter(or_(*search_conditions))
+
+    total = query.count()
+    workers = query.offset((page - 1) * page_size).limit(page_size).all()
+
+    items = []
+    for worker in workers:
+        worker_model = EmployeeResponse.model_validate(worker, from_attributes=True)
+        worker_model.current_status = 'active' if worker.is_active else 'terminated'
+        worker_model.contract_type = worker.contract_type or '請負'
+
+        if worker.factory_id:
+            factory = db.query(Factory).filter(Factory.factory_id == worker.factory_id).first()
+            worker_model.factory_name = factory.name if factory else None
+
+        items.append(worker_model.model_dump())
+
+    return _paginate_response(items, total, page, page_size)
+
+
+def _list_staff_members(
+    *,
+    page: int,
+    page_size: int,
+    is_active: Optional[bool],
+    search: Optional[str],
+    db: Session,
+):
+    query = db.query(Staff)
+
+    if is_active is not None:
+        query = query.filter(Staff.is_active == is_active)
+    if search:
+        from sqlalchemy import or_, cast, String
+
+        search_conditions = [
+            Staff.full_name_kanji.ilike(f"%{search}%"),
+            Staff.full_name_kana.ilike(f"%{search}%"),
+            Staff.rirekisho_id.ilike(f"%{search}%"),
+            Staff.email.ilike(f"%{search}%"),
+            Staff.phone.ilike(f"%{search}%"),
+            Staff.address.ilike(f"%{search}%"),
+            Staff.postal_code.ilike(f"%{search}%"),
+            Staff.position.ilike(f"%{search}%"),
+            Staff.department.ilike(f"%{search}%"),
+            Staff.notes.ilike(f"%{search}%"),
+            cast(Staff.staff_id, String).ilike(f"%{search}%"),
+        ]
+
+        try:
+            search_num = int(search)
+            search_conditions.extend(
+                [
+                    Staff.monthly_salary == search_num,
+                ]
+            )
+        except ValueError:
+            pass
+
+        query = query.filter(or_(*search_conditions))
+
+    total = query.count()
+    staff_members = query.offset((page - 1) * page_size).limit(page_size).all()
+
+    items = []
+    for member in staff_members:
+        employee_like = EmployeeResponse.model_validate(
+            {
+                'id': member.id,
+                'hakenmoto_id': member.staff_id,
+                'rirekisho_id': member.rirekisho_id,
+                'factory_id': None,
+                'factory_name': None,
+                'hakensaki_shain_id': None,
+                'photo_url': member.photo_url,
+                'full_name_kanji': member.full_name_kanji,
+                'full_name_kana': member.full_name_kana,
+                'date_of_birth': member.date_of_birth,
+                'gender': member.gender,
+                'nationality': member.nationality,
+                'address': member.address,
+                'phone': member.phone,
+                'email': member.email,
+                'postal_code': member.postal_code,
+                'assignment_location': None,
+                'assignment_line': None,
+                'job_description': member.department,
+                'hire_date': member.hire_date,
+                'current_hire_date': None,
+                'entry_request_date': None,
+                'termination_date': member.termination_date,
+                'jikyu': 0,
+                'jikyu_revision_date': None,
+                'hourly_rate_charged': None,
+                'billing_revision_date': None,
+                'profit_difference': None,
+                'standard_compensation': member.monthly_salary,
+                'health_insurance': member.health_insurance,
+                'nursing_insurance': member.nursing_insurance,
+                'pension_insurance': member.pension_insurance,
+                'social_insurance_date': member.social_insurance_date,
+                'visa_type': None,
+                'zairyu_expire_date': None,
+                'visa_renewal_alert': None,
+                'visa_alert_days': None,
+                'license_type': None,
+                'license_expire_date': None,
+                'commute_method': None,
+                'optional_insurance_expire': None,
+                'japanese_level': None,
+                'career_up_5years': None,
+                'apartment_id': None,
+                'apartment_start_date': None,
+                'apartment_move_out_date': None,
+                'apartment_rent': None,
+                'yukyu_total': member.yukyu_total,
+                'yukyu_used': member.yukyu_used,
+                'yukyu_remaining': member.yukyu_remaining,
+                'current_status': 'active' if member.is_active else 'terminated',
+                'is_active': member.is_active,
+                'termination_reason': member.termination_reason,
+                'notes': member.notes,
+                'contract_type': 'スタッフ',
+                'created_at': member.created_at,
+                'updated_at': member.updated_at,
+            }
+        )
+        items.append(employee_like.model_dump())
+
+    return _paginate_response(items, total, page, page_size)
+
+
 @router.get("/")
 async def list_employees(
     page: int = 1,
@@ -91,6 +293,26 @@ async def list_employees(
     db: Session = Depends(get_db)
 ):
     """List all employees"""
+
+    if contract_type == '請負':
+        return _list_contract_workers(
+            page=page,
+            page_size=page_size,
+            factory_id=factory_id,
+            is_active=is_active,
+            search=search,
+            db=db,
+        )
+
+    if contract_type == 'スタッフ':
+        return _list_staff_members(
+            page=page,
+            page_size=page_size,
+            is_active=is_active,
+            search=search,
+            db=db,
+        )
+
     query = db.query(Employee)
 
     # Hide staff (スタッフ) from non-SUPER_ADMIN users
@@ -175,13 +397,7 @@ async def list_employees(
             emp_dict['factory_name'] = factory.name if factory else None
         items.append(emp_dict)
 
-    return {
-        "items": items,
-        "total": total,
-        "page": page,
-        "page_size": page_size,
-        "total_pages": (total + page_size - 1) // page_size
-    }
+    return _paginate_response(items, total, page, page_size)
 
 
 @router.get("/{employee_id}")
