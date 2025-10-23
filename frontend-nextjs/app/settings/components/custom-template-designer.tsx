@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Sparkles, Wand2 } from 'lucide-react';
 import {
   applyTemplateToDocument,
+  defaultTemplateVariables,
   setActiveTemplateSelection,
   type TemplateVariables,
 } from '@/lib/templates';
@@ -68,27 +69,29 @@ const buildVariables = (state: typeof initialState): TemplateVariables => {
   const accent = state.accentColor;
   const surface = state.surfaceColor;
 
-  return {
-    '--layout-card-radius': radius,
-    '--layout-card-shadow': `0 ${Math.round(shadowBase)}px ${Math.round(shadowBase * 2.4)}px ${withAlpha(primary, 0.32)}`,
-    '--layout-card-border': withAlpha(primary, 0.24),
-    '--layout-card-surface': `linear-gradient(${heroAngle - 12}deg, ${withAlpha(surface, 0.96)} 0%, ${withAlpha(surface, 0.85)} 100%)`,
-    '--layout-button-radius': buttonRadius,
-    '--layout-button-shadow': `0 ${Math.round(shadowBase * 0.85)}px ${Math.round(shadowBase * 1.9)}px ${withAlpha(accent, 0.38)}`,
-    '--layout-surface-gradient': `radial-gradient(circle at 18% -8%, ${withAlpha(primary, overlayAlpha)} 0%, transparent 58%), radial-gradient(circle at 80% -6%, ${withAlpha(accent, overlayAlpha * 0.85)} 0%, transparent 62%)`,
-    '--layout-surface-overlay': withAlpha(primary, overlayAlpha * 0.42),
-    '--layout-panel-blur': blur,
-    '--layout-hero-gradient': `linear-gradient(${heroAngle}deg, ${withAlpha(primary, 0.92)} 0%, ${withAlpha(secondary, 0.85)} 50%, ${withAlpha(accent, 0.8)} 100%)`,
-    '--layout-hero-glow': `0 ${Math.round(shadowBase * 2.6)}px ${Math.round(shadowBase * 3.1)}px ${withAlpha(secondary, 0.42)}`,
-    '--layout-container-max': `${clamp(state.containerWidth, 1080, 1440)}px`,
-    '--layout-section-gap': `${clamp(state.sectionGap, 2.5, 5.5).toFixed(1)}rem`,
-    '--layout-navbar-background': withAlpha(primary, 0.62),
-    '--layout-navbar-shadow': `0 ${Math.round(shadowBase * 1.1)}px ${Math.round(shadowBase * 2.6)}px ${withAlpha(primary, 0.28)}`,
-    '--layout-divider-glow': `linear-gradient(90deg, ${withAlpha(primary, 0)} 0%, ${withAlpha(accent, 0.55)} 45%, ${withAlpha(secondary, 0)} 100%)`,
-    '--layout-list-stripe': `linear-gradient(90deg, ${withAlpha(primary, 0.18)} 0%, ${withAlpha(secondary, 0.32)} 100%)`,
-    '--layout-focus-ring': `0 0 0 4px ${withAlpha(accent, 0.45)}`,
-    '--layout-badge-glow': `0 0 0 4px ${withAlpha(accent, 0.42)}`,
-  };
+  const variables: TemplateVariables = { ...defaultTemplateVariables };
+
+  variables['--layout-card-radius'] = radius;
+  variables['--layout-card-shadow'] = `0 ${Math.round(shadowBase)}px ${Math.round(shadowBase * 2.4)}px ${withAlpha(primary, 0.32)}`;
+  variables['--layout-card-border'] = withAlpha(primary, 0.24);
+  variables['--layout-card-surface'] = `linear-gradient(${heroAngle - 12}deg, ${withAlpha(surface, 0.96)} 0%, ${withAlpha(surface, 0.85)} 100%)`;
+  variables['--layout-button-radius'] = buttonRadius;
+  variables['--layout-button-shadow'] = `0 ${Math.round(shadowBase * 0.85)}px ${Math.round(shadowBase * 1.9)}px ${withAlpha(accent, 0.38)}`;
+  variables['--layout-surface-gradient'] = `radial-gradient(circle at 18% -8%, ${withAlpha(primary, overlayAlpha)} 0%, transparent 58%), radial-gradient(circle at 80% -6%, ${withAlpha(accent, overlayAlpha * 0.85)} 0%, transparent 62%)`;
+  variables['--layout-surface-overlay'] = withAlpha(primary, overlayAlpha * 0.42);
+  variables['--layout-panel-blur'] = blur;
+  variables['--layout-hero-gradient'] = `linear-gradient(${heroAngle}deg, ${withAlpha(primary, 0.92)} 0%, ${withAlpha(secondary, 0.85)} 50%, ${withAlpha(accent, 0.8)} 100%)`;
+  variables['--layout-hero-glow'] = `0 ${Math.round(shadowBase * 2.6)}px ${Math.round(shadowBase * 3.1)}px ${withAlpha(secondary, 0.42)}`;
+  variables['--layout-container-max'] = `${clamp(state.containerWidth, 1080, 1440)}px`;
+  variables['--layout-section-gap'] = `${clamp(state.sectionGap, 2.5, 5.5).toFixed(1)}rem`;
+  variables['--layout-navbar-background'] = withAlpha(primary, 0.62);
+  variables['--layout-navbar-shadow'] = `0 ${Math.round(shadowBase * 1.1)}px ${Math.round(shadowBase * 2.6)}px ${withAlpha(primary, 0.28)}`;
+  variables['--layout-divider-glow'] = `linear-gradient(90deg, ${withAlpha(primary, 0)} 0%, ${withAlpha(accent, 0.55)} 45%, ${withAlpha(secondary, 0)} 100%)`;
+  variables['--layout-list-stripe'] = `linear-gradient(90deg, ${withAlpha(primary, 0.18)} 0%, ${withAlpha(secondary, 0.32)} 100%)`;
+  variables['--layout-focus-ring'] = `0 0 0 4px ${withAlpha(accent, 0.45)}`;
+  variables['--layout-badge-glow'] = `0 0 0 4px ${withAlpha(accent, 0.42)}`;
+
+  return variables;
 };
 
 export function CustomTemplateDesigner({ onTemplateSaved }: CustomTemplateDesignerProps) {
