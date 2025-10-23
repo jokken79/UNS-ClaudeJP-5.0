@@ -18,15 +18,16 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Link from 'next/link';
+import { authService } from '@/lib/api';
+import { useAuthStore } from '@/stores/auth-store';
 
 export function Header() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const user = useAuthStore((state) => state.user);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    // Forzar un refresco completo para asegurar que todo el estado se limpie
-    window.location.href = '/login';
+    authService.logout();
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -195,9 +196,9 @@ export function Header() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">Admin</p>
+                  <p className="text-sm font-medium leading-none">{user?.username ?? 'Admin'}</p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    admin@uns-hrapp.com
+                    {user?.email ?? 'admin@uns-hrapp.com'}
                   </p>
                 </div>
               </DropdownMenuLabel>
