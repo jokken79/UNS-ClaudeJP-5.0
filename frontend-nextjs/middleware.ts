@@ -3,10 +3,8 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-
   // Protected routes
-  const protectedRoutes = new Set([
+  const protectedRoutes = [
     '/dashboard',
     '/candidates',
     '/employees',
@@ -17,7 +15,7 @@ export function middleware(request: NextRequest) {
     '/database-management',
     '/settings',
     '/profile',
-  ]);
+  ];
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
   // Check for token in cookies (we'll set this on login)

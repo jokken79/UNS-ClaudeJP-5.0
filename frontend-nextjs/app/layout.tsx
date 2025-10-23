@@ -22,7 +22,12 @@ const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", displa
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk", display: "swap" });
 const urbanist = Urbanist({ subsets: ["latin"], variable: "--font-urbanist", display: "swap" });
 const lora = Lora({ subsets: ["latin"], variable: "--font-lora", display: "swap" });
-const poppins = Poppins({ subsets: ["latin"], variable: "--font-poppins", display: "swap" });
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
+  display: "swap",
+});
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", display: "swap" });
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", display: "swap" });
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-plus-jakarta", display: "swap" });
