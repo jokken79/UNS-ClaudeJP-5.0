@@ -1,6 +1,29 @@
 import axios from 'axios';
 
 import { useAuthStore } from '@/stores/auth-store';
+import type {
+  AuthResponse,
+  User,
+  Candidate,
+  CandidateCreateData,
+  CandidateListParams,
+  PaginatedResponse,
+  Employee,
+  EmployeeCreateData,
+  EmployeeListParams,
+  Factory,
+  FactoryCreateData,
+  TimerCard,
+  TimerCardCreateData,
+  TimerCardListParams,
+  SalaryCalculation,
+  SalaryCalculationCreateData,
+  SalaryListParams,
+  Request,
+  RequestCreateData,
+  RequestListParams,
+  DashboardStats,
+} from '@/types/api';
 
 // Normalize base URL to ensure it includes `/api` and no trailing slash
 const normalizeBaseUrl = (url: string): string => {
@@ -26,7 +49,7 @@ const getAuthToken = (): string | null => {
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
-  (config) => {
+  (config: any) => {
     const token = getAuthToken();
     if (token) {
       config.headers = config.headers ?? {};
@@ -46,15 +69,15 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => {
+  (error: unknown) => {
     return Promise.reject(error);
   }
 );
 
 // Response interceptor to handle auth errors
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  (response: any) => response,
+  async (error: any) => {
     // Log detallado para depurar errores de red y respuesta
     if (error.response) {
       console.error('Response error:', error.response.status);
@@ -84,12 +107,12 @@ api.interceptors.response.use(
 
 // Auth services
 export const authService = {
-  login: async (username: string, password: string) => {
+  login: async (username: string, password: string): Promise<AuthResponse> => {
     const formData = new FormData();
     formData.append('username', username);
     formData.append('password', password);
 
-    const response = await api.post('/auth/login', formData, {
+    const response = await api.post<AuthResponse>('/auth/login', formData, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
@@ -97,200 +120,196 @@ export const authService = {
     return response.data;
   },
 
-  logout: () => {
+  logout: (): void => {
     useAuthStore.getState().logout();
     if (typeof window !== 'undefined') {
       window.location.href = '/login';
     }
   },
 
-  getCurrentUser: async (token?: string) => {
+  getCurrentUser: async (token?: string): Promise<User> => {
     const config = token ? {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     } : {};
-    const response = await api.get('/auth/me', config);
+    const response = await api.get<User>('/auth/me', config);
     return response.data;
   }
 };
 
 // Employee services
 export const employeeService = {
-  getEmployees: async (params?: any) => {
-    const response = await api.get('/employees', { params });
+  getEmployees: async (params?: EmployeeListParams): Promise<PaginatedResponse<Employee>> => {
+    const response = await api.get<PaginatedResponse<Employee>>('/employees', { params });
     return response.data;
   },
 
-  getEmployee: async (id: string) => {
-    const response = await api.get(`/employees/${id}`);
+  getEmployee: async (id: string | number): Promise<Employee> => {
+    const response = await api.get<Employee>(`/employees/${id}`);
     return response.data;
   },
 
-  createEmployee: async (data: any) => {
-    const response = await api.post('/employees', data);
+  createEmployee: async (data: EmployeeCreateData): Promise<Employee> => {
+    const response = await api.post<Employee>('/employees', data);
     return response.data;
   },
 
-  updateEmployee: async (id: string, data: any) => {
-    const response = await api.put(`/employees/${id}`, data);
+  updateEmployee: async (id: string | number, data: Partial<EmployeeCreateData>): Promise<Employee> => {
+    const response = await api.put<Employee>(`/employees/${id}`, data);
     return response.data;
   },
 
-  deleteEmployee: async (id: string) => {
-    const response = await api.delete(`/employees/${id}`);
-    return response.data;
+  deleteEmployee: async (id: string | number): Promise<void> => {
+    await api.delete(`/employees/${id}`);
   }
 };
 
 // Candidate services
 export const candidateService = {
-  getCandidates: async (params?: any) => {
-    const response = await api.get('/candidates', { params });
+  getCandidates: async (params?: CandidateListParams): Promise<PaginatedResponse<Candidate>> => {
+    const response = await api.get<PaginatedResponse<Candidate>>('/candidates', { params });
     return response.data;
   },
 
-  getCandidate: async (id: string) => {
-    const response = await api.get(`/candidates/${id}`);
+  getCandidate: async (id: string | number): Promise<Candidate> => {
+    const response = await api.get<Candidate>(`/candidates/${id}`);
     return response.data;
   },
 
-  createCandidate: async (data: any) => {
-    const response = await api.post('/candidates', data);
+  createCandidate: async (data: CandidateCreateData): Promise<Candidate> => {
+    const response = await api.post<Candidate>('/candidates', data);
     return response.data;
   },
 
-  updateCandidate: async (id: string, data: any) => {
-    const response = await api.put(`/candidates/${id}`, data);
+  updateCandidate: async (id: string | number, data: Partial<CandidateCreateData>): Promise<Candidate> => {
+    const response = await api.put<Candidate>(`/candidates/${id}`, data);
     return response.data;
   },
 
-  deleteCandidate: async (id: string) => {
-    const response = await api.delete(`/candidates/${id}`);
+  deleteCandidate: async (id: string | number): Promise<void> => {
+    await api.delete(`/candidates/${id}`);
+  },
+
+  approveCandidate: async (id: string | number): Promise<Candidate> => {
+    const response = await api.post<Candidate>(`/candidates/${id}/approve`);
     return response.data;
   },
 
-  approveCandidate: async (id: string) => {
-    const response = await api.post(`/candidates/${id}/approve`);
-    return response.data;
-  },
-
-  rejectCandidate: async (id: string, reason: string) => {
-    const response = await api.post(`/candidates/${id}/reject`, { reason });
+  rejectCandidate: async (id: string | number, reason: string): Promise<Candidate> => {
+    const response = await api.post<Candidate>(`/candidates/${id}/reject`, { reason });
     return response.data;
   }
 };
 
 // Factory services
 export const factoryService = {
-  getFactories: async (params?: any) => {
-    const response = await api.get('/factories', { params });
+  getFactories: async (params?: Record<string, unknown>): Promise<Factory[]> => {
+    const response = await api.get<Factory[]>('/factories', { params });
     return response.data;
   },
 
-  getFactory: async (id: string) => {
-    const response = await api.get(`/factories/${id}`);
+  getFactory: async (id: string | number): Promise<Factory> => {
+    const response = await api.get<Factory>(`/factories/${id}`);
     return response.data;
   },
 
-  createFactory: async (data: any) => {
-    const response = await api.post('/factories', data);
+  createFactory: async (data: FactoryCreateData): Promise<Factory> => {
+    const response = await api.post<Factory>('/factories', data);
     return response.data;
   },
 
-  updateFactory: async (id: string, data: any) => {
-    const response = await api.put(`/factories/${id}`, data);
+  updateFactory: async (id: string | number, data: Partial<FactoryCreateData>): Promise<Factory> => {
+    const response = await api.put<Factory>(`/factories/${id}`, data);
     return response.data;
   },
 
-  deleteFactory: async (id: string) => {
-    const response = await api.delete(`/factories/${id}`);
-    return response.data;
+  deleteFactory: async (id: string | number): Promise<void> => {
+    await api.delete(`/factories/${id}`);
   }
 };
 
 // Timer Card services
 export const timerCardService = {
-  getTimerCards: async (params?: any) => {
-    const response = await api.get('/timer-cards', { params });
+  getTimerCards: async (params?: TimerCardListParams): Promise<TimerCard[]> => {
+    const response = await api.get<TimerCard[]>('/timer-cards', { params });
     return response.data;
   },
 
-  getTimerCard: async (id: string) => {
-    const response = await api.get(`/timer-cards/${id}`);
+  getTimerCard: async (id: string | number): Promise<TimerCard> => {
+    const response = await api.get<TimerCard>(`/timer-cards/${id}`);
     return response.data;
   },
 
-  createTimerCard: async (data: any) => {
-    const response = await api.post('/timer-cards', data);
+  createTimerCard: async (data: TimerCardCreateData): Promise<TimerCard> => {
+    const response = await api.post<TimerCard>('/timer-cards', data);
     return response.data;
   },
 
-  updateTimerCard: async (id: string, data: any) => {
-    const response = await api.put(`/timer-cards/${id}`, data);
+  updateTimerCard: async (id: string | number, data: Partial<TimerCardCreateData>): Promise<TimerCard> => {
+    const response = await api.put<TimerCard>(`/timer-cards/${id}`, data);
     return response.data;
   },
 
-  deleteTimerCard: async (id: string) => {
-    const response = await api.delete(`/timer-cards/${id}`);
-    return response.data;
+  deleteTimerCard: async (id: string | number): Promise<void> => {
+    await api.delete(`/timer-cards/${id}`);
   }
 };
 
 // Salary services
 export const salaryService = {
-  getSalaries: async (params?: any) => {
-    const response = await api.get('/salary', { params });
+  getSalaries: async (params?: SalaryListParams): Promise<SalaryCalculation[]> => {
+    const response = await api.get<SalaryCalculation[]>('/salary', { params });
     return response.data;
   },
 
-  getSalary: async (id: string) => {
-    const response = await api.get(`/salary/${id}`);
+  getSalary: async (id: string | number): Promise<SalaryCalculation> => {
+    const response = await api.get<SalaryCalculation>(`/salary/${id}`);
     return response.data;
   },
 
-  calculateSalary: async (data: any) => {
-    const response = await api.post('/salary/calculate', data);
+  calculateSalary: async (data: SalaryCalculationCreateData): Promise<SalaryCalculation> => {
+    const response = await api.post<SalaryCalculation>('/salary/calculate', data);
     return response.data;
   }
 };
 
 // Request services
 export const requestService = {
-  getRequests: async (params?: any) => {
-    const response = await api.get('/requests', { params });
+  getRequests: async (params?: RequestListParams): Promise<Request[]> => {
+    const response = await api.get<Request[]>('/requests', { params });
     return response.data;
   },
 
-  getRequest: async (id: string) => {
-    const response = await api.get(`/requests/${id}`);
+  getRequest: async (id: string | number): Promise<Request> => {
+    const response = await api.get<Request>(`/requests/${id}`);
     return response.data;
   },
 
-  createRequest: async (data: any) => {
-    const response = await api.post('/requests', data);
+  createRequest: async (data: RequestCreateData): Promise<Request> => {
+    const response = await api.post<Request>('/requests', data);
     return response.data;
   },
 
-  approveRequest: async (id: string) => {
-    const response = await api.post(`/requests/${id}/approve`);
+  approveRequest: async (id: string | number): Promise<Request> => {
+    const response = await api.post<Request>(`/requests/${id}/approve`);
     return response.data;
   },
 
-  rejectRequest: async (id: string, reason: string) => {
-    const response = await api.post(`/requests/${id}/reject`, { reason });
+  rejectRequest: async (id: string | number, reason: string): Promise<Request> => {
+    const response = await api.post<Request>(`/requests/${id}/reject`, { reason });
     return response.data;
   }
 };
 
 // Dashboard services
 export const dashboardService = {
-  getStats: async () => {
-    const response = await api.get('/dashboard/stats');
+  getStats: async (): Promise<DashboardStats> => {
+    const response = await api.get<DashboardStats>('/dashboard/stats');
     return response.data;
   },
 
-  getRecentActivity: async () => {
+  getRecentActivity: async (): Promise<unknown> => {
     const response = await api.get('/dashboard/recent-activity');
     return response.data;
   }
