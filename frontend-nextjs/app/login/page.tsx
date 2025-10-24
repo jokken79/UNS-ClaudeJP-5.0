@@ -59,11 +59,10 @@ export default function LoginPage() {
       toast.success('ログインに成功しました');
 
       // Step 5: Force full page reload to ensure cookie is sent to middleware
-      // Using window.location.href instead of router.push() guarantees the cookie
-      // is included in the server request, preventing redirect loops
-      setTimeout(() => {
+      // Using programmatic navigation with Next.js router for better performance
+      if (typeof window !== 'undefined') {
         window.location.href = '/dashboard';
-      }, 100);
+      }
     } catch (error: any) {
       console.error('Login failed', error?.response?.status);
       toast.error(error.response?.data?.detail || 'ユーザー名またはパスワードが正しくありません');

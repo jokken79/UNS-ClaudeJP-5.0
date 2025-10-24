@@ -1,11 +1,14 @@
 """
 Configuration settings for UNS-ClaudeJP 4.0
 """
-from pydantic import field_validator, validator
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 from typing import Optional
 import os
 import secrets
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
@@ -58,10 +61,10 @@ class Settings(BaseSettings):
     # OCR Settings
     OCR_ENABLED: bool = True
     TESSERACT_LANG: str = "jpn+eng"
-    
+
     # Gemini API (Primary OCR method)
     GEMINI_API_KEY: Optional[str] = os.getenv("GEMINI_API_KEY")
-    
+
     # Google Cloud Vision API (Backup OCR method)
     GOOGLE_CLOUD_VISION_ENABLED: bool = os.getenv("GOOGLE_CLOUD_VISION_ENABLED", "false").lower() == "true"
     GOOGLE_CLOUD_VISION_API_KEY: Optional[str] = os.getenv("GOOGLE_CLOUD_VISION_API_KEY")
@@ -71,6 +74,17 @@ class Settings(BaseSettings):
     AZURE_COMPUTER_VISION_ENDPOINT: Optional[str] = os.getenv("AZURE_COMPUTER_VISION_ENDPOINT")
     AZURE_COMPUTER_VISION_KEY: Optional[str] = os.getenv("AZURE_COMPUTER_VISION_KEY")
     AZURE_COMPUTER_VISION_API_VERSION: str = os.getenv("AZURE_COMPUTER_VISION_API_VERSION", "2023-02-01-preview")
+
+    @field_validator("OCR_ENABLED")
+    @classmethod
+    def validate_ocr_enabled(cls, v, info):
+        if v:
+            values = info.data
+            # Check if at least one OCR provider is configured
+            azure_available = bool(values.get('AZURE_COMPUTER_VISION_ENDPOINT') and values.get('AZURE_COMPUTER_VISION_KEY'))
+            if not azure_available:
+                logger.warning("OCR_ENABLED=True but no OCR providers configured. OCR will fall back to EasyOCR/Tesseract.")
+        return v
 
     # Email/SMTP Settings (for notifications)
     SMTP_SERVER: str = os.getenv("SMTP_SERVER", "smtp.gmail.com")

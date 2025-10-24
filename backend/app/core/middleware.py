@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import time
+import re
 from fastapi import HTTPException, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
@@ -41,8 +42,12 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         response.headers.setdefault("X-XSS-Protection", "1; mode=block")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
 
-        if request.headers.get("User-Agent") in {None, "", "curl", "python-requests/2.x"}:
-            log_security_event(message="Suspicious user agent", user_agent=request.headers.get("User-Agent"))
+        # Improved user-agent detection
+        user_agent = request.headers.get("User-Agent", "")
+        suspicious_patterns = [r"^curl", r"^python-requests", r"^wget", r"^libwww"]
+        is_suspicious = not user_agent or any(re.match(pattern, user_agent, re.IGNORECASE) for pattern in suspicious_patterns)
+        if is_suspicious:
+            log_security_event(message="Suspicious user agent", user_agent=user_agent)
 
         return response
 

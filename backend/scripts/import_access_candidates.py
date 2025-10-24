@@ -180,7 +180,7 @@ class CandidateImporter:
             'postal_code': get_val('郵便番号'),
             'current_address': get_val('現住所'),
             'address_banchi': get_val('番地'),
-            'building_name': get_val('物件名'),
+            'address_building': get_val('物件名'),
             'registered_address': get_val('登録住所'),
 
             # Contact Information

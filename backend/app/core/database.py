@@ -18,7 +18,9 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
-    logger.warning("DATABASE_URL is not set. Falling back to an in-memory SQLite database.")
+    if os.getenv("ENVIRONMENT") == "production":
+        raise ValueError("DATABASE_URL must be set in production environment")
+    logger.warning("DATABASE_URL not set, using SQLite in-memory (development only)")
     DATABASE_URL = "sqlite:///:memory:"
 
 

@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
 
   // Rewrite removed - frontend calls backend directly
 
-  // Headers de seguridad (CSP removido para desarrollo)
+  // Headers de seguridad con CSP
   async headers() {
     return [
       {
@@ -56,6 +56,10 @@ const nextConfig: NextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()'
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' http://localhost:8000;"
           }
         ],
       },
@@ -67,7 +71,7 @@ const nextConfig: NextConfig = {
 
   // Configuración de variables de entorno
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,

@@ -58,13 +58,15 @@ export default function OCRUploader({ onOCRComplete }: OCRUploaderProps) {
     setIsUploading(true);
     setUploadProgress(0);
 
+    let progressInterval: NodeJS.Timeout | null = null;
+
     try {
       // Simulate upload progress
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setUploadProgress((prev) => {
           const nextProgress = prev + 10;
           if (nextProgress >= 90) {
-            clearInterval(progressInterval);
+            if (progressInterval) clearInterval(progressInterval);
             return 90;
           }
           return nextProgress;
@@ -84,7 +86,7 @@ export default function OCRUploader({ onOCRComplete }: OCRUploaderProps) {
         body: formData,
       });
 
-      clearInterval(progressInterval);
+      if (progressInterval) clearInterval(progressInterval);
       setUploadProgress(100);
 
       if (!response.ok) {
@@ -100,6 +102,7 @@ export default function OCRUploader({ onOCRComplete }: OCRUploaderProps) {
         onOCRComplete(data.data);
       }
     } catch (error: any) {
+      if (progressInterval) clearInterval(progressInterval);
       toast.error(`OCR処理エラー: ${error.message}`);
       console.error('OCR processing error:', error);
     } finally {

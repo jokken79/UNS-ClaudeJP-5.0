@@ -107,7 +107,6 @@ class Candidate(Base):
     address = Column(Text)  # 住所 (principal)
     address_banchi = Column(String(100))  # 番地
     address_building = Column(String(100))  # 物件名 (Building/apartment name)
-    building_name = Column(String(100))  # 物件名
     registered_address = Column(Text)  # 登録住所
 
     # 連絡先 (Contact Information)
