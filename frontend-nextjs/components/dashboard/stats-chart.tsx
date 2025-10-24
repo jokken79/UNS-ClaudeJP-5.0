@@ -71,18 +71,38 @@ const mockData = [
   },
 ];
 
+export type TimePeriod = '7days' | '30days' | '90days' | '1year';
+
 interface StatsChartProps {
   data?: typeof mockData;
   title?: string;
   description?: string;
+  showPeriodSelector?: boolean;
+  onPeriodChange?: (period: TimePeriod) => void;
+  showExportButton?: boolean;
+  onExport?: () => void;
 }
 
 export function StatsChart({
   data = mockData,
   title = 'Tendencias del Sistema',
   description = 'Evolución de empleados, horas y nómina',
+  showPeriodSelector = true,
+  onPeriodChange,
+  showExportButton = false,
+  onExport,
 }: StatsChartProps) {
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30days');
+
+  const handlePeriodChange = (period: TimePeriod) => {
+    setSelectedPeriod(period);
+    onPeriodChange?.(period);
+  };
+
+  const handleExport = () => {
+    onExport?.();
+  };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -113,8 +133,52 @@ export function StatsChart({
   return (
     <Card className="col-span-full">
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Period Selector */}
+            {showPeriodSelector && (
+              <div className="flex items-center gap-1 border rounded-lg p-1">
+                {(['7days', '30days', '90days', '1year'] as TimePeriod[]).map((period) => {
+                  const labels = {
+                    '7days': '7D',
+                    '30days': '30D',
+                    '90days': '90D',
+                    '1year': '1A',
+                  };
+                  return (
+                    <button
+                      key={period}
+                      onClick={() => handlePeriodChange(period)}
+                      className={cn(
+                        'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+                        selectedPeriod === period
+                          ? 'bg-primary text-primary-foreground'
+                          : 'hover:bg-muted text-muted-foreground'
+                      )}
+                    >
+                      {labels[period]}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Export Button */}
+            {showExportButton && (
+              <button
+                onClick={handleExport}
+                className="px-3 py-1 text-xs font-medium rounded-md border hover:bg-muted transition-colors"
+              >
+                Exportar
+              </button>
+            )}
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

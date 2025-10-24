@@ -1,8 +1,11 @@
+'use client';
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-
+import { motion, MotionProps } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { buttonHover, buttonTap, shouldReduceMotion } from "@/lib/animations"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--layout-button-radius,0.55rem)] text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 shadow-[var(--layout-button-shadow,0_18px_45px_rgba(15,23,42,0.12))] hover:-translate-y-0.5 active:translate-y-0",
@@ -38,15 +41,37 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  /**
+   * Disable animations (for reduced motion or performance)
+   */
+  disableAnimations?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, disableAnimations = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
+    const reducedMotion = shouldReduceMotion()
+    const shouldAnimate = !disableAnimations && !reducedMotion
+
+    // If using asChild or animations disabled, use original component
+    if (asChild || !shouldAnimate) {
+      return (
+        <Comp
+          className={cn(buttonVariants({ variant, size, className }))}
+          ref={ref}
+          {...props}
+        />
+      )
+    }
+
+    // Use motion.button for animations
     return (
-      <Comp
+      <motion.button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        whileHover={buttonHover}
+        whileTap={buttonTap}
+        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
         {...props}
       />
     )
