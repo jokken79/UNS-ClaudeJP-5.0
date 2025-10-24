@@ -82,6 +82,9 @@ export default function Page() {
     family: [],
   }));
 
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingCandidateId, setEditingCandidateId] = useState<string | null>(null);
+
   const [editingRelationIndex, setEditingRelationIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const photoDataUrl = useRef<string>("");
@@ -93,6 +96,114 @@ export default function Page() {
   const [isSaving, setIsSaving] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [showPrintPreview, setShowPrintPreview] = useState(false);
+
+  // --- Load candidate data if in edit mode ---
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    const candidateId = urlParams.get('id');
+
+    if (mode === 'edit' && candidateId) {
+      setIsEditMode(true);
+      setEditingCandidateId(candidateId);
+
+      const storedData = sessionStorage.getItem('editingCandidateData');
+      if (storedData) {
+        try {
+          const candidate = JSON.parse(storedData);
+
+          // Map candidate data to form fields
+          const formData: Partial<FormDataState> = {
+            applicantId: candidate.rirekisho_id || `UNS-${candidateId}`,
+            receptionDate: candidate.reception_date || "",
+            nameKanji: candidate.full_name_kanji || "",
+            nameFurigana: candidate.full_name_kana || "",
+            birthday: candidate.date_of_birth || "",
+            age: candidate.age?.toString() || "",
+            gender: candidate.gender || "",
+            nationality: candidate.nationality || "",
+            postalCode: candidate.postal_code || "",
+            address: candidate.current_address || candidate.address || "",
+            mobile: candidate.mobile || "",
+            phone: candidate.phone || "",
+            emergencyName: candidate.emergency_contact_name || "",
+            emergencyRelation: candidate.emergency_contact_relation || "",
+            emergencyPhone: candidate.emergency_contact_phone || "",
+            visaType: candidate.residence_status || "",
+            visaPeriod: candidate.residence_expiry || "",
+            residenceCardNo: candidate.residence_card_number || "",
+            passportNo: candidate.passport_number || "",
+            passportExpiry: candidate.passport_expiry || "",
+            licenseNo: candidate.license_number || "",
+            licenseExpiry: candidate.license_expiry || "",
+            carOwner: candidate.car_ownership || "",
+            insurance: candidate.voluntary_insurance || "",
+            speakLevel: candidate.speaking_level || "",
+            listenLevel: candidate.listening_level || "",
+            kanjiReadLevel: candidate.read_kanji || "",
+            kanjiWriteLevel: candidate.write_kanji || "",
+            hiraganaReadLevel: candidate.read_hiragana || "",
+            hiraganaWriteLevel: candidate.write_hiragana || "",
+            katakanaReadLevel: candidate.read_katakana || "",
+            katakanaWriteLevel: candidate.write_katakana || "",
+            education: candidate.education || "",
+            major: candidate.major || "",
+            bloodType: candidate.blood_type || "",
+            glasses: candidate.glasses || "",
+            dominantArm: candidate.dominant_hand || "",
+            allergy: candidate.allergy_exists || "",
+            vaccine: candidate.covid_vaccine_status || "",
+            forkliftLicense: candidate.forklift_license === "有" || false,
+            jlpt: !!candidate.jlpt_level,
+            jlptLevel: candidate.jlpt_level || "",
+            commuteMethod: candidate.commute_method || "",
+            commuteTimeMin: candidate.commute_time_oneway?.toString() || "",
+            lunchPref: (candidate.lunch_preference || "昼/夜") as FormDataState["lunchPref"],
+          };
+
+          // Load family data
+          const family: FamilyEntry[] = [];
+          for (let i = 1; i <= 5; i++) {
+            const name = candidate[`family_name_${i}`];
+            const relation = candidate[`family_relation_${i}`];
+            const age = candidate[`family_age_${i}`];
+            const residence = candidate[`family_residence_${i}`];
+
+            if (name || relation || age || residence) {
+              family.push({
+                name: name || "",
+                relation: relation || "",
+                age: age?.toString() || "",
+                residence: residence || "",
+                dependent: "",
+              });
+            }
+          }
+          if (family.length > 0) {
+            formData.family = family;
+          }
+
+          setData(prev => ({ ...prev, ...formData }));
+
+          // Load photo if available
+          if (candidate.photo_data_url) {
+            photoDataUrl.current = candidate.photo_data_url;
+            setPhotoPreview(candidate.photo_data_url);
+          }
+
+          toast.success(`候補者 ${candidate.full_name_kanji || candidateId} のデータを読み込みました`);
+
+          // Clear sessionStorage after loading
+          sessionStorage.removeItem('editingCandidateData');
+        } catch (error) {
+          console.error('Failed to load candidate data:', error);
+          toast.error('候補者データの読み込みに失敗しました');
+        }
+      }
+    }
+  }, []);
 
   // --- Core Functions ---
   function onChange<K extends keyof FormDataState>(key: K, value: FormDataState[K]) {
@@ -232,38 +343,95 @@ export default function Page() {
         azureRaw: lastAzureRaw,
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/candidates/rirekisho/form`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          applicantId: data.applicantId,
-          rirekishoId: data.applicantId,
-          formData: payloadFormData,
-          photoDataUrl: photoDataUrl.current || null,
-          azureMetadata: lastAzureRaw,
-        }),
-      });
+      // If in edit mode, update the existing candidate
+      if (isEditMode && editingCandidateId) {
+        const response = await fetch(`${API_BASE_URL}/api/candidates/${editingCandidateId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            rirekisho_id: data.applicantId,
+            full_name_kanji: data.nameKanji,
+            full_name_kana: data.nameFurigana,
+            date_of_birth: data.birthday || null,
+            age: data.age ? parseInt(data.age) : null,
+            gender: data.gender,
+            nationality: data.nationality,
+            postal_code: data.postalCode,
+            current_address: data.address,
+            mobile: data.mobile,
+            phone: data.phone,
+            emergency_contact_name: data.emergencyName,
+            emergency_contact_relation: data.emergencyRelation,
+            emergency_contact_phone: data.emergencyPhone,
+            residence_status: data.visaType,
+            residence_expiry: data.visaPeriod || null,
+            residence_card_number: data.residenceCardNo,
+            passport_number: data.passportNo,
+            passport_expiry: data.passportExpiry || null,
+            license_number: data.licenseNo,
+            license_expiry: data.licenseExpiry || null,
+            car_ownership: data.carOwner,
+            voluntary_insurance: data.insurance,
+            blood_type: data.bloodType,
+            glasses: data.glasses,
+            dominant_hand: data.dominantArm,
+            allergy_exists: data.allergy,
+            covid_vaccine_status: data.vaccine,
+            forklift_license: data.forkliftLicense ? "有" : "無",
+            jlpt_level: data.jlptLevel,
+            commute_method: data.commuteMethod,
+            commute_time_oneway: data.commuteTimeMin ? parseInt(data.commuteTimeMin.replace(/[^0-9]/g, '')) : null,
+            lunch_preference: data.lunchPref,
+            major: data.major,
+            photo_data_url: photoDataUrl.current || null,
+          }),
+        });
 
-      if (!response.ok) {
-        const errorPayload = await response.json().catch(() => ({}));
-        const message = typeof errorPayload.detail === "string" ? errorPayload.detail : "データベースへの保存に失敗しました。";
-        throw new Error(message);
+        if (!response.ok) {
+          const errorPayload = await response.json().catch(() => ({}));
+          const message = typeof errorPayload.detail === "string" ? errorPayload.detail : "候補者の更新に失敗しました。";
+          throw new Error(message);
+        }
+
+        toast.success(`候補者 ${data.nameKanji || editingCandidateId} を更新しました`);
+      } else {
+        // Create new candidate
+        const response = await fetch(`${API_BASE_URL}/api/candidates/rirekisho/form`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            applicantId: data.applicantId,
+            rirekishoId: data.applicantId,
+            formData: payloadFormData,
+            photoDataUrl: photoDataUrl.current || null,
+            azureMetadata: lastAzureRaw,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorPayload = await response.json().catch(() => ({}));
+          const message = typeof errorPayload.detail === "string" ? errorPayload.detail : "データベースへの保存に失敗しました。";
+          throw new Error(message);
+        }
+
+        const savedForm = (await response.json()) as {
+          rirekisho_id?: string;
+          applicant_id?: string;
+        };
+
+        const resolvedId = savedForm?.rirekisho_id || savedForm?.applicant_id;
+        if (resolvedId) {
+          setData((prev) => ({ ...prev, applicantId: resolvedId }));
+        }
+
+        toast.success(resolvedId ? `履歴書を保存しました (ID: ${resolvedId})` : "履歴書をデータベースに保存しました。");
       }
-
-      const savedForm = (await response.json()) as {
-        rirekisho_id?: string;
-        applicant_id?: string;
-      };
-
-      const resolvedId = savedForm?.rirekisho_id || savedForm?.applicant_id;
-      if (resolvedId) {
-        setData((prev) => ({ ...prev, applicantId: resolvedId }));
-      }
-
-      toast.success(resolvedId ? `履歴書を保存しました (ID: ${resolvedId})` : "履歴書をデータベースに保存しました。");
     } catch (error) {
       console.error(error);
       toast.error(error instanceof Error ? error.message : "保存処理で予期せぬエラーが発生しました。");
@@ -556,7 +724,15 @@ export default function Page() {
   return (
     <div className={`print-form-container mx-auto max-w-[1200px] px-4 py-6 font-noto-sans-jp ${isPrinting ? 'printing' : ''}`}>
       {/* Toolbar */}
-      <div className="sticky top-0 z-10 mb-6 flex items-center justify-center gap-3 rounded-xl border bg-white/80 p-3 shadow-md backdrop-blur print:hidden">
+      <div className="sticky top-0 z-10 mb-6 rounded-xl border bg-white/80 p-3 shadow-md backdrop-blur print:hidden">
+        {isEditMode && (
+          <div className="mb-2 text-center">
+            <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+              編集モード - 候補者ID: {editingCandidateId}
+            </span>
+          </div>
+        )}
+        <div className="flex items-center justify-center gap-3">
         <button
           onClick={() => fileInputRef.current?.click()}
           className="rounded-lg border px-4 py-2 font-semibold hover:bg-gray-50"
@@ -592,8 +768,17 @@ export default function Page() {
             isSaving ? "cursor-not-allowed bg-gray-100 text-gray-400" : "hover:bg-gray-50"
           }`}
         >
-          {isSaving ? "保存中..." : "データベース保存"}
+          {isSaving ? "保存中..." : isEditMode ? "更新" : "データベース保存"}
         </button>
+        {isEditMode && (
+          <button
+            onClick={() => window.location.href = '/candidates'}
+            className="rounded-lg border border-gray-300 px-4 py-2 font-semibold transition hover:bg-gray-50"
+          >
+            キャンセル
+          </button>
+        )}
+        </div>
       </div>
 
       {showAzurePanel && (

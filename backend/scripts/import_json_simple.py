@@ -6,6 +6,7 @@ Only maps existing fields to avoid errors
 
 import json
 import sys
+import base64
 from datetime import datetime, date
 
 sys.path.insert(0, '/app')
@@ -16,6 +17,62 @@ from app.models.models import Candidate
 # File paths
 CANDIDATES_JSON = "/app/access_candidates_data.json"
 PHOTO_MAPPINGS_JSON = "/app/access_photo_mappings.json"
+
+
+def clean_photo_data(photo_data_url):
+    """
+    Clean photo data URL by removing garbage before JPEG/PNG markers.
+
+    Args:
+        photo_data_url: Data URL string (e.g., "data:image/jpeg;base64,...")
+
+    Returns:
+        Cleaned data URL string or original if not applicable
+    """
+    if not photo_data_url or not isinstance(photo_data_url, str):
+        return photo_data_url
+
+    # Check if it's a data URL with base64 encoding
+    if photo_data_url.startswith("data:image/jpeg;base64,"):
+        prefix = "data:image/jpeg;base64,"
+        image_type = "jpeg"
+    elif photo_data_url.startswith("data:image/png;base64,"):
+        prefix = "data:image/png;base64,"
+        image_type = "png"
+    else:
+        return photo_data_url
+
+    try:
+        # Extract base64 part
+        base64_data = photo_data_url[len(prefix):]
+
+        # Decode to bytes
+        image_bytes = base64.b64decode(base64_data)
+
+        # Define image markers
+        if image_type == "jpeg":
+            marker = b'\xff\xd8\xff'  # JPEG marker
+        else:  # png
+            marker = b'\x89PNG'  # PNG marker
+
+        # Find marker position
+        marker_pos = image_bytes.find(marker)
+
+        if marker_pos > 0:
+            # Marker found but not at start - clean it
+            cleaned_bytes = image_bytes[marker_pos:]
+            cleaned_base64 = base64.b64encode(cleaned_bytes).decode('utf-8')
+            return f"{prefix}{cleaned_base64}"
+        elif marker_pos == 0:
+            # Marker already at start - no cleaning needed
+            return photo_data_url
+        else:
+            # Marker not found - return original (might be corrupted beyond repair)
+            return photo_data_url
+
+    except Exception as e:
+        # If any error occurs during cleaning, return original
+        return photo_data_url
 
 
 def load_photo_mappings():
@@ -70,10 +127,19 @@ def parse_age(value):
     return None
 
 
-def map_simple(row, photo_mappings):
+def map_simple(row, photo_mappings, photo_cleaned_counter):
     """Map only existing fields"""
     rid_int = row.get('履歴書ID')
     rid = str(rid_int) if rid_int else None
+
+    # Get and clean photo data
+    photo_data_url = photo_mappings.get(rid_int) if rid_int else None
+    if photo_data_url:
+        original_photo = photo_data_url
+        cleaned_photo = clean_photo_data(photo_data_url)
+        if cleaned_photo != original_photo:
+            photo_cleaned_counter['count'] += 1
+        photo_data_url = cleaned_photo
 
     return {
         # Basic
@@ -85,17 +151,17 @@ def map_simple(row, photo_mappings):
         'full_name_roman': row.get('氏名（ローマ字)'),
         'gender': row.get('性別'),
         'date_of_birth': parse_date(row.get('生年月日')),
-        'photo_data_url': photo_mappings.get(rid_int) if rid_int else None,
+        'photo_data_url': photo_data_url,
         'nationality': row.get('国籍'),
         'marital_status': row.get('配偶'),
 
-        # Address
+        # Address - Japanese 3-part system
         'postal_code': row.get('〒番号'),
-        'current_address': row.get('県住所'),
-        'address': row.get('番地'),
-        'address_banchi': row.get('番地'),
-        'address_building': row.get('建物名'),
-        'building_name': row.get('建物名'),
+        'current_address': row.get('現住所'),  # 現住所 - Base address from postal code
+        'address_banchi': row.get('番地'),  # 番地 - Block/lot number
+        'address_building': row.get('物件名'),  # 物件名 - Building/apartment name
+        'building_name': row.get('物件名'),  # Legacy field (same as address_building)
+        'address': None,  # Will be set if needed (kept for compatibility)
         'registered_address': row.get('登録住所'),
         'phone': row.get('電話番号'),
         'mobile': row.get('携帯電話'),
@@ -242,6 +308,7 @@ def import_candidates():
     imported = 0
     skipped = 0
     errors = 0
+    photo_cleaned_counter = {'count': 0}
 
     try:
         for i, row in enumerate(candidates_data, 1):
@@ -260,8 +327,8 @@ def import_candidates():
                         print(f"  Skipped {skipped} duplicates...")
                     continue
 
-                # Map
-                data = map_simple(row, photo_mappings)
+                # Map (with photo cleaning)
+                data = map_simple(row, photo_mappings, photo_cleaned_counter)
 
                 # Create
                 candidate = Candidate(**data)
@@ -287,6 +354,7 @@ def import_candidates():
         print(f"Skipped (duplicates): {skipped}")
         print(f"Errors: {errors}")
         print(f"Photos attached: {sum(1 for d in candidates_data if photo_mappings.get(d.get('履歴書ID')))}")
+        print(f"Photos cleaned: {photo_cleaned_counter['count']}")
         print("=" * 80)
 
     finally:

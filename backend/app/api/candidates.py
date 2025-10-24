@@ -418,11 +418,13 @@ async def list_candidates(
     page_size: int = 20,
     status_filter: Optional[CandidateStatus] = None,
     search: Optional[str] = None,
+    sort: Optional[str] = None,
     current_user: User = Depends(auth_service.get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """
     List all candidates with pagination
+    sort options: 'newest' (default), 'oldest'
     """
     query = db.query(Candidate)
 
@@ -438,14 +440,23 @@ async def list_candidates(
             (Candidate.rirekisho_id.ilike(f"%{search}%"))
         )
 
+    # Apply sorting
+    if sort == "oldest":
+        query = query.order_by(Candidate.created_at.asc())
+    else:  # default to newest
+        query = query.order_by(Candidate.created_at.desc())
+
     # Get total count
     total = query.count()
 
     # Apply pagination
     candidates = query.offset((page - 1) * page_size).limit(page_size).all()
 
+    # Convert SQLAlchemy objects to Pydantic models
+    items = [CandidateResponse.model_validate(c) for c in candidates]
+
     return {
-        "items": candidates,
+        "items": items,
         "total": total,
         "page": page,
         "page_size": page_size,
@@ -639,6 +650,7 @@ async def approve_candidate(
             last_employee = db.query(Employee).order_by(Employee.hakenmoto_id.desc()).first()
             next_hakenmoto_id = (last_employee.hakenmoto_id + 1) if last_employee else 1
 
+            # Keep the 3-part Japanese address structure
             address_parts = [
                 candidate.current_address,
                 candidate.address_banchi,
@@ -662,6 +674,9 @@ async def approve_candidate(
                 zairyu_card_number=candidate.residence_card_number,
                 zairyu_expire_date=candidate.residence_expiry,
                 address=candidate_address,
+                current_address=candidate.current_address,  # 現住所 - Base address
+                address_banchi=candidate.address_banchi,  # 番地 - Block/lot number
+                address_building=candidate.building_name,  # 物件名 - Building name
                 postal_code=candidate.postal_code,
                 phone=candidate.mobile or candidate.phone,
                 email=candidate.email,

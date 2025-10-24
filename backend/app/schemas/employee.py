@@ -16,6 +16,9 @@ class EmployeeBase(BaseModel):
     zairyu_card_number: Optional[str] = None
     zairyu_expire_date: Optional[date] = None
     address: Optional[str] = None
+    current_address: Optional[str] = None  # 現住所 - Base address
+    address_banchi: Optional[str] = None  # 番地 - Block/lot number
+    address_building: Optional[str] = None  # 物件名 - Building name
     phone: Optional[str] = None
     email: Optional[EmailStr] = None
     emergency_contact: Optional[str] = None
@@ -69,6 +72,9 @@ class EmployeeResponse(EmployeeBase):
     photo_url: Optional[str] = None  # Added photo
     position: Optional[str]
     contract_type: Optional[str]
+    current_address: Optional[str] = None  # 現住所 - Base address
+    address_banchi: Optional[str] = None  # 番地 - Block/lot number
+    address_building: Optional[str] = None  # 物件名 - Building name
 
     # Assignment information
     assignment_location: Optional[str]  # 配属先

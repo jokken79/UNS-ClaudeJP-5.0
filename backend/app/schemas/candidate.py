@@ -20,6 +20,7 @@ class CandidateBase(BaseModel):
     gender: Optional[str] = None
     date_of_birth: Optional[date] = None
     photo_url: Optional[str] = None
+    photo_data_url: Optional[str] = None  # Base64 photo data
     nationality: Optional[str] = None
     marital_status: Optional[str] = None
     hire_date: Optional[date] = None

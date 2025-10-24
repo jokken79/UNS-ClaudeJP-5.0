@@ -51,6 +51,8 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
     relationOptions: ["妻", "長男", "次男", "息子", "子", "長女", "次女", "娘", "母", "父", "その他"],
   };
 
+  const applicantId = data?.applicantId ?? data?.applicant_id ?? "";
+
   return (
     <div className="rirekisho-print-container">
       {/* Header */}
@@ -349,7 +351,7 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
       </div>
 
       <div className="applicant-id-footer">
-        ID: {data.applicant_id}
+        ID: {applicantId}
       </div>
 
       <style jsx>{`

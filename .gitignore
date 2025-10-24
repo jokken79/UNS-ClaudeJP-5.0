@@ -115,8 +115,15 @@ ocr_rirekisho_results.json
 # Allow tracked backend tests
 !backend/tests/
 !backend/tests/test_*.py
-"# Archivos grandes de datos de Access" 
-"access_photo_mappings.json" 
-"access_candidates_data.json" 
-"backend/access_photo_mappings.json" 
-"backend/access_candidates_data.json" 
+
+# ========================================
+# Access Import Data (Large Files)
+# ========================================
+access_photo_mappings.json
+access_candidates_data.json
+backend/access_photo_mappings.json
+backend/access_candidates_data.json
+candidate-photos-*.png
+stuck_request.txt
+reinstalar_log.txt
+scripts/reinstalar_log.txt 

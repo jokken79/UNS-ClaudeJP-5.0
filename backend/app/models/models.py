@@ -376,6 +376,9 @@ class Employee(Base):
 
     # Contact information
     address = Column(Text)
+    current_address = Column(String)  # 現住所 - Base address from postal code
+    address_banchi = Column(String)  # 番地 - Block/lot number
+    address_building = Column(String)  # 物件名 - Building/apartment name
     phone = Column(String(20))
     email = Column(String(100))
     emergency_contact_name = Column(String(100))

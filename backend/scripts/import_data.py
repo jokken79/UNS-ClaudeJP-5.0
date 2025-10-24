@@ -308,6 +308,9 @@ def import_haken_employees(db: Session):
                     visa_type=get_str('ビザ種類'),
                     postal_code=get_str('〒'),
                     address=get_str('住所'),
+                    current_address=get_str('現住所'),  # 現住所 - Base address
+                    address_banchi=get_str('番地'),  # 番地 - Block/lot number
+                    address_building=get_str('物件名'),  # 物件名 - Building name
                     phone=None,
                     email=None,
                     # Employment

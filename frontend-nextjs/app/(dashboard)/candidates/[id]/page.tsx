@@ -35,6 +35,7 @@ interface Candidate {
   address?: string;
   status?: string;
   photo_url?: string;
+  photo_data_url?: string;
 
   // Visa/Residence
   residence_status?: string;
@@ -208,9 +209,9 @@ export default function CandidateDetailPage() {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
               <div className="flex flex-col items-center">
                 <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center overflow-hidden mb-4">
-                  {candidate.photo_url ? (
+                  {(candidate.photo_data_url || candidate.photo_url) ? (
                     <img
-                      src={candidate.photo_url}
+                      src={candidate.photo_data_url || candidate.photo_url}
                       alt="候補者写真"
                       className="w-full h-full object-cover"
                     />
