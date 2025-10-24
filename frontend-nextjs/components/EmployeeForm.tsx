@@ -21,6 +21,8 @@ interface EmployeeFormData {
   gender: string;
   nationality: string;
   address: string;
+  address_banchi: string;
+  address_building: string;
   phone: string;
   email: string;
   postal_code: string;
@@ -93,6 +95,8 @@ export default function EmployeeForm({ employeeId, isEdit = false }: EmployeeFor
     gender: '男',
     nationality: '',
     address: '',
+    address_banchi: '',
+    address_building: '',
     phone: '',
     email: '',
     postal_code: '',
@@ -146,6 +150,8 @@ export default function EmployeeForm({ employeeId, isEdit = false }: EmployeeFor
         gender: employee.gender || '男',
         nationality: employee.nationality || '',
         address: employee.address || '',
+        address_banchi: employee.address_banchi || '',
+        address_building: employee.address_building || '',
         phone: employee.phone || '',
         email: employee.email || '',
         postal_code: employee.postal_code || '',
@@ -274,6 +280,8 @@ export default function EmployeeForm({ employeeId, isEdit = false }: EmployeeFor
         gender: formData.gender || null,
         nationality: formData.nationality || null,
         address: formData.address || null,
+        address_banchi: formData.address_banchi || null,
+        address_building: formData.address_building || null,
         phone: formData.phone || null,
         email: formData.email || null,
         postal_code: formData.postal_code || null,
@@ -504,14 +512,42 @@ export default function EmployeeForm({ employeeId, isEdit = false }: EmployeeFor
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    住所
+                    現住所
                   </label>
-                  <textarea
+                  <input
+                    type="text"
                     name="address"
                     value={formData.address}
                     onChange={handleChange}
-                    rows={2}
                     placeholder="愛知県名古屋市..."
+                    className="block w-full px-4 py-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    番地
+                  </label>
+                  <input
+                    type="text"
+                    name="address_banchi"
+                    value={formData.address_banchi}
+                    onChange={handleChange}
+                    placeholder="1-2-3"
+                    className="block w-full px-4 py-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    物件名
+                  </label>
+                  <input
+                    type="text"
+                    name="address_building"
+                    value={formData.address_building}
+                    onChange={handleChange}
+                    placeholder="マンション名・号室"
                     className="block w-full px-4 py-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                   />
                 </div>
