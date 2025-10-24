@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useEffect } from "react";
 import { useTheme } from "next-themes";
 
@@ -28,6 +29,7 @@ const themeAliases: Record<string, string> = {
 
 export function ThemeManager() {
   const { theme } = useTheme();
+  const [isTransitioning, setIsTransitioning] = React.useState(false);
 
   useEffect(() => {
     if (!theme) return;
@@ -46,10 +48,20 @@ export function ThemeManager() {
       }
 
       if (selectedTheme) {
+        // Start transition
+        setIsTransitioning(true);
+        root.setAttribute('data-theme-transitioning', 'true');
+
+        // Apply theme colors with smooth transition
         Object.entries(selectedTheme.colors).forEach(([key, value]) => {
-          // Type assertion to fix TypeScript error
           root.style.setProperty(key, value as string);
         });
+
+        // End transition after animation completes
+        setTimeout(() => {
+          setIsTransitioning(false);
+          root.removeAttribute('data-theme-transitioning');
+        }, 300);
       } else if (themes.length > 0) {
         // Fallback to default if theme not found
         Object.keys(themes[0].colors).forEach((key) => {

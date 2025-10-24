@@ -20,11 +20,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { authService } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth-store';
+import { motion, AnimatePresence } from 'framer-motion';
+import { staggerFast, fadeInDown, shouldReduceMotion } from '@/lib/animations';
 
 export function Header() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const user = useAuthStore((state) => state.user);
+  const reducedMotion = shouldReduceMotion();
 
   const handleLogout = () => {
     authService.logout();
@@ -75,7 +78,12 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <motion.header
+      className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      initial={!reducedMotion ? { y: -100 } : undefined}
+      animate={!reducedMotion ? { y: 0 } : undefined}
+      transition={!reducedMotion ? { type: 'spring', stiffness: 300, damping: 30 } : undefined}
+    >
       <div className="flex h-16 items-center gap-4 px-6">
         {/* MENÚ DE NAVEGACIÓN TEMPORAL */}
         <DropdownMenu>
@@ -87,21 +95,34 @@ export function Header() {
           <DropdownMenuContent align="start" className="w-56">
             <DropdownMenuLabel>Navegación</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {navItems.map((item) => {
+            {navItems.map((item, index) => {
               const Icon = item.icon;
               return (
-                <DropdownMenuItem key={item.href} asChild>
-                  <Link href={item.href} className="flex items-center gap-2">
-                    <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </Link>
-                </DropdownMenuItem>
+                <motion.div
+                  key={item.href}
+                  initial={!reducedMotion ? { opacity: 0, x: -20 } : undefined}
+                  animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
+                  transition={!reducedMotion ? { delay: index * 0.05 } : undefined}
+                >
+                  <DropdownMenuItem asChild>
+                    <Link href={item.href} className="flex items-center gap-2">
+                      <Icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </motion.div>
               );
             })}
           </DropdownMenuContent>
         </DropdownMenu>
         {/* Barra de Búsqueda */}
-        <form onSubmit={handleSearch} className="flex-1 max-w-md">
+        <motion.form
+          onSubmit={handleSearch}
+          className="flex-1 max-w-md"
+          initial={!reducedMotion ? { opacity: 0, scale: 0.95 } : undefined}
+          animate={!reducedMotion ? { opacity: 1, scale: 1 } : undefined}
+          transition={!reducedMotion ? { delay: 0.1 } : undefined}
+        >
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -111,7 +132,7 @@ export function Header() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-        </form>
+        </motion.form>
 
         {/* Acciones del Header */}
         <div className="flex items-center gap-2">
@@ -144,31 +165,45 @@ export function Header() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <div className="max-h-[300px] overflow-y-auto">
-                {notifications.map((notification) => (
-                  <DropdownMenuItem
+                {notifications.map((notification, index) => (
+                  <motion.div
                     key={notification.id}
-                    className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                    initial={!reducedMotion ? { opacity: 0, x: -20 } : undefined}
+                    animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
+                    transition={!reducedMotion ? { delay: index * 0.05 } : undefined}
                   >
-                    <div className="flex items-center gap-2 w-full">
-                      <div
-                        className={cn(
-                          'h-2 w-2 rounded-full',
-                          notification.unread ? 'bg-blue-600' : 'bg-transparent'
-                        )}
-                      />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium leading-none">
-                          {notification.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {notification.description}
-                        </p>
-                        <p className="text-xs text-muted-foreground/70 mt-1">
-                          {notification.time}
-                        </p>
+                    <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
+                      <div className="flex items-center gap-2 w-full">
+                        <motion.div
+                          className={cn(
+                            'h-2 w-2 rounded-full',
+                            notification.unread ? 'bg-blue-600' : 'bg-transparent'
+                          )}
+                          animate={
+                            !reducedMotion && notification.unread
+                              ? { scale: [1, 1.2, 1] }
+                              : undefined
+                          }
+                          transition={
+                            !reducedMotion && notification.unread
+                              ? { duration: 2, repeat: Infinity }
+                              : undefined
+                          }
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium leading-none">
+                            {notification.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {notification.description}
+                          </p>
+                          <p className="text-xs text-muted-foreground/70 mt-1">
+                            {notification.time}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </DropdownMenuItem>
+                    </DropdownMenuItem>
+                  </motion.div>
                 ))}
               </div>
               <DropdownMenuSeparator />
@@ -223,6 +258,6 @@ export function Header() {
           </DropdownMenu>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }

@@ -14,6 +14,10 @@ import {
   HandThumbDownIcon
 } from '@heroicons/react/24/outline';
 import { candidateService } from '@/lib/api';
+import { SkeletonListItem } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/empty-state';
+import { ErrorState } from '@/components/error-state';
+import { useDelayedLoading, getErrorType } from '@/lib/loading-utils';
 
 interface Candidate {
   id: number;
@@ -47,7 +51,7 @@ export default function CandidatesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
-  const { data, isLoading, refetch } = useQuery<CandidatesResponse>({
+  const { data, isLoading, error, refetch } = useQuery<CandidatesResponse>({
     queryKey: ['candidates', currentPage, statusFilter, searchTerm, sortOrder, pageSize],
     queryFn: async () => {
       const params: any = {
@@ -81,7 +85,11 @@ export default function CandidatesPage() {
 
       return result;
     },
+    retry: 1,
   });
+
+  // Smart delayed loading to prevent flashing
+  const showLoading = useDelayedLoading(isLoading, 200);
 
   const candidates = data?.items || [];
   const total = data?.total || 0;
@@ -229,39 +237,52 @@ export default function CandidatesPage() {
           </p>
         </div>
 
-        {/* Candidates Grid */}
-        {isLoading ? (
+        {/* Error State */}
+        {error && !showLoading && (
+          <ErrorState
+            type={getErrorType(error)}
+            title="Failed to Load Candidates"
+            message="Unable to fetch candidate data. Please try again."
+            details={error}
+            onRetry={refetch}
+            showRetry={true}
+            showGoBack={false}
+          />
+        )}
+
+        {/* Loading State - Using staggered skeleton items */}
+        {showLoading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-white rounded-xl shadow-sm p-6 animate-pulse">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="h-3 bg-gray-200 rounded"></div>
-                  <div className="h-3 bg-gray-200 rounded w-4/5"></div>
-                </div>
+            {[...Array(pageSize)].map((_, i) => (
+              <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200">
+                <SkeletonListItem
+                  variant="shimmer"
+                  withAvatar={true}
+                  className="p-6"
+                />
               </div>
             ))}
           </div>
-        ) : candidates.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <UserPlusIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">候補者がいません</h3>
-            <p className="text-gray-600 mb-6">検索条件を変更するか、新しい候補者を登録してください</p>
-            <button
-              onClick={() => router.push('/candidates/new')}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
-            >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              新規候補者登録
-            </button>
-          </div>
-        ) : (
+        )}
+
+        {/* Empty State */}
+        {!showLoading && !error && candidates.length === 0 && (
+          <EmptyState
+            variant="no-results"
+            icon={<UserPlusIcon className="w-12 h-12 text-blue-500" />}
+            title="候補者がいません"
+            description="検索条件を変更するか、新しい候補者を登録してください"
+            action={{
+              label: '新規候補者登録',
+              onClick: () => router.push('/candidates/new'),
+              icon: PlusIcon,
+              variant: 'default',
+            }}
+          />
+        )}
+
+        {/* Candidates Grid */}
+        {!showLoading && !error && candidates.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {candidates.map((candidate) => {
               // Debug: Log photo status for each candidate

@@ -771,6 +771,291 @@ export const templates: TemplateDefinition[] = [
       "--layout-badge-glow": '0 0 0 4px rgba(249, 115, 22, 0.4)'
     })
   },
+  {
+    id: 'bento-grid-minimal',
+    name: 'Bento Grid Minimalist',
+    tagline: 'Apple-inspired clean aesthetics',
+    description: 'Ultra-clean design inspired by Apple with grid-based layouts, large card radius, and SF Pro-like typography. Perfect for modern product showcases.',
+    category: 'Minimalist',
+    price: '$215',
+    features: [
+      'Large card radius (24px) with subtle shadows',
+      'Clean white/black color scheme with Apple blue accents',
+      'Grid-based Bento layout system',
+      'Premium Inter/Space Grotesk typography'
+    ],
+    fonts: {
+      heading: 'Inter',
+      body: 'Inter',
+      ui: 'Space Grotesk',
+    },
+    iconography: ['Lucide Line Minimal', 'SF Symbols Style', 'Apple-inspired Icons'],
+    buttonStyles: ['Minimal Primary', 'Ghost Secondary', 'Borderless Text', 'Icon Only'],
+    palette: {
+      primary: '#000000',
+      secondary: '#1D1D1F',
+      accent: '#0071E3',
+      neutral: '#F5F5F7',
+      background: '#FFFFFF'
+    },
+    preview: {
+      gradient: 'linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 113, 227, 0.05) 100%)',
+      spotlight: 'radial-gradient(circle at 50% 0%, rgba(0, 113, 227, 0.08), transparent 70%)',
+      accentShape: 'radial-gradient(circle at 80% 50%, rgba(0, 0, 0, 0.03), transparent 60%)'
+    },
+    variables: withVariables({
+      "--layout-card-radius": '24px',
+      "--layout-card-shadow": '0 2px 16px rgba(0, 0, 0, 0.06)',
+      "--layout-card-border": 'rgba(0, 0, 0, 0.06)',
+      "--layout-card-surface": 'linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(245,245,247,0.95) 100%)',
+      "--layout-button-radius": '12px',
+      "--layout-button-shadow": '0 1px 3px rgba(0, 113, 227, 0.12)',
+      "--layout-font-heading": 'var(--font-inter)',
+      "--layout-font-body": 'var(--font-inter)',
+      "--layout-font-ui": 'var(--font-space-grotesk)',
+      "--layout-surface-gradient": 'radial-gradient(circle at 50% 0%, rgba(0, 113, 227, 0.02), transparent 80%)',
+      "--layout-surface-overlay": 'rgba(255,255,255,0.85)',
+      "--layout-panel-blur": '20px',
+      "--layout-hero-gradient": 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(245,245,247,0.95) 100%)',
+      "--layout-hero-glow": '0 8px 32px rgba(0, 113, 227, 0.08)',
+      "--layout-container-max": '1280px',
+      "--layout-section-gap": '4rem',
+      "--layout-navbar-background": 'rgba(255, 255, 255, 0.72)',
+      "--layout-navbar-shadow": '0 1px 0 rgba(0, 0, 0, 0.04)',
+      "--layout-divider-glow": 'linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.06) 50%, rgba(0,0,0,0) 100%)',
+      "--layout-list-stripe": 'linear-gradient(90deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.01) 100%)',
+      "--layout-focus-ring": '0 0 0 4px rgba(0, 113, 227, 0.2)',
+      "--layout-badge-glow": '0 0 0 3px rgba(0, 113, 227, 0.15)'
+    })
+  },
+  {
+    id: 'gradient-mesh-futurism',
+    name: 'Gradient Mesh Futurism',
+    tagline: 'Vibrant multi-color mesh gradients',
+    description: 'Cutting-edge design with mesh gradients, glassmorphism with heavy blur, and vibrant purple-to-cyan color schemes. Perfect for tech startups and AI products.',
+    category: 'Futurista',
+    price: '$225',
+    features: [
+      'Multi-color mesh gradient backgrounds',
+      'Heavy glassmorphism with 32px blur',
+      'Purple to cyan gradient color system',
+      'Futuristic tech aesthetic with glow effects'
+    ],
+    fonts: {
+      heading: 'Space Grotesk',
+      body: 'Inter',
+      ui: 'Manrope',
+    },
+    iconography: ['Lucide Gradient', 'Heroicons Tech', 'Phosphor Futuristic'],
+    buttonStyles: ['Gradient Mesh CTA', 'Glass Outline', 'Glow Primary', 'Holographic Secondary'],
+    palette: {
+      primary: '#8B5CF6',
+      secondary: '#7C3AED',
+      accent: '#06B6D4',
+      neutral: '#F59E0B',
+      background: '#0F172A'
+    },
+    preview: {
+      gradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.9) 0%, rgba(124, 58, 237, 0.85) 35%, rgba(6, 182, 212, 0.9) 70%, rgba(245, 158, 11, 0.75) 100%)',
+      spotlight: 'radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.6), transparent 50%)',
+      accentShape: 'radial-gradient(circle at 70% 80%, rgba(6, 182, 212, 0.5), transparent 50%)'
+    },
+    variables: withVariables({
+      "--layout-card-radius": '24px',
+      "--layout-card-shadow": '0 25px 50px -12px rgba(139, 92, 246, 0.25)',
+      "--layout-card-border": 'rgba(255, 255, 255, 0.18)',
+      "--layout-card-surface": 'linear-gradient(145deg, rgba(139, 92, 246, 0.15) 0%, rgba(6, 182, 212, 0.12) 100%)',
+      "--layout-button-radius": '16px',
+      "--layout-button-shadow": '0 20px 40px rgba(139, 92, 246, 0.4)',
+      "--layout-font-heading": 'var(--font-space-grotesk)',
+      "--layout-font-body": 'var(--font-inter)',
+      "--layout-font-ui": 'var(--font-manrope)',
+      "--layout-surface-gradient": 'radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.4) 0%, transparent 50%), radial-gradient(at 50% 50%, rgba(124, 58, 237, 0.3) 0%, transparent 50%), radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.35) 0%, transparent 50%)',
+      "--layout-surface-overlay": 'rgba(15, 23, 42, 0.4)',
+      "--layout-panel-blur": '32px',
+      "--layout-hero-gradient": 'linear-gradient(135deg, rgba(139,92,246,0.9) 0%, rgba(124,58,237,0.85) 25%, rgba(168,85,247,0.8) 50%, rgba(6,182,212,0.85) 75%, rgba(245,158,11,0.75) 100%)',
+      "--layout-hero-glow": '0 0 120px rgba(139, 92, 246, 0.6)',
+      "--layout-container-max": '1320px',
+      "--layout-section-gap": '5rem',
+      "--layout-navbar-background": 'rgba(15, 23, 42, 0.6)',
+      "--layout-navbar-shadow": '0 10px 40px rgba(139, 92, 246, 0.3)',
+      "--layout-divider-glow": 'linear-gradient(90deg, rgba(139,92,246,0) 0%, rgba(139,92,246,0.8) 30%, rgba(6,182,212,0.8) 70%, rgba(6,182,212,0) 100%)',
+      "--layout-list-stripe": 'linear-gradient(90deg, rgba(139, 92, 246, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%)',
+      "--layout-focus-ring": '0 0 0 4px rgba(139, 92, 246, 0.5)',
+      "--layout-badge-glow": '0 0 20px rgba(139, 92, 246, 0.6)'
+    })
+  },
+  {
+    id: 'neo-brutalism',
+    name: 'Neo-Brutalism',
+    tagline: 'Bold borders and high contrast design',
+    description: 'Brutal design trend with thick black borders, sharp corners, high-contrast colors, and offset drop shadows. Makes a strong visual statement.',
+    category: 'Experimental',
+    price: '$199',
+    features: [
+      'Bold 3-4px black borders everywhere',
+      'High contrast hot pink and neon green colors',
+      'Sharp 2px corners with offset shadows (8px, 8px)',
+      'Bright yellow/white backgrounds'
+    ],
+    fonts: {
+      heading: 'Space Grotesk',
+      body: 'Space Grotesk',
+      ui: 'Space Grotesk',
+    },
+    iconography: ['Lucide Bold', 'Heroicons Solid', 'Bootstrap Icons'],
+    buttonStyles: ['Brutal Primary', 'Bold Outline', 'Offset Shadow CTA', 'High Contrast'],
+    palette: {
+      primary: '#FF3366',
+      secondary: '#00FF94',
+      accent: '#FFEE00',
+      neutral: '#000000',
+      background: '#FFFFFF'
+    },
+    preview: {
+      gradient: 'linear-gradient(135deg, #FFEE00 0%, #FF3366 50%, #00FF94 100%)',
+      spotlight: 'none',
+      accentShape: 'none'
+    },
+    variables: withVariables({
+      "--layout-card-radius": '2px',
+      "--layout-card-shadow": '8px 8px 0 rgba(0, 0, 0, 1)',
+      "--layout-card-border": 'rgba(0, 0, 0, 1)',
+      "--layout-card-surface": 'linear-gradient(145deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 100%)',
+      "--layout-button-radius": '2px',
+      "--layout-button-shadow": '6px 6px 0 rgba(0, 0, 0, 1)',
+      "--layout-font-heading": 'var(--font-space-grotesk)',
+      "--layout-font-body": 'var(--font-space-grotesk)',
+      "--layout-font-ui": 'var(--font-space-grotesk)',
+      "--layout-surface-gradient": 'none',
+      "--layout-surface-overlay": 'rgba(255, 238, 0, 0.1)',
+      "--layout-panel-blur": '0px',
+      "--layout-hero-gradient": 'linear-gradient(135deg, #FFEE00 0%, #FF3366 50%, #00FF94 100%)',
+      "--layout-hero-glow": 'none',
+      "--layout-container-max": '1200px',
+      "--layout-section-gap": '3rem',
+      "--layout-navbar-background": 'rgba(255, 255, 255, 1)',
+      "--layout-navbar-shadow": '0 4px 0 rgba(0, 0, 0, 1)',
+      "--layout-divider-glow": 'linear-gradient(90deg, #000000 0%, #000000 100%)',
+      "--layout-list-stripe": 'linear-gradient(90deg, rgba(255, 238, 0, 0.3) 0%, rgba(255, 238, 0, 0.1) 100%)',
+      "--layout-focus-ring": '0 0 0 4px rgba(255, 51, 102, 0.5)',
+      "--layout-badge-glow": '4px 4px 0 rgba(0, 0, 0, 1)'
+    })
+  },
+  {
+    id: 'soft-ui-neumorphism',
+    name: 'Soft UI / Neumorphism 2.0',
+    tagline: 'Comfortable soft shadows and embossed design',
+    description: 'Modern take on neumorphism with soft inner and outer shadows, subtle gradients, low contrast for comfort, and rounded edges everywhere.',
+    category: 'Minimalista',
+    price: '$209',
+    features: [
+      'Soft inner and outer shadow combinations',
+      'Low contrast pastel color palette',
+      'Heavily rounded corners (20px+)',
+      'Embossed card effect with subtle gradients'
+    ],
+    fonts: {
+      heading: 'Poppins',
+      body: 'Inter',
+      ui: 'Manrope',
+    },
+    iconography: ['Lucide Soft', 'Heroicons Outline Soft', 'Feather Rounded'],
+    buttonStyles: ['Soft Embossed', 'Neumorphic Pressed', 'Subtle Outline', 'Floating CTA'],
+    palette: {
+      primary: '#E0E5EC',
+      secondary: '#A6B1C2',
+      accent: '#9DB4E8',
+      neutral: '#D1D9E6',
+      background: '#E0E5EC'
+    },
+    preview: {
+      gradient: 'linear-gradient(135deg, rgba(224, 229, 236, 1) 0%, rgba(209, 217, 230, 1) 100%)',
+      spotlight: 'radial-gradient(circle at 40% 40%, rgba(157, 180, 232, 0.15), transparent 70%)',
+      accentShape: 'radial-gradient(circle at 60% 60%, rgba(166, 177, 194, 0.1), transparent 60%)'
+    },
+    variables: withVariables({
+      "--layout-card-radius": '24px',
+      "--layout-card-shadow": '12px 12px 24px rgba(163, 177, 198, 0.6), -12px -12px 24px rgba(255, 255, 255, 0.5)',
+      "--layout-card-border": 'rgba(255, 255, 255, 0.3)',
+      "--layout-card-surface": 'linear-gradient(145deg, rgba(235, 240, 247, 1) 0%, rgba(224, 229, 236, 1) 100%)',
+      "--layout-button-radius": '20px',
+      "--layout-button-shadow": '8px 8px 16px rgba(163, 177, 198, 0.5), -8px -8px 16px rgba(255, 255, 255, 0.7)',
+      "--layout-font-heading": 'var(--font-poppins)',
+      "--layout-font-body": 'var(--font-inter)',
+      "--layout-font-ui": 'var(--font-manrope)',
+      "--layout-surface-gradient": 'radial-gradient(circle at 30% 30%, rgba(157, 180, 232, 0.08), transparent 70%)',
+      "--layout-surface-overlay": 'rgba(224, 229, 236, 0.4)',
+      "--layout-panel-blur": '16px',
+      "--layout-hero-gradient": 'linear-gradient(135deg, rgba(224,229,236,1) 0%, rgba(209,217,230,1) 50%, rgba(193,204,224,1) 100%)',
+      "--layout-hero-glow": 'none',
+      "--layout-container-max": '1200px',
+      "--layout-section-gap": '3.5rem',
+      "--layout-navbar-background": 'rgba(224, 229, 236, 0.95)',
+      "--layout-navbar-shadow": '0 4px 12px rgba(163, 177, 198, 0.3)',
+      "--layout-divider-glow": 'linear-gradient(90deg, rgba(224,229,236,0) 0%, rgba(166,177,194,0.4) 50%, rgba(224,229,236,0) 100%)',
+      "--layout-list-stripe": 'linear-gradient(90deg, rgba(166, 177, 194, 0.1) 0%, rgba(209, 217, 230, 0.15) 100%)',
+      "--layout-focus-ring": '0 0 0 4px rgba(157, 180, 232, 0.3)',
+      "--layout-badge-glow": 'inset 2px 2px 4px rgba(163, 177, 198, 0.4), inset -2px -2px 4px rgba(255, 255, 255, 0.6)'
+    })
+  },
+  {
+    id: 'holographic-iridescent',
+    name: 'Holographic Iridescent',
+    tagline: 'Rainbow gradients with shifting colors',
+    description: 'Futuristic holographic design with rainbow gradient effects, shifting colors on interaction, glass with color tint, and animated gradient transitions.',
+    category: 'Futurista',
+    price: '$235',
+    features: [
+      'Rainbow iridescent gradient effects',
+      'Shifting colors with hover animations',
+      'Heavy backdrop-filter with color tints',
+      'Animated gradient transitions'
+    ],
+    fonts: {
+      heading: 'Space Grotesk',
+      body: 'Inter',
+      ui: 'Space Grotesk',
+    },
+    iconography: ['Lucide Gradient', 'Heroicons Colorful', 'Radix Holographic'],
+    buttonStyles: ['Holographic CTA', 'Rainbow Outline', 'Iridescent Ghost', 'Shimmer Primary'],
+    palette: {
+      primary: '#FF6B9D',
+      secondary: '#C371F4',
+      accent: '#4FACFE',
+      neutral: '#FFC371',
+      background: '#0A0E27'
+    },
+    preview: {
+      gradient: 'linear-gradient(135deg, rgba(255, 107, 157, 0.9) 0%, rgba(195, 113, 244, 0.85) 25%, rgba(79, 172, 254, 0.9) 50%, rgba(255, 195, 113, 0.85) 75%, rgba(255, 107, 157, 0.9) 100%)',
+      spotlight: 'radial-gradient(circle at 25% 25%, rgba(255, 107, 157, 0.5), transparent 40%)',
+      accentShape: 'radial-gradient(circle at 75% 75%, rgba(79, 172, 254, 0.4), transparent 50%)'
+    },
+    variables: withVariables({
+      "--layout-card-radius": '20px',
+      "--layout-card-shadow": '0 8px 32px 0 rgba(255, 107, 157, 0.37)',
+      "--layout-card-border": 'rgba(255, 255, 255, 0.18)',
+      "--layout-card-surface": 'linear-gradient(135deg, rgba(255, 107, 157, 0.1) 0%, rgba(195, 113, 244, 0.08) 25%, rgba(79, 172, 254, 0.1) 50%, rgba(255, 195, 113, 0.08) 75%, rgba(255, 107, 157, 0.1) 100%)',
+      "--layout-button-radius": '16px',
+      "--layout-button-shadow": '0 0 25px rgba(255, 107, 157, 0.5)',
+      "--layout-font-heading": 'var(--font-space-grotesk)',
+      "--layout-font-body": 'var(--font-inter)',
+      "--layout-font-ui": 'var(--font-space-grotesk)',
+      "--layout-surface-gradient": 'linear-gradient(135deg, rgba(255, 107, 157, 0.15) 0%, rgba(195, 113, 244, 0.12) 25%, rgba(79, 172, 254, 0.15) 50%, rgba(255, 195, 113, 0.12) 75%, rgba(255, 107, 157, 0.15) 100%)',
+      "--layout-surface-overlay": 'rgba(10, 14, 39, 0.5)',
+      "--layout-panel-blur": '40px',
+      "--layout-hero-gradient": 'linear-gradient(135deg, rgba(255,107,157,0.8) 0%, rgba(195,113,244,0.75) 20%, rgba(79,172,254,0.8) 40%, rgba(0,242,254,0.75) 60%, rgba(255,195,113,0.8) 80%, rgba(255,107,157,0.8) 100%)',
+      "--layout-hero-glow": '0 0 80px rgba(195, 113, 244, 0.6)',
+      "--layout-container-max": '1340px',
+      "--layout-section-gap": '5rem',
+      "--layout-navbar-background": 'rgba(10, 14, 39, 0.7)',
+      "--layout-navbar-shadow": '0 8px 32px 0 rgba(255, 107, 157, 0.25)',
+      "--layout-divider-glow": 'linear-gradient(90deg, rgba(255,107,157,0) 0%, rgba(195,113,244,0.8) 20%, rgba(79,172,254,0.8) 50%, rgba(255,195,113,0.8) 80%, rgba(255,107,157,0) 100%)',
+      "--layout-list-stripe": 'linear-gradient(90deg, rgba(255, 107, 157, 0.08) 0%, rgba(195, 113, 244, 0.12) 50%, rgba(79, 172, 254, 0.08) 100%)',
+      "--layout-focus-ring": '0 0 0 4px rgba(195, 113, 244, 0.5)',
+      "--layout-badge-glow": '0 0 20px rgba(255, 107, 157, 0.8)'
+    })
+  },
 ];
 
 
