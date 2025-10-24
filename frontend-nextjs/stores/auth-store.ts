@@ -47,11 +47,6 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         if (typeof window !== 'undefined') {
-          const expireCookie = (name: string) => {
-            document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
-          };
-          expireCookie('token');
-          expireCookie('auth_token');
           localStorage.removeItem('auth-storage');
         }
         set({ token: null, user: null, isAuthenticated: false });

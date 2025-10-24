@@ -70,7 +70,7 @@ class User(Base):
     username = Column(String(50), unique=True, nullable=False, index=True)
     email = Column(String(100), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
-    role = Column(SQLEnum(UserRole, name='user_role', values_callable=lambda x: [e.value for e in x]), nullable=False, default=UserRole.EMPLOYEE)
+    role = Column(SQLEnum(UserRole, name='user_role'), nullable=False, default=UserRole.EMPLOYEE)
     full_name = Column(String(100))
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -269,7 +269,7 @@ class Candidate(Base):
     ocr_notes = Column(Text)  # OCR処理に関するメモ
 
     # Status & Audit Fields
-    status = Column(SQLEnum(CandidateStatus, name='candidate_status', values_callable=lambda x: [e.value for e in x]), default=CandidateStatus.PENDING)
+    status = Column(SQLEnum(CandidateStatus, name='candidate_status'), default=CandidateStatus.PENDING)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     approved_by = Column(Integer, ForeignKey("users.id"))
@@ -304,7 +304,7 @@ class Document(Base):
     id = Column(Integer, primary_key=True, index=True)
     candidate_id = Column(Integer, ForeignKey("candidates.id", ondelete="CASCADE"))
     employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"))
-    document_type = Column(SQLEnum(DocumentType, name='document_type', values_callable=lambda x: [e.value for e in x]), nullable=False)
+    document_type = Column(SQLEnum(DocumentType, name='document_type'), nullable=False)
     file_name = Column(String(255), nullable=False)
     file_path = Column(String(500), nullable=False)
     file_size = Column(Integer)
@@ -601,7 +601,7 @@ class TimerCard(Base):
     work_date = Column(Date, nullable=False)
 
     # Shift type
-    shift_type = Column(SQLEnum(ShiftType, name='shift_type', values_callable=lambda x: [e.value for e in x]))
+    shift_type = Column(SQLEnum(ShiftType, name='shift_type'))
 
     # Schedules
     clock_in = Column(Time)
@@ -677,8 +677,8 @@ class Request(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     hakenmoto_id = Column(Integer, ForeignKey("employees.hakenmoto_id", ondelete="CASCADE"), nullable=False)
-    request_type = Column(SQLEnum(RequestType, name='request_type', values_callable=lambda x: [e.value for e in x]), nullable=False)
-    status = Column(SQLEnum(RequestStatus, name='request_status', values_callable=lambda x: [e.value for e in x]), default=RequestStatus.PENDING)
+    request_type = Column(SQLEnum(RequestType, name='request_type'), nullable=False)
+    status = Column(SQLEnum(RequestStatus, name='request_status'), default=RequestStatus.PENDING)
 
     # Dates
     start_date = Column(Date, nullable=False)

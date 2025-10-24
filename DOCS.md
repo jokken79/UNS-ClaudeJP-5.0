@@ -31,12 +31,10 @@
 
 | Documento | Descripción |
 |-----------|-------------|
-| [BD_PROPUESTA_1_MINIMALISTA.md](docs/database/BD_PROPUESTA_1_MINIMALISTA.md) | Propuesta minimalista de esquema de BD |
-| [BD_PROPUESTA_2_COMPLETA.md](docs/database/BD_PROPUESTA_2_COMPLETA.md) | Propuesta completa de esquema de BD |
+| [README.md](docs/database/README.md) | Índice de documentación de base de datos |
 | [BD_PROPUESTA_3_HIBRIDA.md](docs/database/BD_PROPUESTA_3_HIBRIDA.md) | ✅ Propuesta híbrida (implementada) |
-| [ANALISIS_EXCEL_VS_BD.md](docs/database/ANALISIS_EXCEL_VS_BD.md) | Análisis comparativo Excel vs Base de Datos |
-| [RESUMEN_ANALISIS_EXCEL_COMPLETO.md](docs/database/RESUMEN_ANALISIS_EXCEL_COMPLETO.md) | Resumen completo del análisis de Excel |
-| [base-datos/README_MIGRACION.md](base-datos/README_MIGRACION.md) | Guía de migraciones con Alembic (multiplataforma) |
+| [MIGRACIONES_ALEMBIC.md](docs/guides/MIGRACIONES_ALEMBIC.md) | Guía de migraciones con Alembic (multiplataforma) |
+| [archive/](docs/database/archive/) | Propuestas históricas y análisis archivados |
 
 ---
 
@@ -44,13 +42,41 @@
 
 📁 **Ubicación**: `docs/guides/`
 
-### Instalación y Configuración
+| Documento | Descripción |
+|-----------|-------------|
+| [README.md](docs/guides/README.md) | Índice completo de guías |
+| [INSTALACION_RAPIDA.md](docs/guides/INSTALACION_RAPIDA.md) | Guía rápida de instalación (Windows/Linux/macOS) |
+| [TROUBLESHOOTING.md](docs/guides/TROUBLESHOOTING.md) | Solución de problemas comunes por plataforma |
+| [POST_REINSTALL_VERIFICATION.md](docs/guides/POST_REINSTALL_VERIFICATION.md) | Verificación después de reinstalar |
+| [BACKUP_RESTAURACION.md](docs/guides/BACKUP_RESTAURACION.md) | Procedimientos de backup y restauración |
+
+### OCR y Documentos
 
 | Documento | Descripción |
 |-----------|-------------|
-| [INSTALACION_RAPIDA.md](docs/guides/INSTALACION_RAPIDA.md) | Guía rápida de instalación (Windows/Linux/macOS) |
-| [TROUBLESHOOTING.md](docs/guides/TROUBLESHOOTING.md) | Solución de problemas comunes por plataforma |
 | [AZURE_OCR_SETUP.md](docs/guides/AZURE_OCR_SETUP.md) | Configuración paso a paso de Azure Computer Vision |
+| [OCR_MULTI_DOCUMENT_GUIDE.md](docs/guides/OCR_MULTI_DOCUMENT_GUIDE.md) | Procesamiento de múltiples tipos de documentos |
+| [PHOTO_EXTRACTION.md](docs/guides/PHOTO_EXTRACTION.md) | Extracción de fotos desde Access |
+
+### Importación de Datos
+
+| Documento | Descripción |
+|-----------|-------------|
+| [IMPORT_FROM_ACCESS_AUTO.md](docs/guides/IMPORT_FROM_ACCESS_AUTO.md) | Importación automática vía REINSTALAR.bat |
+| [IMPORT_FROM_ACCESS_MANUAL.md](docs/guides/IMPORT_FROM_ACCESS_MANUAL.md) | Importación manual con scripts |
+| [GUIA_IMPORTAR_TARIFAS_SEGUROS.md](docs/guides/GUIA_IMPORTAR_TARIFAS_SEGUROS.md) | Importación de tarifas y seguros |
+| [QUICK_START_IMPORT.md](docs/guides/QUICK_START_IMPORT.md) | Inicio rápido para importación |
+| [QUICK_START_PHOTOS.md](docs/guides/QUICK_START_PHOTOS.md) | Inicio rápido para fotos |
+
+### Features y UI
+
+| Documento | Descripción |
+|-----------|-------------|
+| [THEME_TEMPLATE_ENHANCEMENTS.md](docs/guides/THEME_TEMPLATE_ENHANCEMENTS.md) | Mejoras de temas y plantillas |
+| [THEME_SWITCHER_QUICK_START.md](docs/guides/THEME_SWITCHER_QUICK_START.md) | Sistema de cambio de temas |
+| [NAVIGATION_ANIMATIONS_IMPLEMENTATION.md](docs/guides/NAVIGATION_ANIMATIONS_IMPLEMENTATION.md) | Implementación de animaciones |
+| [RIREKISHO_PRINT_MODIFICATIONS_2025-10-23.md](docs/guides/RIREKISHO_PRINT_MODIFICATIONS_2025-10-23.md) | Modificaciones de impresión |
+| [PRINT_SOLUTION_GUIDE.md](docs/guides/PRINT_SOLUTION_GUIDE.md) | Guía de solución de problemas de impresión |
 
 ### Git y GitHub
 
@@ -60,20 +86,37 @@
 | [COMO_SUBIR_A_GITHUB.md](docs/guides/COMO_SUBIR_A_GITHUB.md) | Cómo subir cambios a GitHub de forma segura |
 | [SEGURIDAD_GITHUB.md](docs/guides/SEGURIDAD_GITHUB.md) | Buenas prácticas de seguridad en GitHub |
 
+### Mantenimiento
+
+| Documento | Descripción |
+|-----------|-------------|
+| [LIMPIEZA_CODIGO_ANTIGUO.md](docs/guides/LIMPIEZA_CODIGO_ANTIGUO.md) | Guía de limpieza de código |
+| [SCRIPTS_MEJORADOS_GUIDE.md](docs/guides/SCRIPTS_MEJORADOS_GUIDE.md) | Guía de scripts del sistema |
+
 ---
 
 ## ⚠️ Incidentes y Reportes
 
-📁 **Ubicación**: `docs/issues/` y `docs/reports/`
+📁 **Ubicación**: `docs/issues/` y `docs/archive/reports/`
+
+### Problemas Conocidos
 
 | Documento | Descripción |
 |-----------|-------------|
 | [issues/AUTH_ERROR_401.md](docs/issues/AUTH_ERROR_401.md) | Explicación del error 401 antes del login |
-| [reports/2024-11-Backend-Hardening.md](docs/reports/2024-11-Backend-Hardening.md) | Checklist de endurecimiento del backend |
-| [reports/2025-01-FIX_DB_ERROR.md](docs/reports/2025-01-FIX_DB_ERROR.md) | Detalles técnicos del fix al healthcheck de PostgreSQL |
-| [reports/2025-01-RESUMEN_SOLUCION.md](docs/reports/2025-01-RESUMEN_SOLUCION.md) | Resumen ejecutivo de la solución |
-| [reports/2025-01-CAMBIOS_CODIGO.md](docs/reports/2025-01-CAMBIOS_CODIGO.md) | Cambios de código involucrados |
-| [reports/2025-01-INSTRUCCIONES_VISUAL.md](docs/reports/2025-01-INSTRUCCIONES_VISUAL.md) | Pasos visuales de verificación |
+
+### Auditorías Recientes
+
+| Documento | Descripción |
+|-----------|-------------|
+| [AUDITORIA_COMPLETA_2025-10-24.md](docs/AUDITORIA_COMPLETA_2025-10-24.md) | Auditoría completa del sistema - 7 errores críticos + 14 warnings |
+| [BACKEND_AUDIT_REPORT_2025-10-23.md](docs/BACKEND_AUDIT_REPORT_2025-10-23.md) | Auditoría detallada del backend |
+
+### Reportes Históricos
+
+| Documento | Descripción |
+|-----------|-------------|
+| [archive/reports/](docs/archive/reports/) | Reportes técnicos históricos (2024-2025) |
 
 ---
 
@@ -83,9 +126,10 @@
 
 | Documento | Descripción | Fecha |
 |-----------|-------------|-------|
-| [RESUMEN_FINAL_SESION.md](docs/sessions/RESUMEN_FINAL_SESION.md) | Resumen final de sesión de desarrollo | - |
-| [RESUMEN_PARA_MANANA.md](docs/sessions/RESUMEN_PARA_MANANA.md) | Tareas pendientes para próxima sesión | - |
-| [RESUMEN_SESION_COMPLETO.md](docs/sessions/RESUMEN_SESION_COMPLETO.md) | Resumen completo de sesión | - |
+| [README.md](docs/sessions/README.md) | Índice de sesiones de trabajo | - |
+| [SESION-2025-10-24-importacion-access.md](docs/sessions/SESION-2025-10-24-importacion-access.md) | Implementación de importación Access | 2025-10-24 |
+| [SESSION-2025-10-23-analisis-y-correcciones.md](docs/sessions/SESSION-2025-10-23-analisis-y-correcciones.md) | Análisis y correcciones críticas | 2025-10-23 |
+| [archive/](docs/sessions/archive/) | Sesiones históricas archivadas | - |
 
 ---
 
@@ -93,12 +137,22 @@
 
 📁 **Ubicación**: `docs/archive/`
 
+| Carpeta/Documento | Descripción |
+|-------------------|-------------|
+| [README.md](docs/archive/README.md) | Índice del archivo histórico |
+| [completed/](docs/archive/completed/) | Implementaciones y features completados |
+| [analysis/](docs/archive/analysis/) | Análisis históricos del sistema |
+| [reports/](docs/archive/reports/) | Reportes técnicos antiguos (2024-2025) |
+| [legacy-root-assets/](docs/archive/legacy-root-assets/) | Archivos de activos antiguos |
+
+### Documentos Destacados
+
 | Documento | Descripción | Estado |
 |-----------|-------------|--------|
 | [ANALISIS_RIREKISHO_TO_CANDIDATE.md](docs/archive/ANALISIS_RIREKISHO_TO_CANDIDATE.md) | Análisis de migración Rirekisho → Candidate | ✅ Completado |
-| [CAMBIOS_RIREKISHO_COMPLETADOS.md](docs/archive/CAMBIOS_RIREKISHO_COMPLETADOS.md) | Cambios realizados en módulo Rirekisho | ✅ Completado |
 | [DASHBOARD_MODERNO_IMPLEMENTACION.md](docs/archive/DASHBOARD_MODERNO_IMPLEMENTACION.md) | Implementación del dashboard moderno | ✅ Completado |
-| [PROBLEMA_SIDEBAR_PENDIENTE.md](docs/archive/PROBLEMA_SIDEBAR_PENDIENTE.md) | Problema histórico del sidebar | 📋 Documentado |
+| [completed/LOGIN_PAGE_UPGRADE.md](docs/archive/completed/LOGIN_PAGE_UPGRADE.md) | Actualización de página de login | ✅ Completado |
+| [completed/DASHBOARD_REDESIGN_COMPLETE.md](docs/archive/completed/DASHBOARD_REDESIGN_COMPLETE.md) | Rediseño completo del dashboard | ✅ Completado |
 
 ---
 
@@ -150,12 +204,21 @@ UNS-ClaudeJP-4.2/
 │
 ├── docs/                         # 📚 Documentación organizada
 │   ├── database/                 # Base de datos
+│   │   ├── archive/              # Propuestas históricas
+│   │   └── README.md             # Índice de BD
 │   ├── guides/                   # Guías y tutoriales
+│   │   └── README.md             # Índice de guías
 │   ├── issues/                   # Incidentes y errores conocidos
-│   ├── reports/                  # Reportes técnicos y resúmenes
 │   ├── releases/                 # Notas por versión
 │   ├── sessions/                 # Resúmenes de sesiones
-│   └── archive/                  # Documentos históricos
+│   │   ├── archive/              # Sesiones históricas
+│   │   └── README.md             # Índice de sesiones
+│   ├── archive/                  # Documentos históricos
+│   │   ├── completed/            # Features completados
+│   │   ├── analysis/             # Análisis históricos
+│   │   ├── reports/              # Reportes antiguos
+│   │   └── README.md             # Índice del archivo
+│   └── README.md                 # Índice general de docs
 │
 ├── backend/                      # Backend FastAPI
 │   ├── app/
@@ -198,7 +261,13 @@ UNS-ClaudeJP-4.2/
 → [docs/database/BD_PROPUESTA_3_HIBRIDA.md](docs/database/BD_PROPUESTA_3_HIBRIDA.md)
 
 ### ¿Cómo hacer migraciones de BD?
-→ [base-datos/README_MIGRACION.md](base-datos/README_MIGRACION.md)
+→ [docs/guides/MIGRACIONES_ALEMBIC.md](docs/guides/MIGRACIONES_ALEMBIC.md)
+
+### ¿Cómo importar datos desde Access?
+→ [docs/guides/IMPORT_FROM_ACCESS_AUTO.md](docs/guides/IMPORT_FROM_ACCESS_AUTO.md)
+
+### ¿Cómo hacer backup y restauración?
+→ [docs/guides/BACKUP_RESTAURACION.md](docs/guides/BACKUP_RESTAURACION.md)
 
 ---
 
@@ -225,4 +294,15 @@ UNS-ClaudeJP-4.2/
 
 ---
 
-**Última actualización:** 2025-02-10
+**Última actualización:** 2025-10-24
+
+## Notas de Reorganización
+
+La documentación fue reorganizada el 2025-10-24 para mejorar la navegabilidad:
+
+- Archivos movidos desde raíz a `docs/guides/`
+- Archivos históricos consolidados en `docs/archive/`
+- Reportes antiguos movidos a `docs/archive/reports/`
+- Propuestas de BD históricas en `docs/database/archive/`
+- Sesiones antiguas en `docs/sessions/archive/`
+- Añadidos archivos README.md en cada carpeta para facilitar navegación
