@@ -3,6 +3,7 @@ SQLAlchemy Models for UNS-ClaudeJP 1.0
 """
 from sqlalchemy import Boolean, Column, Integer, String, Text, DateTime, Date, Time, Numeric, ForeignKey, Enum as SQLEnum, JSON
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 from datetime import datetime
 import enum
@@ -69,7 +70,7 @@ class User(Base):
     username = Column(String(50), unique=True, nullable=False, index=True)
     email = Column(String(100), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
-    role = Column(SQLEnum(UserRole, name='user_role'), nullable=False, default=UserRole.EMPLOYEE)
+    role = Column(SQLEnum(UserRole, name='user_role', values_callable=lambda x: [e.value for e in x]), nullable=False, default=UserRole.EMPLOYEE)
     full_name = Column(String(100))
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -83,7 +84,6 @@ class Candidate(Base):
     # Primary Key & IDs
     id = Column(Integer, primary_key=True, index=True)
     rirekisho_id = Column(String(20), unique=True, nullable=False, index=True)  # 履歴書ID
-    applicant_id = Column(String(50), index=True)  # フォームで生成された応募者ID
 
     # 受付日・来日 (Reception & Arrival Dates)
     reception_date = Column(Date)  # 受付日
@@ -270,7 +270,7 @@ class Candidate(Base):
     ocr_notes = Column(Text)  # OCR処理に関するメモ
 
     # Status & Audit Fields
-    status = Column(SQLEnum(CandidateStatus, name='candidate_status'), default=CandidateStatus.PENDING)
+    status = Column(SQLEnum(CandidateStatus, name='candidate_status', values_callable=lambda x: [e.value for e in x]), default=CandidateStatus.PENDING)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     approved_by = Column(Integer, ForeignKey("users.id"))
@@ -305,7 +305,7 @@ class Document(Base):
     id = Column(Integer, primary_key=True, index=True)
     candidate_id = Column(Integer, ForeignKey("candidates.id", ondelete="CASCADE"))
     employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"))
-    document_type = Column(SQLEnum(DocumentType, name='document_type'), nullable=False)
+    document_type = Column(SQLEnum(DocumentType, name='document_type', values_callable=lambda x: [e.value for e in x]), nullable=False)
     file_name = Column(String(255), nullable=False)
     file_path = Column(String(500), nullable=False)
     file_size = Column(Integer)
@@ -599,7 +599,7 @@ class TimerCard(Base):
     work_date = Column(Date, nullable=False)
 
     # Shift type
-    shift_type = Column(SQLEnum(ShiftType, name='shift_type'))
+    shift_type = Column(SQLEnum(ShiftType, name='shift_type', values_callable=lambda x: [e.value for e in x]))
 
     # Schedules
     clock_in = Column(Time)
@@ -674,29 +674,43 @@ class Request(Base):
     __tablename__ = "requests"
 
     id = Column(Integer, primary_key=True, index=True)
-    employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False)
-    request_type = Column(SQLEnum(RequestType, name='request_type'), nullable=False)
-    status = Column(SQLEnum(RequestStatus, name='request_status'), default=RequestStatus.PENDING)
+    hakenmoto_id = Column(Integer, ForeignKey("employees.hakenmoto_id", ondelete="CASCADE"), nullable=False)
+    request_type = Column(SQLEnum(RequestType, name='request_type', values_callable=lambda x: [e.value for e in x]), nullable=False)
+    status = Column(SQLEnum(RequestStatus, name='request_status', values_callable=lambda x: [e.value for e in x]), default=RequestStatus.PENDING)
 
     # Dates
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
-    total_days = Column(Numeric(3, 1))  # For 半日 can be 0.5
+    # Note: total_days is computed from start_date and end_date, not stored in DB
 
     # Details
     reason = Column(Text)
     notes = Column(Text)
 
     # Approval
-    reviewed_by = Column(Integer, ForeignKey("users.id"))
-    reviewed_at = Column(DateTime(timezone=True))
-    review_notes = Column(Text)
+    approved_by = Column(Integer, ForeignKey("users.id"))
+    approved_at = Column(DateTime(timezone=True))
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    employee = relationship("Employee", back_populates="requests")
+    employee = relationship("Employee", foreign_keys=[hakenmoto_id], back_populates="requests")
+
+    @property
+    def total_days(self):
+        """Computed property: calculate total days from start_date and end_date"""
+        if self.start_date and self.end_date:
+            delta = self.end_date - self.start_date
+            return float(delta.days + 1)
+        return None
+
+    @hybrid_property
+    def employee_id(self):
+        """Backwards compatibility: return employee.id if relationship is loaded"""
+        if self.employee:
+            return self.employee.id
+        return None
 
 
 class Contract(Base):
@@ -733,4 +747,39 @@ class AuditLog(Base):
     new_values = Column(JSON)
     ip_address = Column(String(50))
     user_agent = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class SocialInsuranceRate(Base):
+    """
+    Tabla de tarifas de seguros sociales (健康保険・厚生年金)
+    Basada en la hoja '愛知23' del Excel
+    """
+    __tablename__ = "social_insurance_rates"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # Rango de compensación estándar (標準報酬月額)
+    min_compensation = Column(Integer, nullable=False)  # Mínimo del rango
+    max_compensation = Column(Integer, nullable=False)  # Máximo del rango
+    standard_compensation = Column(Integer, nullable=False)  # 標準報酬月額
+
+    # Seguros (金額 completa, se divide entre empleado y empleador)
+    health_insurance_total = Column(Integer)  # 健康保険料 (total)
+    health_insurance_employee = Column(Integer)  # 健康保険料 (empleado)
+    health_insurance_employer = Column(Integer)  # 健康保険料 (empleador)
+
+    nursing_insurance_total = Column(Integer)  # 介護保険料 (total, solo >40 años)
+    nursing_insurance_employee = Column(Integer)  # 介護保険料 (empleado)
+    nursing_insurance_employer = Column(Integer)  # 介護保険料 (empleador)
+
+    pension_insurance_total = Column(Integer)  # 厚生年金保険料 (total)
+    pension_insurance_employee = Column(Integer)  # 厚生年金保険料 (empleado)
+    pension_insurance_employer = Column(Integer)  # 厚生年金保険料 (empleador)
+
+    # Metadata
+    effective_date = Column(Date, nullable=False)  # Fecha de vigencia
+    prefecture = Column(String(20), default='愛知')  # Prefectura
+    notes = Column(Text)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())

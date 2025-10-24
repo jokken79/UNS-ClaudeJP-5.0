@@ -62,7 +62,14 @@ services:
         echo '--- Running create_admin_user.py ---' &&
         python scripts/create_admin_user.py &&
         echo '--- Running import_data.py ---' &&
-        python scripts/import_data.py
+        python scripts/import_data.py &&
+        echo '--- Checking for Access database imports ---' &&
+        if [ -f '/app/access_candidates_data.json' ] && [ -f '/app/access_photo_mappings.json' ]; then
+          echo '--- Importing Access candidates with photos ---' &&
+          python scripts/import_json_simple.py
+        else
+          echo '--- No Access data found, skipping ---'
+        fi
       "
 
   # Backend API (FastAPI)

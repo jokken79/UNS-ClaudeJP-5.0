@@ -1,154 +1,187 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-title UNS-ClaudeJP 4.0 - Iniciar Sistema
+title UNS-ClaudeJP - Iniciar Sistema (Corregido)
 
+:: ============================================================================
+:: SECCION DE DIAGNOSTICO
+:: ============================================================================
 echo.
 echo ========================================================
-echo       UNS-CLAUDEJP 4.0 - INICIAR SISTEMA
+echo    UNS-CLAUDEJP - INICIAR SISTEMA (v4.2 Corregido)
 echo ========================================================
 echo.
+echo [FASE 1 de 2] Realizando diagnostico del sistema...
+echo.
 
-REM Cambiar al directorio raiz del proyecto
-cd /d "%~dp0\.."
+set "PYTHON_CMD="
+set "DOCKER_COMPOSE_CMD="
+set "ERROR_FLAG=0"
 
-echo [1/6] Verificando archivo .env...
-if not exist .env (
-    echo      .env no encontrado. Generando automaticamente...
-    python generate_env.py
-    if errorlevel 1 (
-        echo.
-        echo PROBLEMA: Error al generar .env
-        echo Por favor, crea manualmente el archivo .env desde .env.example
-        pause
-        exit /b 1
-    )
-    echo      OK - Archivo .env generado.
+:verificar_python
+echo   [1/5] Verificando Python...
+python --version >nul 2>&1
+if %errorlevel% EQU 0 (
+    set "PYTHON_CMD=python"
+    for /f "tokens=2" %%i in ('python --version 2^>^&1') do echo     ✅ Python encontrado (Version %%i)
+    goto :verificar_docker
+)
+py --version >nul 2>&1
+if %errorlevel% EQU 0 (
+    set "PYTHON_CMD=py"
+    for /f "tokens=2" %%i in ('py --version 2^>^&1') do echo     ✅ Python encontrado (Version %%i)
+    goto :verificar_docker
+)
+echo     ❌ ERROR: Python no esta instalado o no esta en el PATH.
+    echo        SOLUCION: Instala Python desde https://www.python.org/downloads/
+    echo                  (Asegurate de marcar "Add Python to PATH" durante la instalacion)
+set "ERROR_FLAG=1"
+echo.
+
+:verificar_docker
+echo   [2/5] Verificando Docker...
+docker --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo     ❌ ERROR: Docker Desktop no esta instalado.
+    echo        SOLUCION: Instala Docker Desktop desde https://www.docker.com/products/docker-desktop
+    set "ERROR_FLAG=1"
 ) else (
-    echo      OK - Archivo .env ya existe.
+    echo     ✅ Docker instalado.
 )
 echo.
 
-echo [2/6] Verificando Docker Compose...
-set "DOCKER_COMPOSE_CMD="
+:verificar_docker_running
+echo   [3/5] Verificando si Docker Desktop esta corriendo...
+docker ps >nul 2>&1
+if %errorlevel% neq 0 (
+    echo     ❌ ERROR: Docker Desktop no esta corriendo.
+    echo        SOLUCION: Inicia Docker Desktop y espera a que este listo.
+    set "ERROR_FLAG=1"
+) else (
+    echo     ✅ Docker Desktop esta corriendo.
+)
+echo.
+
+:verificar_docker_compose
+echo   [4/5] Verificando Docker Compose...
 docker compose version >nul 2>&1
 if %errorlevel% EQU 0 (
     set "DOCKER_COMPOSE_CMD=docker compose"
-    echo      OK - Docker Compose V2 detectado.
+    echo     ✅ Docker Compose V2 detectado.
+    goto :verificar_proyecto
+)
+docker-compose version >nul 2>&1
+if %errorlevel% EQU 0 (
+    set "DOCKER_COMPOSE_CMD=docker-compose"
+    echo     ✅ Docker Compose V1 detectado.
+    goto :verificar_proyecto
+)
+echo     ❌ ERROR: Docker Compose no fue encontrado.
+    echo        SOLUCION: Asegurate que Docker Desktop este actualizado.
+set "ERROR_FLAG=1"
+echo.
+
+:verificar_proyecto
+echo   [5/5] Verificando archivos del proyecto...
+cd /d "%~dp0\.."
+if not exist "docker-compose.yml" (
+    echo     ❌ ERROR: No se encuentra 'docker-compose.yml'.
+    set "ERROR_FLAG=1"
 ) else (
-    docker-compose version >nul 2>&1
-    if %errorlevel% EQU 0 (
-        set "DOCKER_COMPOSE_CMD=docker-compose"
-        echo      OK - Docker Compose V1 detectado.
-    ) else (
-        echo ERROR: No se encontro Docker Compose.
-        echo Asegurate de que Docker Desktop este instalado y corriendo.
+    echo     ✅ 'docker-compose.yml' encontrado.
+)
+if not exist "generate_env.py" (
+    echo     ❌ ERROR: No se encuentra 'generate_env.py'.
+    set "ERROR_FLAG=1"
+) else (
+    echo     ✅ 'generate_env.py' encontrado.
+)
+echo.
+
+:diagnostico_fin
+if %ERROR_FLAG% EQU 1 (
+    echo ========================================================
+    echo ❌ DIAGNOSTICO FALLIDO. Se encontraron errores.
+    echo ========================================================
+    echo.
+    echo    Por favor, corrige los errores listados arriba y
+    echo    vuelve a ejecutar el script.
+    echo.
+    echo Presiona cualquier tecla para salir...
+    pause >nul
+    exit /b 1
+)
+
+echo ========================================================
+echo ✅ DIAGNOSTICO COMPLETADO. Sistema listo para iniciar.
+echo ========================================================
+echo.
+
+:: ============================================================================
+:: SECCION DE INICIO
+:: ============================================================================
+
+echo [FASE 2 de 2] Iniciando servicios de UNS-ClaudeJP...
+echo.
+
+echo [Paso 1/4] Generando archivo .env si no existe...
+if not exist .env (
+    echo      .env no encontrado. Generando...
+    %PYTHON_CMD% generate_env.py
+    if !errorlevel! neq 0 (
+        echo ❌ ERROR: Fallo la generacion de .env.
         pause
         exit /b 1
     )
+    echo      ✅ .env generado.
+) else (
+    echo      ✅ .env ya existe.
 )
 echo.
 
-echo [3/6] Verificando que Docker Desktop este activo...
-docker ps >nul 2>&1
-if %errorlevel% NEQ 0 (
-    echo ERROR: Docker Desktop no esta corriendo.
-    echo Por favor, inicia Docker Desktop y vuelve a ejecutar este script.
-    pause
-    exit /b 1
-)
-echo      OK - Docker Desktop esta activo.
-echo.
-
-echo [4/6] Deteniendo contenedores anteriores (si existen)...
-%DOCKER_COMPOSE_CMD% down >nul 2>&1
-echo      OK - Limpieza completada.
-echo.
-
-echo [5/6] Iniciando servicios...
-echo.
-echo      IMPORTANTE: La base de datos puede tardar 60-90 segundos.
-echo      Esto es NORMAL, especialmente si el sistema se cerro incorrectamente.
-echo      PostgreSQL necesita tiempo para recuperar y verificar datos.
-echo.
-echo      Espera pacientemente...
-echo.
-
-REM Primero iniciar solo la base de datos
-echo      [5.1] Iniciando PostgreSQL primero...
-%DOCKER_COMPOSE_CMD% up -d db
-
-echo      [5.2] Esperando 30 segundos a que PostgreSQL este saludable...
-timeout /t 30 /nobreak >nul
-
-REM Verificar que la DB este healthy antes de continuar
-echo      [5.3] Verificando salud de PostgreSQL...
-docker inspect --format="{{.State.Health.Status}}" uns-claudejp-db 2>nul | findstr "healthy" >nul
-if %errorlevel% NEQ 0 (
-    echo      ADVERTENCIA: PostgreSQL aun no esta 'healthy', esperando 30 segundos mas...
-    timeout /t 30 /nobreak >nul
-)
-
-REM Ahora iniciar el resto de servicios
-echo      [5.4] Iniciando el resto de servicios...
+echo [Paso 2/4] Iniciando contenedores Docker...
 %DOCKER_COMPOSE_CMD% up -d
-
-if %errorlevel% NEQ 0 (
-    echo.
-    echo ERROR al iniciar los servicios.
-    echo.
-    echo POSIBLES SOLUCIONES:
-    echo    1. Espera 30 segundos y ejecuta START.bat de nuevo
-    echo    2. Ejecuta STOP.bat, espera 10 segundos, luego START.bat
-    echo    3. Ejecuta LOGS.bat para ver los detalles
-    echo    4. Si falla repetidamente, ejecuta REINSTALAR.bat
-    echo.
+if !errorlevel! neq 0 (
+    echo ❌ ERROR: Fallo al iniciar los contenedores.
     pause
     exit /b 1
 )
-echo      OK - Todos los servicios iniciados.
+echo      ✅ Contenedores iniciados.
 echo.
 
-echo [6/6] Esperando a que los servicios esten completamente listos...
+echo [Paso 3/4] Esperando a que los servicios se estabilicen (30s)...
+timeout /t 30 /nobreak >nul
 echo.
-echo      Esperando 20 segundos adicionales para compilacion de Next.js...
-timeout /t 20 /nobreak >nul
 
-echo      Verificando estado de contenedores...
-echo.
+echo [Paso 4/4] Verificando estado final de los servicios...
 %DOCKER_COMPOSE_CMD% ps
 echo.
 
+
 echo ========================================================
-echo       SISTEMA INICIADO
+echo       ✅ SISTEMA INICIADO
 echo ========================================================
 echo.
 echo URLs de Acceso:
-echo    Frontend:         http://localhost:3000
-echo    API Docs:         http://localhost:8000/api/docs
-echo    Base de Datos:    http://localhost:8080 (Adminer)
-echo    Health Check:     http://localhost:8000/api/health
+echo   Frontend:  http://localhost:3000
+echo   Backend:   http://localhost:8000/api/docs
+echo   Adminer:   http://localhost:8080
 echo.
-echo Credenciales de Login:
-echo    Usuario:   admin
-echo    Password:  admin123
+echo Credenciales: admin / admin123
 echo.
-echo NOTAS IMPORTANTES:
-echo  * El frontend puede tardar 1-2 minutos en compilar (Next.js)
-echo  * Si ves "Loading..." en el navegador, espera y recarga
-echo  * Si la BD esta "unhealthy", espera 30-60 segundos mas
-echo.
-echo Para ver logs en tiempo real: LOGS.bat
+echo Nota: El frontend puede tardar 1-2 minutos en compilar la primera vez.
 echo.
 
-set /p ABRIR="Abrir el frontend en el navegador? (S/N): "
+set /p ABRIR="¿Abrir el frontend en el navegador? (S/N): "
 if /i "%ABRIR%"=="S" (
     echo.
     echo Abriendo http://localhost:3000 en tu navegador...
     start http://localhost:3000
 )
 
+goto :end
+
+:end
 echo.
-echo Disfruta de UNS-ClaudeJP!
-echo.
-pause
+echo Presiona cualquier tecla para salir...
+pause >nul

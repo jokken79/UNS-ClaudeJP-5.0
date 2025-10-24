@@ -3,19 +3,19 @@ import api from '../api';
 export const databaseService = {
   // Get all tables with info
   getTables: async () => {
-    const response = await api.get('/api/database/tables');
+    const response = await api.get('/database/tables');
     return response.data;
   },
 
   // Get table data with pagination
   getTableData: async (tableName: string, params?: { limit?: number; offset?: number; search?: string }) => {
-    const response = await api.get(`/api/database/tables/${tableName}/data`, { params });
+    const response = await api.get(`/database/tables/${tableName}/data`, { params });
     return response.data;
   },
 
   // Export table as CSV
   exportTable: async (tableName: string) => {
-    const response = await api.get(`/api/database/tables/${tableName}/export`, {
+    const response = await api.get(`/database/tables/${tableName}/export`, {
       responseType: 'blob'
     });
 
@@ -36,7 +36,7 @@ export const databaseService = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await api.post(`/api/database/tables/${tableName}/import`, formData, {
+    const response = await api.post(`/database/tables/${tableName}/import`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -46,7 +46,7 @@ export const databaseService = {
 
   // Update a specific cell
   updateRow: async (tableName: string, rowId: string, column: string, value: any) => {
-    const response = await api.put(`/api/database/tables/${tableName}/rows/${rowId}`, {
+    const response = await api.put(`/database/tables/${tableName}/rows/${rowId}`, {
       column,
       value
     });
@@ -55,13 +55,13 @@ export const databaseService = {
 
   // Delete a specific row
   deleteRow: async (tableName: string, rowId: string) => {
-    const response = await api.delete(`/api/database/tables/${tableName}/rows/${rowId}`);
+    const response = await api.delete(`/database/tables/${tableName}/rows/${rowId}`);
     return response.data;
   },
 
   // Truncate table (delete all rows)
   truncateTable: async (tableName: string) => {
-    const response = await api.delete(`/api/database/tables/${tableName}/truncate`);
+    const response = await api.delete(`/database/tables/${tableName}/truncate`);
     return response.data;
   }
 };

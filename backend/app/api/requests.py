@@ -2,7 +2,7 @@
 Requests API Endpoints (Yukyu, Ikkikokoku, Taisha, etc.)
 """
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from datetime import date
 
@@ -25,31 +25,37 @@ async def create_request(
     employee = db.query(Employee).filter(Employee.id == request_data.employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
-    
+
     # Check if employee can make request (only their own unless admin)
     if current_user.role.value == "employee":
         # Employee can only request for themselves
         # You'd need to link user to employee here
         pass
-    
-    # Calculate total days
-    if not request_data.total_days:
-        delta = request_data.end_date - request_data.start_date
-        request_data.total_days = delta.days + 1
-    
+
+    # Calculate total days (for validation)
+    delta = request_data.end_date - request_data.start_date
+    total_days = delta.days + 1
+
     # Check yukyu balance for yukyu/hankyu requests
     if request_data.request_type in [RequestType.YUKYU, RequestType.HANKYU]:
-        if employee.yukyu_remaining < float(request_data.total_days):
+        if employee.yukyu_remaining < float(total_days):
             raise HTTPException(
                 status_code=400,
                 detail=f"Insufficient yukyu balance. Available: {employee.yukyu_remaining}"
             )
-    
-    new_request = Request(**request_data.model_dump())
+
+    # Create request with hakenmoto_id from employee
+    request_dict = request_data.model_dump()
+    request_dict['hakenmoto_id'] = employee.hakenmoto_id
+    del request_dict['employee_id']  # Remove employee_id from schema
+    if 'total_days' in request_dict:
+        del request_dict['total_days']  # Remove total_days - it's a computed property
+
+    new_request = Request(**request_dict)
     db.add(new_request)
     db.commit()
     db.refresh(new_request)
-    
+
     return new_request
 
 
@@ -64,15 +70,21 @@ async def list_requests(
     db: Session = Depends(get_db)
 ):
     """List requests"""
-    query = db.query(Request)
-    
+    query = db.query(Request).options(joinedload(Request.employee))
+
     if employee_id:
-        query = query.filter(Request.employee_id == employee_id)
+        # Convert employee.id to hakenmoto_id for filtering
+        employee = db.query(Employee).filter(Employee.id == employee_id).first()
+        if employee:
+            query = query.filter(Request.hakenmoto_id == employee.hakenmoto_id)
+        else:
+            # If employee not found, return empty result
+            return []
     if status:
         query = query.filter(Request.status == status)
     if request_type:
         query = query.filter(Request.request_type == request_type)
-    
+
     return query.offset(skip).limit(limit).all()
 
 
@@ -83,7 +95,7 @@ async def get_request(
     db: Session = Depends(get_db)
 ):
     """Get request by ID"""
-    request = db.query(Request).filter(Request.id == request_id).first()
+    request = db.query(Request).options(joinedload(Request.employee)).filter(Request.id == request_id).first()
     if not request:
         raise HTTPException(status_code=404, detail="Request not found")
     return request
@@ -97,16 +109,18 @@ async def update_request(
     db: Session = Depends(get_db)
 ):
     """Update request (before approval)"""
-    request = db.query(Request).filter(Request.id == request_id).first()
+    request = db.query(Request).options(joinedload(Request.employee)).filter(Request.id == request_id).first()
     if not request:
         raise HTTPException(status_code=404, detail="Request not found")
-    
+
     if request.status != RequestStatus.PENDING:
         raise HTTPException(status_code=400, detail="Can only update pending requests")
-    
+
+    # Update fields, excluding total_days (computed property)
     for field, value in request_update.model_dump(exclude_unset=True).items():
-        setattr(request, field, value)
-    
+        if field != 'total_days':
+            setattr(request, field, value)
+
     db.commit()
     db.refresh(request)
     return request
@@ -120,25 +134,27 @@ async def review_request(
     db: Session = Depends(get_db)
 ):
     """Approve or reject request"""
-    request = db.query(Request).filter(Request.id == request_id).first()
+    request = db.query(Request).options(joinedload(Request.employee)).filter(Request.id == request_id).first()
     if not request:
         raise HTTPException(status_code=404, detail="Request not found")
-    
+
     if request.status != RequestStatus.PENDING:
         raise HTTPException(status_code=400, detail="Request already reviewed")
-    
+
     request.status = review_data.status
-    request.reviewed_by = current_user.id
-    request.reviewed_at = func.now()
-    request.review_notes = review_data.review_notes
-    
+    request.approved_by = current_user.id
+    request.approved_at = func.now()
+    if review_data.notes:
+        request.notes = review_data.notes
+
     # Update yukyu balance if approved
     if review_data.status == RequestStatus.APPROVED:
         if request.request_type in [RequestType.YUKYU, RequestType.HANKYU]:
-            employee = db.query(Employee).filter(Employee.id == request.employee_id).first()
-            employee.yukyu_used += float(request.total_days)
-            employee.yukyu_remaining -= float(request.total_days)
-    
+            employee = db.query(Employee).filter(Employee.hakenmoto_id == request.hakenmoto_id).first()
+            if employee:
+                employee.yukyu_used += float(request.total_days)
+                employee.yukyu_remaining -= float(request.total_days)
+
     db.commit()
     db.refresh(request)
     return request
@@ -154,7 +170,7 @@ async def approve_request(
     Approve a request (convenience endpoint).
     Shortcut for /review with status=APPROVED.
     """
-    request = db.query(Request).filter(Request.id == request_id).first()
+    request = db.query(Request).options(joinedload(Request.employee)).filter(Request.id == request_id).first()
     if not request:
         raise HTTPException(status_code=404, detail="Request not found")
 
@@ -162,12 +178,12 @@ async def approve_request(
         raise HTTPException(status_code=400, detail="Request already reviewed")
 
     request.status = RequestStatus.APPROVED
-    request.reviewed_by = current_user.id
-    request.reviewed_at = func.now()
+    request.approved_by = current_user.id
+    request.approved_at = func.now()
 
     # Update yukyu balance if approved
     if request.request_type in [RequestType.YUKYU, RequestType.HANKYU]:
-        employee = db.query(Employee).filter(Employee.id == request.employee_id).first()
+        employee = db.query(Employee).filter(Employee.hakenmoto_id == request.hakenmoto_id).first()
         if employee:
             employee.yukyu_used += float(request.total_days)
             employee.yukyu_remaining -= float(request.total_days)
@@ -188,7 +204,7 @@ async def reject_request_endpoint(
     Reject a request with reason (convenience endpoint).
     Shortcut for /review with status=REJECTED.
     """
-    request = db.query(Request).filter(Request.id == request_id).first()
+    request = db.query(Request).options(joinedload(Request.employee)).filter(Request.id == request_id).first()
     if not request:
         raise HTTPException(status_code=404, detail="Request not found")
 
@@ -196,9 +212,9 @@ async def reject_request_endpoint(
         raise HTTPException(status_code=400, detail="Request already reviewed")
 
     request.status = RequestStatus.REJECTED
-    request.reviewed_by = current_user.id
-    request.reviewed_at = func.now()
-    request.review_notes = reason
+    request.approved_by = current_user.id
+    request.approved_at = func.now()
+    request.notes = reason
 
     db.commit()
     db.refresh(request)

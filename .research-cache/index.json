@@ -1,1 +1,36 @@
-{"research_sessions": []}
+{
+  "research_sessions": [
+    {
+      "id": "access-migration-1729785600",
+      "technology": "Microsoft Access Database Migration to PostgreSQL",
+      "timestamp": "2025-10-24T12:00:00Z",
+      "file": "microsoft-access-python-migration-2025-10-24.md",
+      "summary": "Comprehensive guide for reading Microsoft Access .accdb files in Python 3.11+, extracting table schemas, handling BLOB/OLE Object fields (especially images), and migrating data to PostgreSQL. Covers pyodbc, pypyodbc, pandas, pywin32 libraries, Docker container considerations, and complete migration examples with image extraction.",
+      "topics": [
+        "pyodbc library and connection strings",
+        "Microsoft Access ODBC drivers (32-bit vs 64-bit)",
+        "Table schema extraction and data migration",
+        "OLE Object field handling and image extraction",
+        "BLOB/binary data processing",
+        "Access to PostgreSQL type mapping",
+        "Docker Windows container limitations",
+        "mdbtools Linux alternative",
+        "Complete migration script examples"
+      ],
+      "key_libraries": [
+        "pyodbc",
+        "pypyodbc", 
+        "pandas",
+        "pywin32",
+        "psycopg2",
+        "Pillow (PIL)",
+        "sqlalchemy"
+      ],
+      "platforms": [
+        "Windows (primary)",
+        "Docker on Windows host",
+        "Linux (with mdbtools)"
+      ]
+    }
+  ]
+}

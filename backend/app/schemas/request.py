@@ -37,19 +37,18 @@ class RequestResponse(RequestBase):
     """Request response"""
     id: int
     status: RequestStatus
-    reviewed_by: Optional[int]
-    reviewed_at: Optional[datetime]
-    review_notes: Optional[str]
+    approved_by: Optional[int]
+    approved_at: Optional[datetime]
     created_at: datetime
     updated_at: Optional[datetime]
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
 class RequestReview(BaseModel):
     """Review request (approve/reject)"""
     status: RequestStatus  # approved or rejected
-    review_notes: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class RequestStats(BaseModel):

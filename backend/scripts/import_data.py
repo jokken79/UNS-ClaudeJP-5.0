@@ -14,7 +14,7 @@ sys.path.insert(0, '/app')
 
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
-from app.models.models import Factory, Employee, ContractWorker, Staff
+from app.models.models import Factory, Employee, ContractWorker, Staff, SocialInsuranceRate
 
 
 def normalize_text(text: str) -> str:
@@ -542,6 +542,83 @@ def import_staff_employees(db: Session):
         return 0
 
 
+def import_taisha_employees(db: Session):
+    """Import 退社社員 (Resigned employees) from DBTaishaX hidden sheet"""
+    print("=" * 50)
+    print("IMPORTANDO 退社社員 (RESIGNED EMPLOYEES)")
+    print("=" * 50)
+
+    try:
+        df = pd.read_excel('/app/config/employee_master.xlsm', sheet_name='DBTaishaX', header=0)
+
+        # Filter out rows where all values are NaN
+        df = df.dropna(how='all')
+
+        if len(df) == 0:
+            print("ℹ No hay empleados renunciados registrados aún.\n")
+            return 0
+
+        imported = 0
+        errors = 0
+
+        for idx, row in df.iterrows():
+            try:
+                if pd.isna(row.get('社員№')):
+                    continue
+
+                hakenmoto_id = int(row['社員№'])
+
+                # Check if employee exists and update to inactive
+                employee = db.query(Employee).filter(Employee.hakenmoto_id == hakenmoto_id).first()
+
+                if employee:
+                    # Update existing employee to mark as resigned
+                    employee.is_active = False
+                    employee.current_status = 'terminated'
+                    if pd.notna(row.get('退社日')):
+                        try:
+                            employee.termination_date = pd.to_datetime(row['退社日']).date()
+                        except:
+                            pass
+
+                    db.commit()
+                    imported += 1
+
+            except Exception as e:
+                db.rollback()
+                errors += 1
+                if errors < 5:
+                    print(f"  ✗ Error en fila {idx}: {e}")
+
+        print(f"✓ Actualizados {imported} empleados renunciados")
+        if errors > 0:
+            print(f"  ⚠ {errors} errores encontrados\n")
+        return imported
+
+    except Exception as e:
+        db.rollback()
+        print(f"✗ Error importando 退社社員: {e}\n")
+        return 0
+
+
+def import_insurance_rates(db: Session):
+    """Import social insurance rates from 愛知23 sheet"""
+    print("=" * 50)
+    print("IMPORTANDO TARIFAS DE SEGUROS (愛知23)")
+    print("=" * 50)
+
+    try:
+        # Note: This sheet has a complex format, needs special parsing
+        # For now, we'll skip it and add a TODO comment
+        print("ℹ Importación de tarifas de seguros pendiente de implementación.")
+        print("  (Requiere parsing manual de la tabla compleja)\n")
+        return 0
+
+    except Exception as e:
+        print(f"✗ Error importando tarifas: {e}\n")
+        return 0
+
+
 def main():
     """Main import function"""
     db = SessionLocal()
@@ -558,6 +635,8 @@ def main():
         haken_count = import_haken_employees(db)
         ukeoi_count = import_ukeoi_employees(db)
         staff_count = import_staff_employees(db)
+        taisha_count = import_taisha_employees(db)
+        insurance_count = import_insurance_rates(db)
 
         total_employees = haken_count + ukeoi_count + staff_count
 
@@ -565,12 +644,14 @@ def main():
         print("=" * 50)
         print("RESUMEN DE IMPORTACIÓN")
         print("=" * 50)
-        print(f"Fábricas:        {factories_count:4d}")
-        print(f"派遣社員:        {haken_count:4d}")
-        print(f"請負社員:        {ukeoi_count:4d}")
-        print(f"スタッフ:        {staff_count:4d}")
+        print(f"Fábricas:          {factories_count:4d}")
+        print(f"派遣社員:          {haken_count:4d}")
+        print(f"請負社員:          {ukeoi_count:4d}")
+        print(f"スタッフ:          {staff_count:4d}")
+        print(f"退社社員:          {taisha_count:4d}")
+        print(f"Tarifas seguros:   {insurance_count:4d}")
         print(f"{'─' * 50}")
-        print(f"TOTAL Empleados: {total_employees:4d}")
+        print(f"TOTAL Empleados:   {total_employees:4d}")
         print("=" * 50)
 
     except Exception as e:

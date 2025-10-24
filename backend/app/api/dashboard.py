@@ -301,8 +301,8 @@ async def get_recent_activity(
     # Recent requests
     recent_requests = db.query(Request).order_by(Request.created_at.desc()).limit(5).all()
     for request in recent_requests:
-        employee = db.query(Employee).filter(Employee.id == request.employee_id).first()
-        employee_name = employee.full_name_kanji if employee else f"Employee #{request.employee_id}"
+        employee = db.query(Employee).filter(Employee.hakenmoto_id == request.hakenmoto_id).first()
+        employee_name = employee.full_name_kanji if employee else f"Employee #{request.hakenmoto_id}"
         status_text = "approved" if request.status == RequestStatus.APPROVED else "rejected" if request.status == RequestStatus.REJECTED else "submitted"
         activities.append(RecentActivity(
             activity_type=f"request_{status_text}",
@@ -364,7 +364,7 @@ async def get_employee_dashboard(
 
     # Pending requests
     pending_requests = db.query(Request).filter(
-        Request.employee_id == employee_id,
+        Request.hakenmoto_id == employee.hakenmoto_id,
         Request.status == RequestStatus.PENDING
     ).count()
 
