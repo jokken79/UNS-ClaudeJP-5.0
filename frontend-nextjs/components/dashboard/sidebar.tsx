@@ -5,18 +5,44 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { dashboardConfig } from '@/lib/constants/dashboard-config';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { useSidebar } from '@/lib/hooks/use-sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeInLeft, staggerFast, shouldReduceMotion } from '@/lib/animations';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/stores/auth-store';
+import { useSettingsStore } from '@/stores/settings-store';
 
 export function Sidebar() {
   const pathname = usePathname();
   const { collapsed, toggle } = useSidebar();
   const reducedMotion = shouldReduceMotion();
+  const { user } = useAuthStore();
+  const { visibilityEnabled, updateVisibilityToggle, fetchVisibilityToggle } = useSettingsStore();
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Fetch visibility toggle on mount
+  useEffect(() => {
+    fetchVisibilityToggle();
+  }, [fetchVisibilityToggle]);
+
+  // Check if user is admin
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+
+  // Handle toggle change
+  const handleVisibilityToggle = async (checked: boolean) => {
+    setIsUpdating(true);
+    try {
+      await updateVisibilityToggle(checked);
+    } catch (error) {
+      console.error('Failed to update visibility toggle:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return (
     <motion.aside
@@ -79,6 +105,70 @@ export function Sidebar() {
           </Button>
         </motion.div>
       </div>
+
+      {/* Admin Visibility Toggle */}
+      {isAdmin && (
+        <>
+          <div className={cn('px-3 py-3 border-b bg-muted/30', collapsed && 'px-2')}>
+            <AnimatePresence mode="wait">
+              {!collapsed ? (
+                <motion.div
+                  key="toggle-full"
+                  className="flex items-center justify-between gap-3"
+                  initial={!reducedMotion ? { opacity: 0, x: -20 } : undefined}
+                  animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
+                  exit={!reducedMotion ? { opacity: 0, x: -20 } : undefined}
+                  transition={!reducedMotion ? { duration: 0.2 } : undefined}
+                >
+                  <div className="flex items-center gap-2 flex-1">
+                    {visibilityEnabled ? (
+                      <Eye className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <EyeOff className="h-4 w-4 text-red-600" />
+                    )}
+                    <div className="flex-1">
+                      <p className="text-xs font-semibold text-foreground">
+                        Visibilidad
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {visibilityEnabled ? 'Contenido visible' : 'En construcción'}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={visibilityEnabled}
+                    onCheckedChange={handleVisibilityToggle}
+                    disabled={isUpdating}
+                    className="data-[state=checked]:bg-green-600"
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="toggle-collapsed"
+                  className="flex justify-center"
+                  initial={!reducedMotion ? { opacity: 0 } : undefined}
+                  animate={!reducedMotion ? { opacity: 1 } : undefined}
+                  exit={!reducedMotion ? { opacity: 0 } : undefined}
+                  transition={!reducedMotion ? { duration: 0.2 } : undefined}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    title={visibilityEnabled ? 'Contenido visible' : 'En construcción'}
+                  >
+                    {visibilityEnabled ? (
+                      <Eye className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <EyeOff className="h-4 w-4 text-red-600" />
+                    )}
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </>
+      )}
 
       {/* Navegación */}
       <ScrollArea className="h-[calc(100vh-4rem)]">

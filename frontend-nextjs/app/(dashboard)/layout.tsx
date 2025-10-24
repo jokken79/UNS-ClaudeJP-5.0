@@ -7,6 +7,7 @@ import { SimpleNavigationProgress } from '@/components/navigation-progress';
 import { PageTransition } from '@/components/PageTransition';
 import { BreadcrumbNav } from '@/components/breadcrumb-nav';
 import { AnimatedLink } from '@/components/animated-link';
+import { VisibilityGuard } from '@/components/visibility-guard';
 
 export default function DashboardLayout({
   children,
@@ -29,15 +30,17 @@ export default function DashboardLayout({
 
           {/* Page Content with Transitions */}
           <main className="flex-1 overflow-y-auto">
-            <div className="container mx-auto p-6 space-y-6">
-              {/* Breadcrumb Navigation */}
-              <BreadcrumbNav showHome={true} maxItems={3} />
+            <VisibilityGuard>
+              <div className="container mx-auto p-6 space-y-6">
+                {/* Breadcrumb Navigation */}
+                <BreadcrumbNav showHome={true} maxItems={3} />
 
-              {/* Page Content with Smooth Transitions */}
-              <PageTransition variant="fade" duration={0.3}>
-                {children}
-              </PageTransition>
-            </div>
+                {/* Page Content with Smooth Transitions */}
+                <PageTransition variant="fade" duration={0.3}>
+                  {children}
+                </PageTransition>
+              </div>
+            </VisibilityGuard>
           </main>
 
           {/* Footer */}

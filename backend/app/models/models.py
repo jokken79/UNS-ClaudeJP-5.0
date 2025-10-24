@@ -786,3 +786,18 @@ class SocialInsuranceRate(Base):
     notes = Column(Text)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class SystemSettings(Base):
+    """
+    System-wide configuration settings
+    Used for admin-controlled toggles like content visibility
+    """
+    __tablename__ = "system_settings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String(100), unique=True, nullable=False, index=True)
+    value = Column(String(255))
+    description = Column(Text)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
