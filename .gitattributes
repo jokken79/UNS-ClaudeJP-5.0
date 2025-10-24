@@ -1,0 +1,5 @@
+access_photo_mappings.json filter=lfs diff=lfs merge=lfs -text
+access_candidates_data.json filter=lfs diff=lfs merge=lfs -text
+backend/access_photo_mappings.json filter=lfs diff=lfs merge=lfs -text
+backend/access_candidates_data.json filter=lfs diff=lfs merge=lfs -text
+candidate-photos-*.png filter=lfs diff=lfs merge=lfs -text

@@ -117,13 +117,13 @@ ocr_rirekisho_results.json
 !backend/tests/test_*.py
 
 # ========================================
-# Access Import Data (Large Files)
+# Access Import Data (Large Files tracked by LFS)
 # ========================================
-access_photo_mappings.json
-access_candidates_data.json
-backend/access_photo_mappings.json
-backend/access_candidates_data.json
-candidate-photos-*.png
+# access_photo_mappings.json - Now tracked by Git LFS
+# access_candidates_data.json - Now tracked by Git LFS
+# backend/access_photo_mappings.json - Now tracked by Git LFS
+# backend/access_candidates_data.json - Now tracked by Git LFS
+# candidate-photos-*.png - Now tracked by Git LFS
 stuck_request.txt
 reinstalar_log.txt
 scripts/reinstalar_log.txt 
