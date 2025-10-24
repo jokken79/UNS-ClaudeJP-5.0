@@ -48,6 +48,9 @@ class EmployeeUpdate(BaseModel):
     jikyu: Optional[int] = None
     position: Optional[str] = None
     address: Optional[str] = None
+    current_address: Optional[str] = None  # 現住所 - Base address
+    address_banchi: Optional[str] = None  # 番地 - Block/lot number
+    address_building: Optional[str] = None  # 物件名 - Building name
     phone: Optional[str] = None
     email: Optional[EmailStr] = None
     emergency_contact: Optional[str] = None

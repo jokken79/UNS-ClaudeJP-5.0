@@ -34,6 +34,8 @@ export default function Page() {
     nationality: "",
     postalCode: "",
     address: "",
+    addressBanchi: "",
+    addressBuilding: "",
     mobile: "",
     phone: "",
     emergencyName: "",
@@ -126,6 +128,8 @@ export default function Page() {
             nationality: candidate.nationality || "",
             postalCode: candidate.postal_code || "",
             address: candidate.current_address || candidate.address || "",
+            addressBanchi: candidate.address_banchi || "",
+            addressBuilding: candidate.address_building || "",
             mobile: candidate.mobile || "",
             phone: candidate.phone || "",
             emergencyName: candidate.emergency_contact_name || "",
@@ -361,6 +365,8 @@ export default function Page() {
             nationality: data.nationality,
             postal_code: data.postalCode,
             current_address: data.address,
+            address_banchi: data.addressBanchi,
+            address_building: data.addressBuilding,
             mobile: data.mobile,
             phone: data.phone,
             emergency_contact_name: data.emergencyName,
@@ -940,9 +946,21 @@ export default function Page() {
                 </td>
               </tr>
               <tr>
-                <th className="border border-black bg-gray-100 px-2 py-1 text-left">住所</th>
+                <th className="border border-black bg-gray-100 px-2 py-1 text-left">現住所</th>
                 <td className="border border-black px-2 py-1" colSpan={7}>
-                  <input value={data.address} onChange={(e) => onChange("address", e.target.value)} className="w-full border-0 p-0 outline-none" />
+                  <input value={data.address} onChange={(e) => onChange("address", e.target.value)} placeholder="愛知県名古屋市..." className="w-full border-0 p-0 outline-none" />
+                </td>
+              </tr>
+              <tr>
+                <th className="border border-black bg-gray-100 px-2 py-1 text-left">番地</th>
+                <td className="border border-black px-2 py-1" colSpan={7}>
+                  <input value={data.addressBanchi} onChange={(e) => onChange("addressBanchi", e.target.value)} placeholder="1-2-3" className="w-full border-0 p-0 outline-none" />
+                </td>
+              </tr>
+              <tr>
+                <th className="border border-black bg-gray-100 px-2 py-1 text-left">物件名</th>
+                <td className="border border-black px-2 py-1" colSpan={7}>
+                  <input value={data.addressBuilding} onChange={(e) => onChange("addressBuilding", e.target.value)} placeholder="マンション名・号室" className="w-full border-0 p-0 outline-none" />
                 </td>
               </tr>
             </tbody>
@@ -1894,7 +1912,7 @@ type FamilyEntry = {
 
 type FormDataState = {
   applicantId: string; receptionDate: string; timeInJapan: string; nameKanji: string; nameFurigana: string; birthday: string; age: string; gender: string;
-  nationality: string; postalCode: string; address: string; mobile: string; phone: string; emergencyName: string;
+  nationality: string; postalCode: string; address: string; addressBanchi: string; addressBuilding: string; mobile: string; phone: string; emergencyName: string;
   emergencyRelation: string; emergencyPhone: string; visaType: string; visaPeriod: string; residenceCardNo: string;
   passportNo: string; passportExpiry: string; licenseNo: string; licenseExpiry: string; carOwner: string; insurance: string;
   speakLevel: string; listenLevel: string; kanjiReadLevel: string; kanjiWriteLevel: string; hiraganaReadLevel: string; hiraganaWriteLevel: string; katakanaReadLevel: string; katakanaWriteLevel: string; education: string;
