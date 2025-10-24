@@ -157,6 +157,7 @@ from app.api import (  # noqa: E402  pylint: disable=wrong-import-position
     reports,
     requests,
     salary,
+    settings,
     timer_cards,
 )
 
@@ -174,6 +175,7 @@ app.include_router(import_export.router, prefix="/api/import", tags=["Import/Exp
 app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
 app.include_router(monitoring.router, prefix="/api/monitoring", tags=["Monitoring"])
+app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
 
 
 if __name__ == "__main__":  # pragma: no cover
