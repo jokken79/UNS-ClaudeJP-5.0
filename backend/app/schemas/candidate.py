@@ -32,7 +32,6 @@ class CandidateBase(BaseModel):
     address: Optional[str] = None
     address_banchi: Optional[str] = None
     address_building: Optional[str] = None
-    building_name: Optional[str] = None
     registered_address: Optional[str] = None
 
     # 連絡先 (Contact Information)

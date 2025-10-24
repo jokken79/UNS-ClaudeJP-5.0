@@ -73,15 +73,7 @@ export default function CandidatesPage() {
 
       const result = await candidateService.getCandidates(params);
 
-      // Debug: Check photo_data_url presence
-      console.log('Candidates data received:', result.items?.length, 'items');
-      if (result.items && result.items.length > 0) {
-        const withPhotos = result.items.filter((c: Candidate) => c.photo_data_url && c.photo_data_url.trim() !== '');
-        console.log(`${withPhotos.length}/${result.items.length} candidates have photo_data_url`);
-        if (withPhotos.length > 0) {
-          console.log('Sample photo_data_url (first 100 chars):', withPhotos[0].photo_data_url?.substring(0, 100));
-        }
-      }
+      // Debug: Check photo_data_url presence (removed for production)
 
       return result;
     },

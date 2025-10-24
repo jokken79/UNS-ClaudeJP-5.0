@@ -160,7 +160,6 @@ def map_simple(row, photo_mappings, photo_cleaned_counter):
         'current_address': row.get('現住所'),  # 現住所 - Base address from postal code
         'address_banchi': row.get('番地'),  # 番地 - Block/lot number
         'address_building': row.get('物件名'),  # 物件名 - Building/apartment name
-        'building_name': row.get('物件名'),  # Legacy field (same as address_building)
         'address': None,  # Will be set if needed (kept for compatibility)
         'registered_address': row.get('登録住所'),
         'phone': row.get('電話番号'),

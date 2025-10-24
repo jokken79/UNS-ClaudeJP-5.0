@@ -14,7 +14,7 @@ const API_BASE_URL = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL || 'http:/
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000,  // 30 seconds for OCR operations
 });
 
 const getAuthToken = (): string | null => {
@@ -146,9 +146,7 @@ export const employeeService = {
 // Candidate services
 export const candidateService = {
   getCandidates: async (params?: any) => {
-    console.time("getCandidates API call");
     const response = await api.get('/candidates', { params });
-    console.timeEnd("getCandidates API call");
     return response.data;
   },
 

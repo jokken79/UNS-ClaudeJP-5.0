@@ -654,7 +654,7 @@ async def approve_candidate(
             address_parts = [
                 candidate.current_address,
                 candidate.address_banchi,
-                candidate.building_name,
+                candidate.address_building,
             ]
             candidate_address = " ".join([part for part in address_parts if part]) or candidate.registered_address
 
@@ -676,7 +676,7 @@ async def approve_candidate(
                 address=candidate_address,
                 current_address=candidate.current_address,  # 現住所 - Base address
                 address_banchi=candidate.address_banchi,  # 番地 - Block/lot number
-                address_building=candidate.building_name,  # 物件名 - Building name
+                address_building=candidate.address_building,  # 物件名 - Building name
                 postal_code=candidate.postal_code,
                 phone=candidate.mobile or candidate.phone,
                 email=candidate.email,
