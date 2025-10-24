@@ -34,6 +34,9 @@ interface Employee {
   gender: string | null;
   nationality: string | null;
   address: string | null;
+  current_address?: string | null;
+  address_banchi?: string | null;
+  address_building?: string | null;
   phone: string | null;
   email: string | null;
   postal_code: string | null;
@@ -349,12 +352,35 @@ export default function EmployeeDetailPage() {
               </div>
               <div className="px-6 py-5">
                 <dl className="space-y-5">
-                  <div>
+                  <div className="sm:col-span-1">
                     <dt className="text-sm font-medium text-gray-500 flex items-center">
                       <HomeIcon className="h-4 w-4 mr-1" />
                       住所
                     </dt>
-                    <dd className="mt-1 text-sm text-gray-900">{employee.address || '-'}</dd>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {employee.current_address && (
+                        <div>
+                          <span className="text-xs text-gray-500">現住所: </span>
+                          {employee.current_address}
+                        </div>
+                      )}
+                      {employee.address_banchi && (
+                        <div>
+                          <span className="text-xs text-gray-500">番地: </span>
+                          {employee.address_banchi}
+                        </div>
+                      )}
+                      {employee.address_building && (
+                        <div>
+                          <span className="text-xs text-gray-500">物件名: </span>
+                          {employee.address_building}
+                        </div>
+                      )}
+                      {!employee.current_address && !employee.address_banchi && !employee.address_building && employee.address && (
+                        <div>{employee.address}</div>
+                      )}
+                      {!employee.current_address && !employee.address_banchi && !employee.address_building && !employee.address && '-'}
+                    </dd>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
