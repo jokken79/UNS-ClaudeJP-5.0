@@ -33,6 +33,8 @@ interface Candidate {
   postal_code?: string;
   current_address?: string;
   address?: string;
+  address_banchi?: string;
+  address_building?: string;
   status?: string;
   photo_url?: string;
   photo_data_url?: string;
@@ -309,10 +311,30 @@ export default function CandidateDetailPage() {
                   </div>
                 )}
 
-                {(candidate.current_address || candidate.address) && (
+                {(candidate.current_address || candidate.address || candidate.address_banchi || candidate.address_building) && (
                   <div className="md:col-span-2">
                     <p className="text-sm text-gray-500 mb-1">住所</p>
-                    <p className="text-gray-900">{candidate.current_address || candidate.address}</p>
+                    {candidate.current_address && (
+                      <p className="text-gray-900">
+                        <span className="text-xs text-gray-500">現住所: </span>
+                        {candidate.current_address}
+                      </p>
+                    )}
+                    {candidate.address_banchi && (
+                      <p className="text-gray-900">
+                        <span className="text-xs text-gray-500">番地: </span>
+                        {candidate.address_banchi}
+                      </p>
+                    )}
+                    {candidate.address_building && (
+                      <p className="text-gray-900">
+                        <span className="text-xs text-gray-500">物件名: </span>
+                        {candidate.address_building}
+                      </p>
+                    )}
+                    {!candidate.current_address && !candidate.address_banchi && !candidate.address_building && candidate.address && (
+                      <p className="text-gray-900">{candidate.address}</p>
+                    )}
                     {candidate.postal_code && (
                       <p className="text-sm text-gray-600 mt-1">〒 {candidate.postal_code}</p>
                     )}
