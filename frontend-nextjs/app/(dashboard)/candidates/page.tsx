@@ -18,30 +18,9 @@ import { SkeletonListItem } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
 import { useDelayedLoading, getErrorType } from '@/lib/loading-utils';
+import type { Candidate, PaginatedResponse } from '@/types/api';
 
-interface Candidate {
-  id: number;
-  rirekisho_id?: string;
-  full_name_kanji?: string;
-  full_name_kana?: string;
-  full_name_roman?: string;
-  date_of_birth?: string;
-  age?: number;
-  nationality?: string;
-  phone?: string;
-  address?: string;
-  status?: string;
-  created_at?: string;
-  photo_url?: string;
-  photo_data_url?: string;  // Base64 photo data
-}
-
-interface CandidatesResponse {
-  items: Candidate[];
-  total: number;
-  page: number;
-  page_size: number;
-}
+type CandidatesResponse = PaginatedResponse<Candidate>;
 
 export default function CandidatesPage() {
   const router = useRouter();
@@ -54,7 +33,13 @@ export default function CandidatesPage() {
   const { data, isLoading, error, refetch } = useQuery<CandidatesResponse>({
     queryKey: ['candidates', currentPage, statusFilter, searchTerm, sortOrder, pageSize],
     queryFn: async () => {
-      const params: any = {
+      const params: {
+        page: number;
+        page_size: number;
+        status_filter?: string;
+        search?: string;
+        sort?: string;
+      } = {
         page: currentPage,
         page_size: pageSize,
       };

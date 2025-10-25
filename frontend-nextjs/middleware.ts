@@ -1,42 +1,19 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+/**
+ * Middleware para Next.js
+ *
+ * IMPORTANTE: Este middleware NO valida tokens de autenticación porque
+ * usamos localStorage (no accesible desde server-side). La validación
+ * de tokens se realiza en el cliente mediante interceptors de Axios.
+ *
+ * Este middleware solo:
+ * - Agrega headers de seguridad
+ * - Permite que todas las rutas pasen (la protección se hace en cliente)
+ */
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  // Protected routes
-  const protectedRoutes = [
-    '/dashboard',
-    '/candidates',
-    '/employees',
-    '/factories',
-    '/timercards',
-    '/salary',
-    '/requests',
-    '/database-management',
-    '/settings',
-    '/profile',
-  ];
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-
-  // Check for token in cookies (we'll set this on login)
-  const token = request.cookies.get('token')?.value || request.cookies.get('auth_token')?.value;
-
-  // If trying to access protected route without token, redirect to login
-  if (isProtectedRoute && !token) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
-  }
-
-  // If logged in and trying to access login page, redirect to dashboard
-  if (pathname === '/login' && token) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
-  }
-
-  // Add security headers
+  // Add security headers to all responses
   const response = NextResponse.next();
   response.headers.set('X-Request-ID', crypto.randomUUID());
   response.headers.set('X-Frame-Options', 'SAMEORIGIN');

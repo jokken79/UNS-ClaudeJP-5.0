@@ -7,13 +7,6 @@ import { LockClosedIcon, UserIcon, EyeIcon, EyeSlashIcon } from '@heroicons/reac
 import { authService } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth-store';
 
-// Helper function to set cookie for middleware authentication
-const setCookie = (name: string, value: string, days: number = 7) => {
-  const expires = new Date();
-  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
-};
-
 export default function LoginPage() {
   const login = useAuthStore((state) => state.login);
   const [username, setUsername] = useState('');
@@ -47,19 +40,15 @@ export default function LoginPage() {
       // Step 1: Login and get token
       const data = await authService.login(username, password);
 
-      // Step 2: Get current user with the token directly (bypass store)
+      // Step 2: Get current user with the token
       const user = await authService.getCurrentUser(data.access_token);
 
-      // Step 3: Set cookie for middleware (CRITICAL - middleware needs this!)
-      setCookie('token', data.access_token, 7);
-
-      // Step 4: Save everything to store at once
+      // Step 3: Save to store (uses localStorage internally)
       login(data.access_token, user);
 
       toast.success('ログインに成功しました');
 
-      // Step 5: Force full page reload to ensure cookie is sent to middleware
-      // Using programmatic navigation with Next.js router for better performance
+      // Step 4: Navigate to dashboard
       if (typeof window !== 'undefined') {
         window.location.href = '/dashboard';
       }
