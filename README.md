@@ -1,12 +1,15 @@
-# Next.js Dashboard
+# UNS-ClaudeJP 5.0 - HR Management System
 
-Este es un dashboard construido con Next.js 15.5.5, React 18.3.1 y TypeScript 5.9.3.
+Dashboard de gestión de recursos humanos para agencias de empleo japonesas, construido con Next.js 16.0.0, React 19.0.0 y TypeScript 5.6.0.
+
+> 🚀 **Nueva versión 5.0** - Actualizado con Next.js 16, React 19 y Turbopack como bundler por defecto.
 
 ## Características
 
-- Next.js 15.5.5 con App Router
-- React 18.3.1
-- TypeScript 5.9.3
+- Next.js 16.0.0 con App Router
+- React 19.0.0 y React DOM 19.0.0
+- TypeScript 5.6.0
+- Turbopack (bundler por defecto - 70% más rápido)
 - Tailwind CSS 3.4.18
 - Radix UI Components
 - Recharts para visualización de datos
