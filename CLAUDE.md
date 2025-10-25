@@ -53,14 +53,14 @@ claude --dangerously-skip-permissions
 
 ## Project Overview
 
-UNS-ClaudeJP 4.2 is a comprehensive HR management system for Japanese staffing agencies (人材派遣会社), built with:
+UNS-ClaudeJP 5.0 is a comprehensive HR management system for Japanese staffing agencies (人材派遣会社), built with:
 - **Backend**: FastAPI 0.115.6 (Python 3.11+) with SQLAlchemy 2.0.36 ORM and PostgreSQL 15
-- **Frontend**: Next.js 15.5.5 with TypeScript 5.6 and Tailwind CSS 3.4 (App Router)
+- **Frontend**: Next.js 16.0.0 with React 19, TypeScript 5.6 and Tailwind CSS 3.4 (App Router)
 - **DevOps**: Docker Compose for orchestration
 
 The system manages the complete lifecycle of temporary workers: candidates (履歴書/Rirekisho), employees (派遣社員), factories (派遣先), attendance (タイムカード), payroll (給与), and requests (申請). It includes hybrid OCR processing (Azure + EasyOCR + Tesseract) for Japanese document handling.
 
-**Version 4.2** represents a major upgrade from v3.x with migration from React/Vite to Next.js 15, implementing 15 functional pages across 8 core modules.
+**Version 5.0** represents a major upgrade to Next.js 16 with React 19, featuring Turbopack as the default bundler, implementing 15 functional pages across 8 core modules with improved performance and caching.
 
 ## Quick Start Commands
 
@@ -122,7 +122,7 @@ pip install package-name
 # Then add to requirements.txt
 ```
 
-### Frontend Development (Next.js 15)
+### Frontend Development (Next.js 16)
 
 ```bash
 # Access frontend container
@@ -208,7 +208,7 @@ backend/
 └── scripts/                  # Maintenance scripts
 ```
 
-### Frontend Structure (Next.js 15 App Router)
+### Frontend Structure (Next.js 16 App Router)
 
 ```
 frontend-nextjs/
@@ -250,7 +250,7 @@ frontend-nextjs/
 │   └── api/                   # API service modules
 ├── stores/                    # Zustand state management
 ├── types/                     # TypeScript type definitions
-├── middleware.ts              # Next.js authentication middleware
+├── proxy.ts                   # Next.js 16 proxy (formerly middleware.ts)
 └── public/                    # Static assets
 ```
 
@@ -286,7 +286,7 @@ frontend-nextjs/
 
 - **JWT-based authentication** with bcrypt password hashing
 - **Role hierarchy**: SUPER_ADMIN → ADMIN → COORDINATOR → KANRININSHA → EMPLOYEE → CONTRACT_WORKER
-- **Frontend**: Next.js middleware protects routes (`middleware.ts`)
+- **Frontend**: Next.js proxy protects routes (`proxy.ts`)
 - **Backend**: FastAPI dependency injection validates JWT on each request
 - Access tokens stored in localStorage
 - Token expiration: 480 minutes (8 hours)
@@ -529,7 +529,7 @@ app/
 - **Docker required**: All services run in containers
 - **Port requirements**: 3000, 8000, 5432, 8080
 - **Japanese terminology**: Extensive use of Japanese HR terms (履歴書, 派遣社員, タイムカード, etc.)
-- **v4.0 Migration**: Frontend migrated from React/Vite to Next.js 15 in January 2025
+- **v5.0 Upgrade**: Upgraded to Next.js 16 with React 19, Turbopack default bundler in October 2025
 - **Next.js**: Uses App Router (not Pages Router), Server Components by default
 
 ## Critical Development Rules
@@ -571,7 +571,7 @@ The application runs 5 services via Docker Compose:
 1. **db** - PostgreSQL 15 with persistent volume
 2. **importer** - One-time data initialization (creates admin user, imports demo data)
 3. **backend** - FastAPI application with hot reload
-4. **frontend** - Next.js 15 application with hot reload
+4. **frontend** - Next.js 16 application with hot reload (Turbopack default)
 5. **adminer** - Database management UI
 
 All services communicate via `uns-network` bridge network.
