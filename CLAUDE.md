@@ -42,6 +42,15 @@ Solo crear nuevo .md si el tema es **completamente diferente** y no encaja en ex
 
 ---
 
+## 🎯 Preferencias del Usuario
+
+**"claude poder"** = Ejecutar comando en terminal:
+```bash
+claude --dangerously-skip-permissions
+```
+
+---
+
 ## Project Overview
 
 UNS-ClaudeJP 4.2 is a comprehensive HR management system for Japanese staffing agencies (人材派遣会社), built with:

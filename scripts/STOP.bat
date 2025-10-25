@@ -1,49 +1,71 @@
 @echo off
+chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
-title UNS-ClaudeJP 4.0 - Detener Sistema
+title UNS-ClaudeJP 4.2 - Detener Sistema
 
 echo.
 echo ========================================================
-echo       UNS-CLAUDEJP 4.0 - DETENER SISTEMA
+echo       UNS-CLAUDEJP 4.2 - DETENER SISTEMA
 echo ========================================================
 echo.
 
 REM Cambiar al directorio raiz del proyecto
 cd /d "%~dp0\.."
 
-echo Verificando Docker Compose...
+echo [1/3] Verificando Docker Desktop...
+docker ps >nul 2>&1
+if %errorlevel% neq 0 (
+    echo     [AVISO] Docker Desktop no esta corriendo.
+    echo     [i] No hay servicios activos para detener.
+    echo.
+    goto :end
+)
+echo     [OK] Docker Desktop esta corriendo.
+echo.
+
+echo [2/3] Verificando Docker Compose...
 set "DOCKER_COMPOSE_CMD="
 docker compose version >nul 2>&1
 if %errorlevel% EQU 0 (
     set "DOCKER_COMPOSE_CMD=docker compose"
+    echo     [OK] Docker Compose V2 detectado.
 ) else (
     docker-compose version >nul 2>&1
     if %errorlevel% EQU 0 (
         set "DOCKER_COMPOSE_CMD=docker-compose"
+        echo     [OK] Docker Compose V1 detectado.
     ) else (
-        echo ERROR: Docker Compose no encontrado
+        echo     [ERROR] ERROR: Docker Compose no encontrado.
+        echo        SOLUCION: Asegurate que Docker Desktop este actualizado.
         pause
         exit /b 1
     )
 )
-
-echo Deteniendo todos los servicios...
 echo.
+
+echo [3/3] Deteniendo todos los servicios...
 %DOCKER_COMPOSE_CMD% down
 
 if %errorlevel% EQU 0 (
     echo.
-    echo OK - Todos los servicios detenidos correctamente.
-    echo.
+    echo ========================================================
+    echo     [OK] TODOS LOS SERVICIOS DETENIDOS CORRECTAMENTE
+    echo ========================================================
 ) else (
     echo.
-    echo ERROR al detener los servicios.
+    echo ========================================================
+    echo     [ERROR] ERROR AL DETENER LOS SERVICIOS
+    echo ========================================================
     echo.
+    echo Intentando verificar estado actual...
 )
-
-echo Estado actual:
-%DOCKER_COMPOSE_CMD% ps
-
 echo.
-pause
+
+echo Estado final de contenedores:
+%DOCKER_COMPOSE_CMD% ps
+echo.
+
+:end
+echo Presiona cualquier tecla para salir...
+pause >nul

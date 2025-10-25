@@ -299,13 +299,15 @@ export default function FactoriesPage() {
                     )}
                   </div>
 
-                  <button
-                    onClick={() => handleEdit(factory)}
-                    className="w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                  >
-                    <PencilIcon className="h-4 w-4 mr-1" />
-                    編集
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => window.location.href = `/factories/${factory.factory_id}/edit`}
+                      className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                    >
+                      <PencilIcon className="h-4 w-4 mr-1" />
+                      詳細編集
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

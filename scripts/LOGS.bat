@@ -1,16 +1,29 @@
 @echo off
+chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
-title UNS-ClaudeJP 4.0 - Ver Logs
+title UNS-ClaudeJP 4.2 - Ver Logs
 
 echo.
 echo ========================================================
-echo       UNS-CLAUDEJP 4.0 - VER LOGS
+echo       UNS-CLAUDEJP 4.2 - VER LOGS
 echo ========================================================
 echo.
 
 REM Cambiar al directorio raiz del proyecto
 cd /d "%~dp0\.."
+
+echo Verificando Docker Desktop...
+docker ps >nul 2>&1
+if %errorlevel% neq 0 (
+    echo     [ERROR] ERROR: Docker Desktop no esta corriendo.
+    echo        SOLUCION: Inicia Docker Desktop con START.bat primero.
+    echo.
+    pause
+    exit /b 1
+)
+echo     [OK] Docker Desktop esta corriendo.
+echo.
 
 set "DOCKER_COMPOSE_CMD="
 docker compose version >nul 2>&1
@@ -21,13 +34,16 @@ if %errorlevel% EQU 0 (
     if %errorlevel% EQU 0 (
         set "DOCKER_COMPOSE_CMD=docker-compose"
     ) else (
-        echo ERROR: Docker Compose no encontrado
+        echo     [ERROR] ERROR: Docker Compose no encontrado.
         pause
         exit /b 1
     )
 )
+echo.
 
+echo ========================================================
 echo Selecciona cual servicio deseas monitorear:
+echo ========================================================
 echo.
 echo   1 - Database (PostgreSQL)
 echo   2 - Backend (FastAPI)
@@ -36,6 +52,8 @@ echo   4 - Importer
 echo   5 - Adminer
 echo   6 - Todos los servicios
 echo   7 - Salir
+echo.
+echo ========================================================
 echo.
 
 choice /C 1234567 /M "Opcion: "

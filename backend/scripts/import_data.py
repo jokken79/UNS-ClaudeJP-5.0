@@ -48,17 +48,30 @@ def normalize_text(text: str) -> str:
 def get_manual_factory_mapping():
     """
     Manual mapping for factory names that require special handling.
+    UPDATED: Using new factory_id format with double underscore (Company__Plant)
+    CVJ and HUB factories consolidated into 岡山工場
     """
     return {
-        '高雄工業 本社': 'Factory-39',
-        '高雄工業 岡山': 'Factory-39',
-        '高雄工業 静岡': 'Factory-39',
-        '高雄工業 海南第一': 'Factory-48',
-        '高雄工業 海南第二': 'Factory-62',
-        'ﾌｪﾆﾃｯｸｾﾐｺﾝﾀﾞｸﾀｰ 岡山': 'Factory-06',
-        'ﾌｪﾆﾃｯｸｾﾐｺﾝﾀﾞｸﾀｰ 鹿児島': 'Factory-06',
-        'オーツカ': 'Factory-30',
-        'アサヒフォージ': 'Factory-37',
+        # 高雄工業 factories
+        '高雄工業 本社': '高雄工業株式会社__本社工場',
+        '高雄工業 岡山': '高雄工業株式会社__岡山工場',  # Consolidated
+        '高雄工業 静岡': '高雄工業株式会社__本社工場',
+        '高雄工業 海南第一': '高雄工業株式会社__海南第一工場',
+        '高雄工業 海南第二': '高雄工業株式会社__海南第二工場',
+        '高雄工業 第一': '高雄工業株式会社__第一工場',
+        '高雄工業 第二': '高雄工業株式会社__第二工場',
+        '高雄工業 CVJ': '高雄工業株式会社__岡山工場',  # Consolidated
+        '高雄工業 HUB': '高雄工業株式会社__岡山工場',  # Consolidated
+        # Other factories
+        'ﾌｪﾆﾃｯｸｾﾐｺﾝﾀﾞｸﾀｰ 岡山': 'フェニテックセミコンダクター(株)__鹿児島工場',
+        'ﾌｪﾆﾃｯｸｾﾐｺﾝﾀﾞｸﾀｰ 鹿児島': 'フェニテックセミコンダクター(株)__鹿児島工場',
+        'オーツカ': '株式会社オーツカ__関ケ原工場',
+        'アサヒフォージ': 'アサヒフォージ株式会社__真庭工場',
+        '瑞陵精機': '瑞陵精機株式会社__恵那工場',
+        '加藤木材 本社': '加藤木材工業株式会社__本社工場',
+        '加藤木材 春日井': '加藤木材工業株式会社__春日井工場',
+        'ユアサ工機 本社': 'ユアサ工機株式会社__本社工場',
+        'ユアサ工機 新城': 'ユアサ工機株式会社__新城工場',
     }
 
 

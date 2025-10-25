@@ -20,19 +20,25 @@ if /i NOT "%CONFIRMAR%"=="S" (
 )
 
 echo.
-echo [1/3] Deteniendo frontend...
-docker stop uns-claudejp-frontend >nul 2>&1
-echo OK
-echo.
-
-echo [2/3] Limpiando cache de Next.js...
+echo [1/3] Limpiando cache de Next.js...
 docker exec uns-claudejp-frontend rm -rf .next/cache 2>nul
-echo OK
+if %ERRORLEVEL% EQU 0 (
+    echo OK - Cache eliminado
+) else (
+    echo ADVERTENCIA - No se pudo eliminar cache (contenedor puede no estar corriendo)
+)
 echo.
 
-echo [3/3] Reiniciando frontend...
-docker start uns-claudejp-frontend
-echo OK
+echo [2/3] Reiniciando frontend...
+docker restart uns-claudejp-frontend >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo OK - Frontend reiniciado
+) else (
+    echo ERROR - No se pudo reiniciar el frontend
+)
+echo.
+
+echo [3/3] Limpieza completada
 echo.
 
 echo ========================================================

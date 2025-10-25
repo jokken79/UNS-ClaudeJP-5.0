@@ -322,7 +322,9 @@ class Factory(Base):
     __tablename__ = "factories"
 
     id = Column(Integer, primary_key=True, index=True)
-    factory_id = Column(String(20), unique=True, nullable=False, index=True)
+    factory_id = Column(String(200), unique=True, nullable=False, index=True)  # Compound: Company__Plant
+    company_name = Column(String(100))  # 企業名 - Company name
+    plant_name = Column(String(100))    # 工場名 - Plant/Factory name
     name = Column(String(100), nullable=False)
     address = Column(Text)
     phone = Column(String(20))
@@ -360,7 +362,9 @@ class Employee(Base):
     id = Column(Integer, primary_key=True, index=True)
     hakenmoto_id = Column(Integer, unique=True, nullable=False, index=True)
     rirekisho_id = Column(String(20), ForeignKey("candidates.rirekisho_id"))  # Changed from uns_id
-    factory_id = Column(String(20), ForeignKey("factories.factory_id"))
+    factory_id = Column(String(200), ForeignKey("factories.factory_id"))  # Compound: Company__Plant
+    company_name = Column(String(100))  # 企業名 - Company name (denormalized for easy display)
+    plant_name = Column(String(100))    # 工場名 - Plant name (denormalized for easy display)
     hakensaki_shain_id = Column(String(50))
 
     # Personal information
@@ -459,7 +463,9 @@ class ContractWorker(Base):
     id = Column(Integer, primary_key=True, index=True)
     hakenmoto_id = Column(Integer, unique=True, nullable=False, index=True)
     rirekisho_id = Column(String(20), ForeignKey("candidates.rirekisho_id"))
-    factory_id = Column(String(20), ForeignKey("factories.factory_id"))
+    factory_id = Column(String(200), ForeignKey("factories.factory_id"))  # Compound: Company__Plant
+    company_name = Column(String(100))  # 企業名 - Company name (denormalized for easy display)
+    plant_name = Column(String(100))    # 工場名 - Plant name (denormalized for easy display)
     hakensaki_shain_id = Column(String(50))
 
     # Personal information
