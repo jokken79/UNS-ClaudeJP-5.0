@@ -18,6 +18,7 @@ import {
 } from 'recharts';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 
 // Datos de ejemplo - Últimos 6 meses
 const mockData = [

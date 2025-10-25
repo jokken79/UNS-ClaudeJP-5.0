@@ -1,0 +1,310 @@
+# Catálogo de Agentes - UNS-CLAUDEJP
+# Sistema de agentes especializados para automatización de tareas del proyecto
+
+version: "1.0"
+description: "Catálogo de agentes especializados para el proyecto UNS-CLAUDEJP"
+
+# Agentes de Mantenimiento y Limpieza
+maintenance_agents:
+  - id: "cache_cleaner_basic"
+    name: "Agente Limpieza Cache Básico"
+    description: "Agente especializado en limpieza de cache local sin dependencias de Docker"
+    script_path: "../scripts/LIMPIAR_CACHE_SIN_DOCKER.bat"
+    category: "maintenance"
+    tags: ["cache", "limpieza", "python", "nextjs", "npm"]
+    requirements:
+      - "Windows OS"
+      - "Acceso a directorios del proyecto"
+    capabilities:
+      - "Eliminar __pycache__ de Python"
+      - "Limpiar cache de Next.js (.next, out)"
+      - "Eliminar cache de npm (node_modules/.cache)"
+      - "Limpiar archivos temporales"
+    execution_mode: "batch"
+    safety_level: "low"
+    
+  - id: "cache_cleaner_full"
+    name: "Agente Limpieza Cache Completo"
+    description: "Agente especializado en limpieza completa incluyendo Docker"
+    script_path: "../scripts/LIMPIAR_CACHE_MEJORADO.bat"
+    category: "maintenance"
+    tags: ["cache", "limpieza", "docker", "python", "nextjs", "npm"]
+    requirements:
+      - "Windows OS"
+      - "Docker Desktop instalado y en ejecución"
+      - "Permisos de administrador recomendados"
+    capabilities:
+      - "Todas las capacidades del agente básico"
+      - "Limpiar build cache de Docker"
+      - "Eliminar imágenes colgadas (dangling)"
+      - "Verificación de estado de Docker"
+    execution_mode: "batch"
+    safety_level: "medium"
+    
+  - id: "cache_cleaner_original"
+    name: "Agente Limpieza Cache Original"
+    description: "Versión original del script de limpieza de cache"
+    script_path: "../scripts/LIMPIAR_CACHE.bat"
+    category: "maintenance"
+    tags: ["cache", "limpieza", "docker", "original"]
+    requirements:
+      - "Windows OS"
+      - "Docker Desktop"
+      - "Permisos de administrador"
+    capabilities:
+      - "Limpieza básica de cache"
+      - "Limpieza de Docker"
+    execution_mode: "batch"
+    safety_level: "medium"
+    deprecated: true
+    notes: "Reemplazado por versiones mejoradas"
+
+# Agentes de Sistema
+system_agents:
+  - id: "system_starter"
+    name: "Agente Iniciador del Sistema"
+    description: "Inicia todos los servicios del proyecto UNS-CLAUDEJP con diagnóstico completo"
+    script_path: "../scripts/START.bat"
+    category: "system"
+    tags: ["inicio", "sistema", "docker", "servicios"]
+    requirements:
+      - "Windows OS"
+      - "Docker Desktop instalado"
+      - "Python instalado"
+      - "Docker Compose"
+    capabilities:
+      - "Verificación de dependencias (Python, Docker, Docker Compose)"
+      - "Inicio automático de Docker Desktop si es necesario"
+      - "Generación de archivo .env si no existe"
+      - "Inicio de todos los contenedores Docker"
+      - "Verificación de estado final de servicios"
+      - "Apertura automática del navegador"
+    execution_mode: "batch"
+    safety_level: "medium"
+    
+  - id: "system_stopper"
+    name: "Agente Detenedor del Sistema"
+    description: "Detiene todos los servicios del proyecto de forma segura"
+    script_path: "../scripts/STOP.bat"
+    category: "system"
+    tags: ["detener", "sistema", "docker", "servicios"]
+    requirements:
+      - "Windows OS"
+      - "Docker Desktop"
+      - "Docker Compose"
+    capabilities:
+      - "Verificación de Docker Desktop"
+      - "Detección de versión de Docker Compose"
+      - "Detención segura de todos los contenedores"
+      - "Verificación de estado final"
+    execution_mode: "batch"
+    safety_level: "low"
+    
+  - id: "system_diagnostic"
+    name: "Agente Diagnóstico del Sistema"
+    description: "Realiza diagnóstico completo del sistema y reporta problemas"
+    script_path: "../scripts/DIAGNOSTICO.bat"
+    category: "system"
+    tags: ["diagnostico", "salud", "sistema", "verificacion"]
+    requirements:
+      - "Windows OS"
+      - "Docker Desktop"
+    capabilities:
+      - "Verificación de instalación de Docker"
+      - "Verificación de Docker Compose (V1 y V2)"
+      - "Análisis de puertos disponibles (3000, 8000, 5432, 8080)"
+      - "Verificación y creación de archivo .env"
+      - "Verificación de estructura de directorios"
+      - "Generación de reporte de salud del sistema"
+    execution_mode: "batch"
+    safety_level: "low"
+
+# Agentes de Desarrollo
+development_agents:
+  - id: "project_initializer"
+    name: "Agente Inicializador de Proyecto"
+    description: "Configura el entorno de desarrollo desde cero"
+    script_path: "../scripts/REINSTALAR.bat"
+    category: "development"
+    tags: ["setup", "instalacion", "configuracion"]
+    requirements:
+      - "Windows OS"
+      - "Node.js"
+      - "Python"
+      - "Docker"
+    capabilities:
+      - "Instalar dependencias"
+      - "Configurar entorno"
+      - "Inicializar servicios"
+    execution_mode: "batch"
+    safety_level: "medium"
+    
+  - id: "project_installer"
+    name: "Agente Instalador Base"
+    description: "Instalación inicial de dependencias del proyecto"
+    script_path: "../scripts/INSTALAR.bat"
+    category: "development"
+    tags: ["instalacion", "dependencias", "configuracion"]
+    requirements:
+      - "Windows OS"
+      - "Node.js"
+      - "Python"
+    capabilities:
+      - "Instalación de dependencias base"
+      - "Configuración inicial"
+    execution_mode: "batch"
+    safety_level: "medium"
+
+# Agentes de Control de Versiones (Git)
+version_control_agents:
+  - id: "git_pull"
+    name: "Agente Sincronización desde GitHub"
+    description: "Baja cambios actualizados desde GitHub con manejo de conflictos"
+    script_path: "../scripts/GIT_BAJAR.bat"
+    category: "version_control"
+    tags: ["git", "pull", "descargar", "github", "sincronizacion"]
+    requirements:
+      - "Windows OS"
+      - "Git instalado"
+      - "Conexión a internet"
+      - "Repositorio Git configurado"
+    capabilities:
+      - "Verificación de instalación de Git"
+      - "Verificación de repositorio local"
+      - "Manejo de cambios locales (commit, stash, discard)"
+      - "Descarga segura desde GitHub"
+      - "Detección y manejo de conflictos"
+      - "Verificación de archivo .env"
+      - "Opción de reinstalación de dependencias"
+    execution_mode: "interactive"
+    safety_level: "medium"
+    
+  - id: "git_push"
+    name: "Agente Publicación a GitHub"
+    description: "Sube cambios locales a GitHub con verificaciones de seguridad"
+    script_path: "../scripts/GIT_SUBIR.bat"
+    category: "version_control"
+    tags: ["git", "push", "subir", "github", "publicacion"]
+    requirements:
+      - "Windows OS"
+      - "Git instalado"
+      - "Conexión a internet"
+      - "Credenciales de GitHub"
+    capabilities:
+      - "Verificación de seguridad (revocación de API keys)"
+      - "Verificación de .gitignore"
+      - "Configuración de usuario Git"
+      - "Creación de commits"
+      - "Configuración de repositorio remoto"
+      - "Subida segura a GitHub"
+      - "Verificación de privacidad del repositorio"
+    execution_mode: "interactive"
+    safety_level: "high"
+
+# Agentes de Respaldo y Recuperación
+backup_agents:
+  - id: "data_backup"
+    name: "Agente Respaldo de Datos"
+    description: "Crea respaldos automáticos de datos críticos"
+    script_path: "../scripts/BACKUP_DATOS.bat"
+    category: "backup"
+    tags: ["backup", "respaldo", "datos"]
+    requirements:
+      - "Windows OS"
+      - "Espacio en disco suficiente"
+    capabilities:
+      - "Respaldo de base de datos"
+      - "Respaldo de configuraciones"
+      - "Compresión de archivos"
+    execution_mode: "batch"
+    safety_level: "low"
+    
+  - id: "data_restore"
+    name: "Agente Restauración de Datos"
+    description: "Restaura datos desde respaldos anteriores"
+    script_path: "../scripts/RESTAURAR_DATOS.bat"
+    category: "backup"
+    tags: ["restauracion", "datos", "recuperacion"]
+    requirements:
+      - "Windows OS"
+      - "Archivos de respaldo disponibles"
+    capabilities:
+      - "Restauración de base de datos"
+      - "Restauración de configuraciones"
+      - "Verificación de integridad"
+    execution_mode: "batch"
+    safety_level: "medium"
+
+# Agentes de Utilidades
+utility_agents:
+  - id: "log_viewer"
+    name: "Agente Visor de Logs"
+    description: "Muestra logs del sistema y servicios"
+    script_path: "../scripts/LOGS.bat"
+    category: "utility"
+    tags: ["logs", "monitoreo", "depuracion"]
+    requirements:
+      - "Windows OS"
+      - "Docker Desktop"
+    capabilities:
+      - "Visualización de logs de contenedores"
+      - "Monitoreo en tiempo real"
+      - "Filtrado de logs"
+    execution_mode: "interactive"
+    safety_level: "low"
+    
+  - id: "clean_general"
+    name: "Agente Limpieza General"
+    description: "Limpieza general de archivos temporales y basura"
+    script_path: "../scripts/CLEAN.bat"
+    category: "utility"
+    tags: ["limpieza", "temporal", "basura"]
+    requirements:
+      - "Windows OS"
+    capabilities:
+      - "Limpieza de archivos temporales"
+      - "Optimización de espacio"
+    execution_mode: "batch"
+    safety_level: "low"
+
+# Configuración de Ejecución
+execution_config:
+  default_timeout: 300  # segundos
+  max_retries: 3
+  log_level: "info"
+  log_directory: "../logs/agents"
+  
+# Políticas de Seguridad
+security_policies:
+  require_confirmation: true
+  admin_privileges_required: 
+    - "cache_cleaner_full"
+    - "cache_cleaner_original"
+    - "git_push"
+  blocked_operations: []
+  audit_log: true
+
+# Integraciones
+integrations:
+  mcp_servers:
+    enabled: true
+    config_file: "../.kilocode/mcp.json"
+  
+  notifications:
+    enabled: false
+    channels: ["console", "file"]
+
+# Metadatos del Catálogo
+metadata:
+  created_by: "Kilo Code"
+  created_date: "2025-10-25"
+  last_updated: "2025-10-25"
+  version_history:
+    - version: "1.0"
+      date: "2025-10-25"
+      changes: 
+        - "Creación inicial del catálogo"
+        - "Inclusión de agentes de limpieza"
+        - "Adición de agentes de sistema (START, STOP, DIAGNOSTICO)"
+        - "Inclusión de agentes de control de versiones (Git)"
+        - "Adición de agentes de respaldo y utilidades"

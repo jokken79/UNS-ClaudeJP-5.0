@@ -22,10 +22,10 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     const shouldAnimate = enableHover && !disableAnimations && !reducedMotion
 
     const baseStyle = {
-      borderRadius: 'var(--layout-card-radius, 1rem)',
-      boxShadow: 'var(--layout-card-shadow, 0 20px 45px rgba(15, 23, 42, 0.12))',
-      borderColor: 'var(--layout-card-border, rgba(148, 163, 184, 0.25))',
-      background: 'var(--layout-card-surface, hsl(var(--card)))',
+      borderRadius: 'var(--layout-card-radius, 1.25rem)',
+      boxShadow: 'var(--layout-card-shadow, 0 10px 40px rgba(0, 0, 0, 0.08))',
+      borderColor: 'var(--layout-card-border, rgba(203, 213, 225, 0.5))',
+      background: 'var(--layout-card-surface, linear-gradient(to bottom right, #ffffff, #fafafa))',
       backdropFilter: 'blur(calc(var(--layout-panel-blur, 18px) * 0.35))',
       ...style,
     }
@@ -35,7 +35,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         <div
           ref={ref}
           className={cn(
-            "relative overflow-hidden border text-card-foreground shadow transition-all duration-500",
+            "relative overflow-hidden border-2 text-card-foreground transition-all duration-500 backdrop-blur-sm",
             className
           )}
           style={baseStyle}
@@ -48,7 +48,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       <motion.div
         ref={ref}
         className={cn(
-          "relative overflow-hidden border text-card-foreground shadow transition-all duration-500",
+          "relative overflow-hidden border-2 text-card-foreground transition-all duration-500 backdrop-blur-sm",
           className
         )}
         style={baseStyle}
@@ -70,7 +70,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    className={cn("flex flex-col space-y-2 p-6 pb-4", className)}
     {...props}
   />
 ))
@@ -82,7 +82,7 @@ const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("font-semibold leading-none tracking-tight", className)}
+    className={cn("text-xl font-bold leading-tight tracking-tight text-gray-900", className)}
     {...props}
   />
 ))
@@ -94,7 +94,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-sm text-gray-600 leading-relaxed", className)}
     {...props}
   />
 ))
@@ -114,7 +114,7 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
+    className={cn("flex items-center gap-3 p-6 pt-4 border-t border-gray-100", className)}
     {...props}
   />
 ))

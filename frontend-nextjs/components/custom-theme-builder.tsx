@@ -39,6 +39,8 @@ import {
   meetsWCAG,
   generateShades,
 } from "@/lib/theme-utils";
+import { getFontVariable } from "@/lib/font-utils";
+import { FontSelector } from "@/components/font-selector";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 
@@ -99,6 +101,7 @@ export function CustomThemeBuilder() {
 
   const [themeName, setThemeName] = React.useState("");
   const [colors, setColors] = React.useState<ThemeColorInputs>(getDefaultColorInputs());
+  const [selectedFont, setSelectedFont] = React.useState<string>("Work Sans");
   const [isPreviewActive, setIsPreviewActive] = React.useState(false);
 
   const updateColor = (key: keyof ThemeColorInputs, value: string) => {
@@ -155,6 +158,14 @@ export function CustomThemeBuilder() {
         root.style.setProperty(key, value as string);
       });
 
+      // Apply font if available
+      const fontVariable = getFontVariable(selectedFont);
+      if (fontVariable) {
+        root.style.setProperty("--layout-font-body", `var(${fontVariable})`);
+        root.style.setProperty("--layout-font-heading", `var(${fontVariable})`);
+        root.style.setProperty("--layout-font-ui", `var(${fontVariable})`);
+      }
+
       setIsPreviewActive(true);
       toast({
         title: "Preview Active",
@@ -182,6 +193,7 @@ export function CustomThemeBuilder() {
 
     try {
       const themeData = createThemeFromColors(themeName, colors);
+      themeData.font = selectedFont;  // Add font to theme data
       const savedTheme = saveCustomTheme(themeData);
 
       toast({
@@ -195,6 +207,7 @@ export function CustomThemeBuilder() {
       // Reset form
       setThemeName("");
       setColors(getDefaultColorInputs());
+      setSelectedFont("Work Sans");  // Reset to default
       setIsPreviewActive(false);
     } catch (error) {
       toast({
@@ -209,6 +222,7 @@ export function CustomThemeBuilder() {
   const exportTheme = () => {
     try {
       const themeData = createThemeFromColors(themeName || "Unnamed Theme", colors);
+      themeData.font = selectedFont;  // Add font to export
       const json = JSON.stringify(themeData, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -244,6 +258,11 @@ export function CustomThemeBuilder() {
         // Validate structure
         if (!json.colors || typeof json.colors !== 'object') {
           throw new Error("Invalid theme file structure");
+        }
+
+        // Extract font if present
+        if (json.font && typeof json.font === 'string') {
+          setSelectedFont(json.font);
         }
 
         // Extract color values and convert to hex (simplified)
@@ -423,6 +442,28 @@ export function CustomThemeBuilder() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Font Selection Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5" />
+              Tipografía
+            </CardTitle>
+            <CardDescription>
+              Elige la fuente para este theme
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FontSelector
+              currentFont={selectedFont}
+              onFontChange={setSelectedFont}
+              label="Fuente del Theme"
+              showPreview={true}
+              showDescription={true}
+            />
+          </CardContent>
+        </Card>
 
         {/* Actions */}
         <div className="flex flex-col gap-2 pt-4 border-t">

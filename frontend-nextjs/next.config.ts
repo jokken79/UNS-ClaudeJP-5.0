@@ -79,7 +79,7 @@ const nextConfig: NextConfig = {
   },
 
   // Optimizaciones de producción
-  reactStrictMode: true,
+  reactStrictMode: false, // Deshabilitado para mejor rendimiento en desarrollo
   poweredByHeader: false,
 
   // Configuración experimental
@@ -109,8 +109,9 @@ const nextConfig: NextConfig = {
     // Optimización para desarrollo
     if (dev) {
       config.watchOptions = {
-        poll: 1000,
-        aggregateTimeout: 300,
+        poll: 5000, // Aumentado de 1000ms a 5000ms para mejor rendimiento en Windows+Docker
+        aggregateTimeout: 1000, // Aumentado de 300ms a 1000ms
+        ignored: ['**/node_modules', '**/.git', '**/.next'],
       };
     }
 

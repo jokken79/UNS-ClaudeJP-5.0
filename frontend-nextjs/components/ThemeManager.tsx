@@ -57,6 +57,24 @@ export function ThemeManager() {
           root.style.setProperty(key, value as string);
         });
 
+        // Apply theme font if available
+        if (selectedTheme.font) {
+          // Convert font name to CSS variable format
+          // "Work Sans" → "--font-work-sans"
+          // "IBM Plex Sans" → "--font-ibm-plex-sans"
+          const fontVariable = selectedTheme.font
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '');
+
+          const fontVarRef = `--font-${fontVariable}`;
+
+          // Apply to all layout font variables
+          root.style.setProperty('--layout-font-body', `var(${fontVarRef})`);
+          root.style.setProperty('--layout-font-heading', `var(${fontVarRef})`);
+          root.style.setProperty('--layout-font-ui', `var(${fontVarRef})`);
+        }
+
         // End transition after animation completes
         setTimeout(() => {
           setIsTransitioning(false);

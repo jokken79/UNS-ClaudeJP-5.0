@@ -1,16 +1,26 @@
 import type { Metadata } from "next";
 import {
   DM_Sans,
+  Fira_Sans,
+  IBM_Plex_Sans,
   Inter,
+  Lato,
+  Libre_Franklin,
   Lora,
   Manrope,
   Montserrat,
+  Nunito,
+  Open_Sans,
   Playfair_Display,
   Plus_Jakarta_Sans,
   Poppins,
+  Roboto,
+  Rubik,
   Sora,
+  Source_Sans_3,
   Space_Grotesk,
   Urbanist,
+  Work_Sans,
 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -34,6 +44,68 @@ const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-pl
 const sora = Sora({ subsets: ["latin"], variable: "--font-sora", display: "swap" });
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat", display: "swap" });
 
+// New professional fonts
+const workSans = Work_Sans({
+  subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-work-sans",
+  display: "swap",
+});
+const ibmPlexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700"],
+  variable: "--font-ibm-plex-sans",
+  display: "swap",
+});
+const rubik = Rubik({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-rubik",
+  display: "swap",
+});
+const nunito = Nunito({
+  subsets: ["latin"],
+  weight: ["200", "300", "400", "500", "600", "700", "800", "900", "1000"],
+  variable: "--font-nunito",
+  display: "swap",
+});
+const sourceSans3 = Source_Sans_3({
+  subsets: ["latin"],
+  weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-source-sans-3",
+  display: "swap",
+});
+const lato = Lato({
+  subsets: ["latin"],
+  weight: ["300", "400", "700", "900"],
+  variable: "--font-lato",
+  display: "swap",
+});
+const firaSans = Fira_Sans({
+  subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-fira-sans",
+  display: "swap",
+});
+const openSans = Open_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-open-sans",
+  display: "swap",
+});
+const roboto = Roboto({
+  subsets: ["latin"],
+  weight: ["100", "300", "400", "500", "700", "900"],
+  variable: "--font-roboto",
+  display: "swap",
+});
+const libreFranklin = Libre_Franklin({
+  subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-libre-franklin",
+  display: "swap",
+});
+
 const fontVariables = [
   inter.variable,
   manrope.variable,
@@ -46,6 +118,16 @@ const fontVariables = [
   plusJakarta.variable,
   sora.variable,
   montserrat.variable,
+  workSans.variable,
+  ibmPlexSans.variable,
+  rubik.variable,
+  nunito.variable,
+  sourceSans3.variable,
+  lato.variable,
+  firaSans.variable,
+  openSans.variable,
+  roboto.variable,
+  libreFranklin.variable,
 ].join(" ");
 
 export const metadata: Metadata = {

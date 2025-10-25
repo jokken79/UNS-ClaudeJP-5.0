@@ -1,6 +1,6 @@
 {
   "total_factories": 72,
-  "last_updated": "2025-10-25 11:56:48",
+  "last_updated": "2025-10-25 20:26:30",
   "factories": [
     {
       "factory_id": "ユアサ工機株式会社__本社工場",
@@ -491,89 +491,89 @@
       "hourly_rate": 1650.0
     },
     {
-      "factory_id": "高雄工業株式会社__第一工場",
+      "factory_id": "高雄工業株式会社__静岡工場",
       "client_company": "高雄工業株式会社",
-      "plant_name": "第一工場",
+      "plant_name": "静岡工場",
       "department": "製作課",
       "line": "清掃作業・切子回収",
       "hourly_rate": 1650.0
     },
     {
-      "factory_id": "高雄工業株式会社__第一工場",
+      "factory_id": "高雄工業株式会社__静岡工場",
       "client_company": "高雄工業株式会社",
-      "plant_name": "第一工場",
+      "plant_name": "静岡工場",
       "department": "製作課",
       "line": "材料投入",
       "hourly_rate": 1650.0
     },
     {
-      "factory_id": "高雄工業株式会社__第一工場",
+      "factory_id": "高雄工業株式会社__静岡工場",
       "client_company": "高雄工業株式会社",
-      "plant_name": "第一工場",
+      "plant_name": "静岡工場",
       "department": "製作課",
       "line": "自動旋削",
       "hourly_rate": 1650.0
     },
     {
-      "factory_id": "高雄工業株式会社__第一工場",
+      "factory_id": "高雄工業株式会社__静岡工場",
       "client_company": "高雄工業株式会社",
-      "plant_name": "第一工場",
+      "plant_name": "静岡工場",
       "department": "製作課",
       "line": "手動旋削",
       "hourly_rate": 1650.0
     },
     {
-      "factory_id": "高雄工業株式会社__第一工場",
+      "factory_id": "高雄工業株式会社__静岡工場",
       "client_company": "高雄工業株式会社",
-      "plant_name": "第一工場",
+      "plant_name": "静岡工場",
       "department": "製作課",
       "line": "チャンファー",
       "hourly_rate": 1650.0
     },
     {
-      "factory_id": "高雄工業株式会社__第一工場",
+      "factory_id": "高雄工業株式会社__静岡工場",
       "client_company": "高雄工業株式会社",
-      "plant_name": "第一工場",
+      "plant_name": "静岡工場",
       "department": "製作課",
       "line": "転造",
       "hourly_rate": 1650.0
     },
     {
-      "factory_id": "高雄工業株式会社__第二工場",
+      "factory_id": "高雄工業株式会社__静岡工場",
       "client_company": "高雄工業株式会社",
-      "plant_name": "第二工場",
+      "plant_name": "静岡工場",
       "department": "製作課",
       "line": "PTJ",
       "hourly_rate": 1650.0
     },
     {
-      "factory_id": "高雄工業株式会社__第二工場",
+      "factory_id": "高雄工業株式会社__静岡工場",
       "client_company": "高雄工業株式会社",
-      "plant_name": "第二工場",
+      "plant_name": "静岡工場",
       "department": "製作課",
       "line": "ナット",
       "hourly_rate": 1650.0
     },
     {
-      "factory_id": "高雄工業株式会社__第二工場",
+      "factory_id": "高雄工業株式会社__静岡工場",
       "client_company": "高雄工業株式会社",
-      "plant_name": "第二工場",
+      "plant_name": "静岡工場",
       "department": "製作課",
       "line": "内輪",
       "hourly_rate": 1650.0
     },
     {
-      "factory_id": "高雄工業株式会社__第二工場",
+      "factory_id": "高雄工業株式会社__静岡工場",
       "client_company": "高雄工業株式会社",
-      "plant_name": "第二工場",
+      "plant_name": "静岡工場",
       "department": "製作課",
       "line": "トラニオン",
       "hourly_rate": 1650.0
     },
     {
-      "factory_id": "高雄工業株式会社__第二工場",
+      "factory_id": "高雄工業株式会社__静岡工場",
       "client_company": "高雄工業株式会社",
-      "plant_name": "第二工場",
+      "plant_name": "静岡工場",
       "department": "製作課",
       "line": "長軸バリ取り",
       "hourly_rate": 1650.0

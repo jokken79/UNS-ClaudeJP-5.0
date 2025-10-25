@@ -12,7 +12,6 @@ import Link from 'next/link';
 import { ChevronRight, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Fragment } from 'react';
 
 export interface BreadcrumbItem {
   label: string;
@@ -122,13 +121,16 @@ export function BreadcrumbNav({
         {/* Desktop: Show all items */}
         <div className="hidden md:flex items-center">
           {items.map((item, index) => (
-            <Fragment key={item.href}>
+            <div key={`desktop-group-${index}-${item.href}`}>
               {/* Separator */}
               {(showHome || index > 0) && (
                 <motion.div
+                  key={`desktop-separator-${index}-${item.href}`}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ delay: index * 0.05 }}
+                  className="inline-flex"
                 >
                   <ChevronRight className="h-4 w-4 text-muted-foreground/50 mx-1" />
                 </motion.div>
@@ -136,9 +138,12 @@ export function BreadcrumbNav({
 
               {/* Breadcrumb Item */}
               <motion.div
+                key={`desktop-item-${index}-${item.href}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
                 transition={{ delay: index * 0.05 }}
+                className="inline-flex"
               >
                 {index === items.length - 1 ? (
                   // Current page (not a link)
@@ -155,38 +160,45 @@ export function BreadcrumbNav({
                   </Link>
                 )}
               </motion.div>
-            </Fragment>
+            </div>
           ))}
         </div>
 
         {/* Mobile: Show only last N items */}
         <div className="flex md:hidden items-center">
           {hasHiddenItems && (
-            <>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <ChevronRight className="h-4 w-4 text-muted-foreground/50 mx-1" />
-              </motion.div>
+            <motion.div
+              key="mobile-ellipsis"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="flex items-center"
+            >
+              <ChevronRight className="h-4 w-4 text-muted-foreground/50 mx-1" />
               <span className="text-muted-foreground">...</span>
-            </>
+            </motion.div>
           )}
 
           {mobileItems.map((item, index) => (
-            <Fragment key={item.href}>
+            <div key={`mobile-group-${index}-${item.href}`}>
               <motion.div
+                key={`mobile-separator-${index}-${item.href}`}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ delay: index * 0.05 }}
+                className="inline-flex"
               >
                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 mx-1" />
               </motion.div>
 
               <motion.div
+                key={`mobile-item-${index}-${item.href}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
                 transition={{ delay: index * 0.05 }}
+                className="inline-flex"
               >
                 {index === mobileItems.length - 1 ? (
                   <span className="font-medium text-foreground">
@@ -201,7 +213,7 @@ export function BreadcrumbNav({
                   </Link>
                 )}
               </motion.div>
-            </Fragment>
+            </div>
           ))}
         </div>
       </AnimatePresence>

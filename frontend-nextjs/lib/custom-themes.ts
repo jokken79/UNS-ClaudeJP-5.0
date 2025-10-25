@@ -125,9 +125,23 @@ export function applyCustomTheme(theme: CustomTheme): void {
   try {
     const root = document.documentElement;
 
+    // Apply color variables
     Object.entries(theme.colors).forEach(([key, value]) => {
       root.style.setProperty(key, value as string);
     });
+
+    // Apply custom theme font if available
+    if (theme.font) {
+      const fontVariable = theme.font
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '');
+
+      const fontVarRef = `--font-${fontVariable}`;
+      root.style.setProperty('--layout-font-body', `var(${fontVarRef})`);
+      root.style.setProperty('--layout-font-heading', `var(${fontVarRef})`);
+      root.style.setProperty('--layout-font-ui', `var(${fontVarRef})`);
+    }
   } catch (error) {
     console.error('Error applying custom theme:', error);
     throw new Error('Failed to apply custom theme');
@@ -147,9 +161,10 @@ export interface ThemeColorInputs {
   border: string; // hex
   muted: string; // hex
   destructive?: string; // hex (optional, will use default)
+  font?: string; // font name (optional)
 }
 
-export function createThemeFromColors(name: string, colors: ThemeColorInputs): Omit<CustomTheme, 'id' | 'isCustom' | 'createdAt' | 'updatedAt'> {
+export function createThemeFromColors(name: string, colors: ThemeColorInputs, font?: string): Omit<CustomTheme, 'id' | 'isCustom' | 'createdAt' | 'updatedAt'> {
   try {
     // Import color utilities with error handling
     let hexToHsl: (hex: string) => string;
@@ -193,10 +208,18 @@ export function createThemeFromColors(name: string, colors: ThemeColorInputs): O
       "--ring": hexToHsl(colors.primary),
     };
 
-    return {
+    const theme: Omit<CustomTheme, 'id' | 'isCustom' | 'createdAt' | 'updatedAt'> = {
       name,
       colors: themeColors,
     };
+
+    // Include font if provided (prioritize parameter, fallback to colors.font)
+    const themeFont = font || colors.font;
+    if (themeFont) {
+      theme.font = themeFont;
+    }
+
+    return theme;
   } catch (error) {
     console.error('Error creating theme from colors:', error);
     throw new Error('Failed to create theme from colors');

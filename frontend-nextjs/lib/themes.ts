@@ -1,5 +1,6 @@
 export type Theme = {
   name: string;
+  font?: string;  // name of the font to use with this theme
   colors: {
     "--background": string;
     "--foreground": string;
@@ -26,6 +27,7 @@ export type Theme = {
 export const themes: Theme[] = [
   {
     name: "uns-kikaku",
+    font: "IBM Plex Sans",
     colors: {
       "--background": "210 40% 98%",
       "--foreground": "222 47% 11%",
@@ -50,6 +52,7 @@ export const themes: Theme[] = [
   },
   {
     name: "default-light",
+    font: "Open Sans",
     colors: {
       "--background": "0 0% 100%",
       "--foreground": "222.2 84% 4.9%",
@@ -74,6 +77,7 @@ export const themes: Theme[] = [
   },
   {
     name: "default-dark",
+    font: "Roboto",
     colors: {
       "--background": "222.2 84% 4.9%",
       "--foreground": "210 40% 98%",
@@ -98,6 +102,7 @@ export const themes: Theme[] = [
   },
   {
     name: "ocean-blue",
+    font: "Lato",
     colors: {
       "--background": "200 100% 97%",
       "--foreground": "200 30% 20%",
@@ -122,6 +127,7 @@ export const themes: Theme[] = [
   },
   {
     name: "sunset",
+    font: "Nunito",
     colors: {
       "--background": "20 100% 97%",
       "--foreground": "20 30% 20%",
@@ -146,6 +152,7 @@ export const themes: Theme[] = [
   },
   {
     name: "mint-green",
+    font: "Source Sans 3",
     colors: {
       "--background": "150 100% 97%",
       "--foreground": "150 30% 20%",
@@ -170,6 +177,7 @@ export const themes: Theme[] = [
   },
   {
     name: "royal-purple",
+    font: "Work Sans",
     colors: {
       "--background": "260 100% 97%",
       "--foreground": "260 30% 20%",
@@ -194,6 +202,7 @@ export const themes: Theme[] = [
   },
   {
     name: "industrial",
+    font: "Fira Sans",
     colors: {
       "--background": "215 25% 95%",
       "--foreground": "215 30% 15%",
@@ -218,6 +227,7 @@ export const themes: Theme[] = [
   },
   {
     name: "vibrant-coral",
+    font: "Rubik",
     colors: {
       "--background": "0 0% 100%",
       "--foreground": "240 10% 3.9%",
@@ -242,6 +252,7 @@ export const themes: Theme[] = [
   },
   {
     name: "forest-green",
+    font: "Libre Franklin",
     colors: {
       "--background": "120 10% 96%",
       "--foreground": "120 25% 15%",
@@ -266,6 +277,7 @@ export const themes: Theme[] = [
   },
   {
     name: "monochrome",
+    font: "IBM Plex Sans",
     colors: {
       "--background": "0 0% 100%",
       "--foreground": "0 0% 3.9%",
@@ -290,6 +302,7 @@ export const themes: Theme[] = [
   },
   {
     name: "espresso",
+    font: "Lato",
     colors: {
       "--background": "20 40% 94%",
       "--foreground": "20 20% 20%",
@@ -310,6 +323,31 @@ export const themes: Theme[] = [
       "--border": "20 25% 80%",
       "--input": "20 25% 80%",
       "--ring": "45 100% 51%",
+    },
+  },
+  {
+    name: "jpkken1",
+    font: "Work Sans",
+    colors: {
+      "--background": "210 30% 98%",
+      "--foreground": "222 45% 12%",
+      "--card": "0 0% 100%",
+      "--card-foreground": "222 45% 12%",
+      "--popover": "0 0% 100%",
+      "--popover-foreground": "222 45% 12%",
+      "--primary": "210 80% 50%",
+      "--primary-foreground": "0 0% 100%",
+      "--secondary": "35 95% 55%",
+      "--secondary-foreground": "0 0% 100%",
+      "--muted": "210 40% 92%",
+      "--muted-foreground": "220 15% 48%",
+      "--accent": "140 70% 50%",
+      "--accent-foreground": "0 0% 100%",
+      "--destructive": "0 84% 60%",
+      "--destructive-foreground": "0 0% 100%",
+      "--border": "214 30% 88%",
+      "--input": "214 30% 88%",
+      "--ring": "210 80% 50%",
     },
   },
 ];

@@ -323,7 +323,7 @@ class CandidateImporter:
             'safety_shoes': get_val('安全靴'),
 
             # Status
-            'status': CandidateStatus.APPROVED,  # Import as approved since they're in old system
+            'status': CandidateStatus.APPROVED.value,  # Use .value to get lowercase "approved"
             'created_at': datetime.now(),
             'updated_at': datetime.now()
         }
