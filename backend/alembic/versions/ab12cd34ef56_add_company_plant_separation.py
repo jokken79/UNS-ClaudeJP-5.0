@@ -11,12 +11,15 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'ab12cd34ef56'
-down_revision = 'fe6aac62e522'
+down_revision = 'a1b2c3d4e5f6'  # Updated to latest head
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
+    # Drop view that depends on factory_id column (will recreate later)
+    op.execute("DROP VIEW IF EXISTS vw_employees_with_age")
+
     # Increase factory_id column size for all tables
     # PostgreSQL needs explicit type casting
 
@@ -85,8 +88,27 @@ def upgrade():
         WHERE factory_id IS NOT NULL
     """)
 
+    # Recreate the view that was dropped earlier
+    op.execute("""
+        CREATE OR REPLACE VIEW vw_employees_with_age AS
+        SELECT
+            e.*,
+            EXTRACT(YEAR FROM AGE(e.date_of_birth)) AS calculated_age,
+            CASE
+                WHEN e.zairyu_expire_date - CURRENT_DATE <= e.visa_alert_days THEN TRUE
+                ELSE FALSE
+            END AS visa_expiring_soon,
+            e.zairyu_expire_date - CURRENT_DATE AS days_until_visa_expiration,
+            f.name AS factory_name
+        FROM employees e
+        LEFT JOIN factories f ON e.factory_id = f.factory_id;
+    """)
+
 
 def downgrade():
+    # Drop view before altering columns
+    op.execute("DROP VIEW IF EXISTS vw_employees_with_age")
+
     # Remove new columns
     op.drop_column('contract_workers', 'plant_name')
     op.drop_column('contract_workers', 'company_name')
@@ -110,3 +132,19 @@ def downgrade():
                existing_type=sa.VARCHAR(length=200),
                type_=sa.String(length=20),
                existing_nullable=False)
+
+    # Recreate the view with original column sizes
+    op.execute("""
+        CREATE OR REPLACE VIEW vw_employees_with_age AS
+        SELECT
+            e.*,
+            EXTRACT(YEAR FROM AGE(e.date_of_birth)) AS calculated_age,
+            CASE
+                WHEN e.zairyu_expire_date - CURRENT_DATE <= e.visa_alert_days THEN TRUE
+                ELSE FALSE
+            END AS visa_expiring_soon,
+            e.zairyu_expire_date - CURRENT_DATE AS days_until_visa_expiration,
+            f.name AS factory_name
+        FROM employees e
+        LEFT JOIN factories f ON e.factory_id = f.factory_id;
+    """)
