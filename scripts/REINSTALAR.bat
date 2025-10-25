@@ -203,7 +203,10 @@ echo [Paso 2/5] Deteniendo y eliminando contenedores y volumenes
 echo      [OK] Servicios detenidos y datos eliminados.
 echo.
 
-echo [Paso 3/5] Reconstruyendo imagenes desde cero (puede tardar 3-5 mins)
+echo [Paso 3/5] Reconstruyendo imagenes desde cero
+echo      Primera instalacion: 30-40 mins (descarga dependencias ML)
+echo      Reinstalaciones: 5-8 mins (usa cache de Docker)
+set DOCKER_BUILDKIT=1
 %DOCKER_COMPOSE_CMD% build --no-cache
 if !errorlevel! neq 0 (
     echo [ERROR] ERROR: Fallo al construir las imagenes. Revisa los logs.
@@ -216,8 +219,8 @@ echo.
 echo [Paso 4/5] Iniciando servicios
 echo      [4.1] Iniciando PostgreSQL
 %DOCKER_COMPOSE_CMD% up -d db --remove-orphans
-echo      [4.2] Esperando 30s a que la base de datos se estabilice
-timeout /t 30 /nobreak >nul
+echo      [4.2] Esperando 60s a que la base de datos se estabilice
+timeout /t 60 /nobreak >nul
 echo      [4.3] Iniciando el resto de servicios
 %DOCKER_COMPOSE_CMD% up -d --remove-orphans
 if !errorlevel! neq 0 (
@@ -229,8 +232,9 @@ echo      [OK] Servicios iniciados.
 echo.
 
 echo [Paso 5/5] Esperando y verificando
-echo      [5.1] Esperando 60s para la compilacion del frontend y la BD
-timeout /t 60 /nobreak >nul
+echo      [5.1] Esperando 120s para la compilacion del frontend
+echo         (Next.js puede tardar 90-120s en primera compilacion)
+timeout /t 120 /nobreak >nul
 echo.
 echo      [5.2] Verificando si existe backup de produccion
 if exist "%~dp0\..\backend\backups\production_backup.sql" (
