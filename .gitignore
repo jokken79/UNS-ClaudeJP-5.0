@@ -127,3 +127,8 @@ ocr_rirekisho_results.json
 stuck_request.txt
 reinstalar_log.txt
 scripts/reinstalar_log.txt 
+
+
+# Large JSON files with photo data - too big for git
+access_photo_mappings.json
+backend/access_photo_mappings.json
