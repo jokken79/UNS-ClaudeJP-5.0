@@ -125,7 +125,7 @@ export function BreadcrumbNav({
           className="hidden md:flex items-center"
         >
           {items.map((item, index) => (
-            <Fragment key={item.href}>
+            <div key={`desktop-${item.href}-${index}`} className="flex items-center">
               {/* Separator */}
               {(showHome || index > 0) && (
                 <motion.div
@@ -162,7 +162,7 @@ export function BreadcrumbNav({
                   </Link>
                 )}
               </motion.div>
-            </Fragment>
+            </div>
           ))}
         </motion.div>
 
@@ -185,7 +185,7 @@ export function BreadcrumbNav({
           )}
 
           {mobileItems.map((item, index) => (
-            <Fragment key={item.href}>
+            <div key={`mobile-${item.href}-${index}`} className="flex items-center">
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -216,7 +216,7 @@ export function BreadcrumbNav({
                   </Link>
                 )}
               </motion.div>
-            </Fragment>
+            </div>
           ))}
         </motion.div>
       </AnimatePresence>
