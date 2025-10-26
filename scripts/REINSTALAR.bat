@@ -2,14 +2,14 @@
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
-title UNS-ClaudeJP - Reinstalar Sistema (Corregido)
+title UNS-ClaudeJP 5.0 - Reinstalar Sistema (Completo)
 
 :: ============================================================================
 :: SECCION DE DIAGNOSTICO
 :: ============================================================================
 echo.
 echo ========================================================
-echo   UNS-CLAUDEJP - REINSTALACION DE SISTEMA (v4.2 Corregido)
+echo   UNS-CLAUDEJP 5.0 - REINSTALACION DE SISTEMA (Completa)
 echo ========================================================
 echo.
 echo [FASE 1 de 3] Realizando diagnostico del sistema
@@ -203,7 +203,17 @@ echo [Paso 2/5] Deteniendo y eliminando contenedores y volumenes
 echo      [OK] Servicios detenidos y datos eliminados.
 echo.
 
-echo [Paso 3/5] Reconstruyendo imagenes desde cero
+echo [Paso 2.5/5] Copiando datos de factories desde backup
+echo      [>] Creando directorio config\factories
+if not exist "..\config\factories" mkdir "..\config\factories"
+echo      [>] Copiando archivos JSON desde backup
+for /r "..\config\factories\backup" %%F in (*.json) do (
+    copy "%%F" "..\config\factories\" /Y >nul
+)
+echo      [OK] Datos de factories copiados.
+echo.
+
+echo [Paso 4/6] Reconstruyendo imagenes desde cero
 echo      Primera instalacion: 30-40 mins (descarga dependencias ML)
 echo      Reinstalaciones: 5-8 mins (usa cache de Docker)
 set DOCKER_BUILDKIT=1
@@ -216,12 +226,12 @@ if !errorlevel! neq 0 (
 echo      [OK] Imagenes reconstruidas.
 echo.
 
-echo [Paso 4/5] Iniciando servicios
-echo      [4.1] Iniciando PostgreSQL
+echo [Paso 5/6] Iniciando servicios
+echo      [5.1] Iniciando PostgreSQL
 %DOCKER_COMPOSE_CMD% up -d db --remove-orphans
-echo      [4.2] Esperando 60s a que la base de datos se estabilice
+echo      [5.2] Esperando 60s a que la base de datos se estabilice
 timeout /t 60 /nobreak >nul
-echo      [4.3] Iniciando el resto de servicios
+echo      [5.3] Iniciando el resto de servicios
 %DOCKER_COMPOSE_CMD% up -d --remove-orphans
 if !errorlevel! neq 0 (
     echo [ERROR] ERROR: Fallo al iniciar los servicios.
@@ -231,12 +241,12 @@ if !errorlevel! neq 0 (
 echo      [OK] Servicios iniciados.
 echo.
 
-echo [Paso 5/5] Esperando y verificando
-echo      [5.1] Esperando 120s para la compilacion del frontend
+echo [Paso 6/6] Esperando y verificando
+echo      [6.1] Esperando 120s para la compilacion del frontend
 echo         (Next.js puede tardar 90-120s en primera compilacion)
 timeout /t 120 /nobreak >nul
 echo.
-echo      [5.2] Verificando si existe backup de produccion
+echo      [6.2] Verificando si existe backup de produccion
 if exist "%~dp0\..\backend\backups\production_backup.sql" (
     echo      [OK] Backup encontrado: backend\backups\production_backup.sql
     echo.
