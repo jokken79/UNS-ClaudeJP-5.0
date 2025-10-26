@@ -71,25 +71,43 @@ def find_databasejp_folder() -> Optional[Path]:
 def find_access_database(databasejp_path: Path) -> Optional[Path]:
     """
     Search for .accdb files in DATABASEJP folder
+
+    Priority:
+    1. Look for specific database name: ユニバーサル企画㈱データベースv25.3.24.accdb
+    2. Look for any .accdb file (largest = main database)
     """
 
     logger.info(f"Searching for Access database files in {databasejp_path}...")
 
-    # Search in root and subdirectories
+    # Strategy 1: Look for the specific known database name
+    known_db_names = [
+        "ユニバーサル企画㈱データベースv25.3.24.accdb",
+        "ユニバーサル企画㈱データベース.accdb",
+        "ユニバーサル企画.accdb",
+    ]
+
+    for db_name in known_db_names:
+        db_path = databasejp_path / db_name
+        if db_path.exists():
+            logger.info(f"✓ Found specific database: {db_name}")
+            logger.info(f"  Size: {db_path.stat().st_size / (1024*1024):.1f} MB")
+            return db_path
+
+    # Strategy 2: Search for any .accdb files
+    logger.info("Specific database not found, searching for any .accdb files...")
     accdb_files = list(databasejp_path.glob("**/*.accdb"))
 
     if not accdb_files:
-        logger.warning("No .accdb files found")
+        logger.warning("No .accdb files found in DATABASEJP")
         return None
 
-    # Prefer the main database (largest file or specific name)
     logger.info(f"Found {len(accdb_files)} Access database file(s)")
 
     # Sort by size (descending) to get the main database
     accdb_files.sort(key=lambda p: p.stat().st_size, reverse=True)
 
     selected_db = accdb_files[0]
-    logger.info(f"✓ Selected database: {selected_db.name} ({selected_db.stat().st_size / (1024*1024):.1f} MB)")
+    logger.info(f"✓ Selected largest database: {selected_db.name} ({selected_db.stat().st_size / (1024*1024):.1f} MB)")
 
     return selected_db
 
