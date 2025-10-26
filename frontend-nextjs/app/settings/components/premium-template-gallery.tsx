@@ -150,8 +150,8 @@ export function PremiumTemplateGallery() {
               </div>
 
               <div className="grid grid-cols-4 gap-2">
-                {[template.palette.primary, template.palette.secondary, template.palette.accent, template.palette.background].map((color) => (
-                  <div key={color} className="rounded-lg border border-white/10 p-2 text-center text-xs font-medium text-muted-foreground">
+                {[template.palette.primary, template.palette.secondary, template.palette.accent, template.palette.background].map((color, index) => (
+                  <div key={`${template.id}-${color}-${index}`} className="rounded-lg border border-white/10 p-2 text-center text-xs font-medium text-muted-foreground">
                     <div className="h-8 w-full rounded-md" style={{ background: color }} />
                     <span className="mt-1 block truncate" title={color}>
                       {color}

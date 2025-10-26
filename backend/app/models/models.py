@@ -268,8 +268,8 @@ class Candidate(Base):
 
     ocr_notes = Column(Text)  # OCR処理に関するメモ
 
-    # Status & Audit Fields
-    status = Column(SQLEnum(CandidateStatus, name='candidate_status'), default=CandidateStatus.PENDING)
+    # Status & Audit Fields (usando String en lugar de SQLEnum para evitar problemas de serialización)
+    status = Column(String(20), server_default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     approved_by = Column(Integer, ForeignKey("users.id"))

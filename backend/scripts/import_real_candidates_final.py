@@ -11,8 +11,33 @@ import openpyxl
 sys.path.insert(0, '/app')
 
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from app.core.database import SessionLocal
-from app.models.models import Candidate
+from app.models.models import Candidate, CandidateStatus
+
+
+def _insert_candidates_sql(db: Session, records: list):
+    """Inserta candidatos usando SQL directo para evitar problemas con enum de SQLAlchemy"""
+    if not records:
+        return
+
+    try:
+        for record in records:
+            sql = text("""
+                INSERT INTO candidates (
+                    rirekisho_id, full_name_roman, full_name_kanji, full_name_kana,
+                    date_of_birth, nationality, gender, residence_status
+                ) VALUES (
+                    :rirekisho_id, :full_name_roman, :full_name_kanji, :full_name_kana,
+                    :date_of_birth, :nationality, :gender, :residence_status
+                )
+            """)
+            db.execute(sql, record)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"Error al insertar batch: {str(e)}")
+        raise
 
 
 def import_real_candidates():
@@ -70,6 +95,7 @@ def import_real_candidates():
 
             candidates_created = 0
             errors = 0
+            batch_records = []
 
             for idx, row in df.iterrows():
                 try:
@@ -97,29 +123,28 @@ def import_real_candidates():
                         except:
                             pass
 
-                    # Crear candidato
-                    candidate = Candidate(
-                        seimei_kanji=name_romaji,  # Usar romaji como kanji por ahora
-                        seimei_katakana=name_kana if name_kana else name_romaji,
-                        seimei_romaji=name_romaji,
-                        birth_date=birthdate,
-                        nationality=nationality if nationality and nationality != "nan" else "Unknown",
-                        visa_status="Specific Skilled Worker (SSW)",
-                        phone="",
-                        email="",
-                        qualification="Technical Skill Level 2",
-                        work_experience_years=0,
-                        status="employed" if status == "在職中" else "seeking",
-                        created_at=datetime.now(),
-                        updated_at=datetime.now(),
-                    )
+                    # Generar rirekisho_id único
+                    rirekisho_id = f"RIR{candidates_created + 1:06d}"
 
-                    db.add(candidate)
+                    # Preparar datos para inserción SQL directo
+                    batch_records.append({
+                        'rirekisho_id': rirekisho_id,
+                        'full_name_roman': name_romaji,
+                        'full_name_kanji': name_romaji,
+                        'full_name_kana': name_kana if name_kana else name_romaji,
+                        'date_of_birth': birthdate,
+                        'nationality': nationality if nationality and nationality != "nan" else "不明",
+                        'gender': gender if gender and gender != "nan" else None,
+                        'residence_status': "特定技能第1号",
+                    })
+
                     candidates_created += 1
 
-                    # Mostrar progreso cada 100 registros
-                    if candidates_created % 100 == 0:
+                    # Insertar cada 50 registros usando SQL directo
+                    if candidates_created % 50 == 0:
+                        _insert_candidates_sql(db, batch_records)
                         print(f"  ✓ Procesados {candidates_created} candidatos...")
+                        batch_records = []
 
                 except Exception as e:
                     errors += 1
@@ -127,8 +152,9 @@ def import_real_candidates():
                         print(f"  ! Error en fila {idx}: {str(e)}")
                     continue
 
-            # Guardar todos los cambios
-            db.commit()
+            # Insertar registros finales
+            if batch_records:
+                _insert_candidates_sql(db, batch_records)
             print(f"\n✅ Importación completada:")
             print(f"   ✓ Candidatos importados: {candidates_created}")
             print(f"   ! Errores: {errors}")

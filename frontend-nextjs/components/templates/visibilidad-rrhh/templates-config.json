@@ -1,0 +1,187 @@
+{
+  "templates": [
+    {
+      "id": "default-visibilidad-rrhh",
+      "name": "Visibilidad RRHH Default",
+      "description": "Plantilla por defecto del sistema de visibilidad para RRHH",
+      "category": "professional",
+      "version": "1.0.0",
+      "createdAt": "2025-10-26",
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#1e40af",
+        "background": "#ffffff",
+        "text": "#1f2937",
+        "border": "#e5e7eb"
+      },
+      "sidebar": {
+        "width": "w-64",
+        "backgroundColor": "bg-white",
+        "textColor": "text-gray-600",
+        "activeItemBg": "bg-blue-50",
+        "activeItemText": "text-blue-700",
+        "activeItemBorder": "border-blue-600",
+        "hoverBg": "hover:bg-gray-100"
+      },
+      "nav": {
+        "spacing": "space-y-1",
+        "iconSize": "w-5 h-5",
+        "fontSize": "text-sm",
+        "fontWeight": "font-medium",
+        "hoverEffect": true,
+        "transitionDuration": "duration-150"
+      },
+      "header": {
+        "backgroundColor": "bg-white",
+        "borderColor": "border-gray-200",
+        "padding": "px-6 py-4",
+        "shadow": "shadow-sm"
+      },
+      "footer": {
+        "backgroundColor": "bg-white",
+        "textColor": "text-gray-400",
+        "fontSize": "text-xs",
+        "padding": "p-4"
+      }
+    },
+    {
+      "id": "dark-visibilidad-rrhh",
+      "name": "Visibilidad RRHH Dark",
+      "description": "Tema oscuro del sistema de visibilidad para RRHH",
+      "category": "professional",
+      "version": "1.0.0",
+      "createdAt": "2025-10-26",
+      "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#2563eb",
+        "background": "#1f2937",
+        "text": "#f3f4f6",
+        "border": "#374151"
+      },
+      "sidebar": {
+        "width": "w-64",
+        "backgroundColor": "bg-gray-800",
+        "textColor": "text-gray-300",
+        "activeItemBg": "bg-blue-900",
+        "activeItemText": "text-blue-400",
+        "activeItemBorder": "border-blue-500",
+        "hoverBg": "hover:bg-gray-700"
+      },
+      "nav": {
+        "spacing": "space-y-1",
+        "iconSize": "w-5 h-5",
+        "fontSize": "text-sm",
+        "fontWeight": "font-medium",
+        "hoverEffect": true,
+        "transitionDuration": "duration-150"
+      },
+      "header": {
+        "backgroundColor": "bg-gray-900",
+        "borderColor": "border-gray-700",
+        "padding": "px-6 py-4",
+        "shadow": "shadow-md"
+      },
+      "footer": {
+        "backgroundColor": "bg-gray-900",
+        "textColor": "text-gray-500",
+        "fontSize": "text-xs",
+        "padding": "p-4"
+      }
+    },
+    {
+      "id": "minimal-visibilidad-rrhh",
+      "name": "Visibilidad RRHH Minimal",
+      "description": "Tema minimalista del sistema de visibilidad para RRHH",
+      "category": "minimal",
+      "version": "1.0.0",
+      "createdAt": "2025-10-26",
+      "colors": {
+        "primary": "#000000",
+        "secondary": "#333333",
+        "background": "#ffffff",
+        "text": "#1f2937",
+        "border": "#f3f4f6"
+      },
+      "sidebar": {
+        "width": "w-56",
+        "backgroundColor": "bg-white",
+        "textColor": "text-gray-700",
+        "activeItemBg": "bg-gray-100",
+        "activeItemText": "text-black",
+        "activeItemBorder": "border-black",
+        "hoverBg": "hover:bg-gray-50"
+      },
+      "nav": {
+        "spacing": "space-y-2",
+        "iconSize": "w-4 h-4",
+        "fontSize": "text-xs",
+        "fontWeight": "font-normal",
+        "hoverEffect": false,
+        "transitionDuration": "duration-200"
+      },
+      "header": {
+        "backgroundColor": "bg-white",
+        "borderColor": "border-gray-100",
+        "padding": "px-6 py-3",
+        "shadow": "shadow-none"
+      },
+      "footer": {
+        "backgroundColor": "bg-white",
+        "textColor": "text-gray-600",
+        "fontSize": "text-xs",
+        "padding": "p-3"
+      }
+    },
+    {
+      "id": "vibrant-visibilidad-rrhh",
+      "name": "Visibilidad RRHH Vibrant",
+      "description": "Tema vibrante del sistema de visibilidad para RRHH",
+      "category": "modern",
+      "version": "1.0.0",
+      "createdAt": "2025-10-26",
+      "colors": {
+        "primary": "#7c3aed",
+        "secondary": "#db2777",
+        "background": "#ffffff",
+        "text": "#1f2937",
+        "border": "#e5e7eb"
+      },
+      "sidebar": {
+        "width": "w-64",
+        "backgroundColor": "bg-gradient-to-b from-purple-50 to-white",
+        "textColor": "text-gray-600",
+        "activeItemBg": "bg-purple-100",
+        "activeItemText": "text-purple-700",
+        "activeItemBorder": "border-purple-600",
+        "hoverBg": "hover:bg-purple-50"
+      },
+      "nav": {
+        "spacing": "space-y-1",
+        "iconSize": "w-5 h-5",
+        "fontSize": "text-sm",
+        "fontWeight": "font-medium",
+        "hoverEffect": true,
+        "transitionDuration": "duration-150"
+      },
+      "header": {
+        "backgroundColor": "bg-gradient-to-r from-purple-600 to-pink-600",
+        "borderColor": "border-purple-700",
+        "padding": "px-6 py-4",
+        "shadow": "shadow-lg"
+      },
+      "footer": {
+        "backgroundColor": "bg-gray-50",
+        "textColor": "text-gray-500",
+        "fontSize": "text-xs",
+        "padding": "p-4"
+      }
+    }
+  ],
+  "defaultTemplateId": "default-visibilidad-rrhh",
+  "categories": [
+    "professional",
+    "minimal",
+    "modern",
+    "corporate"
+  ]
+}
