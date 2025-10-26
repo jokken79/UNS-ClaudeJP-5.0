@@ -236,57 +236,136 @@ Containers activos:
 
 ---
 
-## 📸 Sincronización de Fotos: Candidatos → Empleados
+## 📸 Sincronización Automática: Fotos + Estados desde DATABASEJP
 
-### Problema: Empleados sin fotos después de importar
-Después de importar candidatos y vincular sus fotos, los **empleados** (派遣社員) creados desde esos candidatos **no tienen fotos**. Esto ocurre porque:
+### Flujo Completo (AUTOMATIZADO en REINSTALAR.bat)
 
-- Tabla `candidates` tiene `photo_data_url` (✅ fotos sincronizadas)
-- Tabla `employees` tiene `photo_data_url = NULL` (❌ fotos faltantes)
-- Un candidato puede ser empleado en múltiples fábricas (1 candidato → N empleados)
+El proceso ahora es **completamente automático**:
 
-### Solución: Script de Sincronización
-Se creó `sync_employee_photos.py` que:
+```
+REINSTALAR.bat
+├─ [Paso 6.3] Auto-extraer fotos desde DATABASEJP
+│             ↓
+│             python auto_extract_photos_from_databasejp.py
+│             ├─ Busca carpeta DATABASEJP
+│             ├─ Encuentra .accdb (Access database)
+│             ├─ Extrae fotos con pywin32
+│             └─ Genera access_photo_mappings.json
+│
+├─ [Paso 6.3b] Copiar JSON al Docker
+│              docker cp access_photo_mappings.json ...
+│
+├─ [Paso 6.3c] Importar fotos a BD
+│              python import_photos_by_name.py
+│
+├─ [Paso 6.4] Ejecutar migraciones
+│
+└─ [Paso 6.5] Sincronización Avanzada (FOTOS + ESTADOS)
+             python sync_employee_data_advanced.py
+             ├─ Match por rirekisho_id (más confiable)
+             ├─ Match por nombre + DOB
+             ├─ Match fuzzy si nombre cambió
+             └─ Sincroniza fotos + estados (在職中/退社/待機中)
+```
 
-1. **Busca empleados sin foto**: `WHERE photo_data_url IS NULL`
-2. **Encuentra candidato coincidente**: Compara `full_name_roman` + `date_of_birth`
-3. **Copia la foto**: `UPDATE employees SET photo_data_url = :photo`
-4. **Maneja múltiples empleados**: Si un candidato tiene 3 empleados (3 fábricas), todos reciben la misma foto
+### Solución: Scripts de Sincronización Avanzada
 
-**Características**:
-- Ejecuta automáticamente en `reinstalar.bat`
-- Genera log detallado: `sync_employee_photos_YYYYMMDD_HHMMSS.log`
-- Resistente a errores (continúa si hay problemas)
-- Sin sobrescribir fotos existentes
+**Se crearon 2 scripts**:
 
-### Ejecución Manual
+1. **`auto_extract_photos_from_databasejp.py`**
+   - Busca automáticamente carpeta "DATABASEJP"
+   - Encuentra base de datos de Access (.accdb)
+   - Extrae fotos usando pywin32 (Windows only)
+   - Resultado: `access_photo_mappings.json`
+
+2. **`sync_employee_data_advanced.py`**
+   - Sincroniza **FOTOS + ESTADOS** simultáneamente
+   - Matching inteligente con 3 estrategias:
+     - **Estrategia 1**: Match por `rirekisho_id` (más confiable)
+     - **Estrategia 2**: Match por `full_name_roman` + `date_of_birth`
+     - **Estrategia 3**: Fuzzy match si nombre cambió en la BD
+   - Maneja múltiples empleados por candidato (1 candidato → N fábricas)
+
+### Cómo Funciona el Matching Avanzado
+
+**Problema**: A veces el nombre del empleado difiere del candidato
+
+```
+Candidato:
+  full_name_roman = "Juan Pérez"
+  date_of_birth = 1995-05-15
+  rirekisho_id = "RIR000001"
+  photo_data_url = [base64...]
+  status = "hired"
+
+Empleado (en 3 fábricas):
+  Empleado #1: nombre="Juan P." (distinto!) → Match fuzzy → Obtiene foto ✅
+  Empleado #2: rirekisho_id="RIR000001" → Match exacto → Obtiene foto ✅
+  Empleado #3: nombre="Juan" DOB match → Match perfecto → Obtiene foto ✅
+
+Resultado final:
+  Todos tienen: foto_data_url + current_status = "hired"
+```
+
+### Estructura de Carpetas para Auto-Extracción
+
+El script `auto_extract_photos_from_databasejp.py` busca en:
+
+```
+D:/DATABASEJP/                    (se busca automáticamente)
+├── ユニバーサル企画㈱データベースv25.3.24.accdb
+├── T_履歴書
+│   └── 写真 (Photo Attachment Field)
+└── (otros archivos)
+```
+
+**Ubicaciones buscadas (en orden)**:
+1. `./DATABASEJP` (carpeta actual)
+2. `../DATABASEJP` (carpeta padre)
+3. `../../DATABASEJP` (carpeta abuelo)
+4. `D:/DATABASEJP`
+5. `D:/ユニバーサル企画㈱データベース`
+6. `~/DATABASEJP`
+
+### Ejecución Manual (si necesitas)
+
 ```bash
-# Dentro del contenedor backend:
-docker exec uns-claudejp-backend python scripts/sync_employee_photos.py
+# 1. Extraer fotos (solo en Windows, una sola vez)
+python backend\scripts\auto_extract_photos_from_databasejp.py
 
-# O en host (si estás en Windows sin Docker):
-cd backend\scripts
-python sync_employee_photos.py
+# 2. Copiar al Docker (si está en Windows)
+docker cp access_photo_mappings.json uns-claudejp-backend:/app/
+
+# 3. Importar fotos a BD
+docker exec uns-claudejp-backend python scripts/import_photos_by_name.py
+
+# 4. Sincronizar datos avanzados (fotos + estados)
+docker exec uns-claudejp-backend python scripts/sync_employee_data_advanced.py
 ```
 
-**Resultado esperado**:
+### Resultado Esperado de Sincronización
+
 ```
-Employees without photo:        245
-Successfully synced:             240
-Candidates not found:            5
-Success rate:                    98%
+ADVANCED SYNC SUMMARY
+================================================================================
+Total employees to update:      245
+Synced by rirekisho_id:         200  (match exacto)
+Synced by name + DOB:           35   (match nombre)
+Synced by fuzzy match:          8    (match aproximado)
+Total synced:                   243
+Candidates not found:           2
+Success rate:                   99%
 ```
 
 ### Nota sobre Estados de Empleados (現在)
-El campo `current_status` en empleados debería reflejar:
-- `在職中` (activo/trabajando)
-- `退社` (se fue/terminó)
-- `待機中` (esperando/standby)
 
-Esto debe importarse correctamente desde la base de datos de origen. Si ves que todos muestran "active", es porque el sistema asigna ese valor por defecto y necesitarías:
+El campo `current_status` ahora se sincroniza automáticamente:
 
-1. Importar datos de estado desde el Access
-2. Crear un script similar a `sync_employee_photos.py` para sincronizar estados
+- `在職中` (activo/trabajando) ← del candidato
+- `退社` (se fue/terminó) ← del candidato
+- `待機中` (esperando/standby) ← del candidato
+
+**El sistema copia el estado del candidato automáticamente**.
 
 ---
 

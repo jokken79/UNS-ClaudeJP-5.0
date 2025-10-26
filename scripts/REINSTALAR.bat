@@ -269,7 +269,28 @@ if exist "%~dp0\..\backend\backups\production_backup.sql" (
 )
 echo.
 
-echo [Paso 6.3/6] Ejecutando migraciones de base de datos
+echo [Paso 6.3/6] Auto-extrayendo fotos desde carpeta DATABASEJP
+echo      [>] Buscando base de datos de Access en DATABASEJP...
+cd /d "%~dp0\.."
+%PYTHON_CMD% backend\scripts\auto_extract_photos_from_databasejp.py >nul 2>&1
+if !errorlevel! EQU 0 (
+    echo      [OK] Fotos extraidas automáticamente desde DATABASEJP
+
+    REM Copiar archivo JSON al contenedor Docker
+    echo      [>] Copiando fotos al contenedor Docker...
+    docker cp access_photo_mappings.json uns-claudejp-backend:/app/ >nul 2>&1
+
+    REM Ejecutar importación de fotos
+    echo      [>] Importando fotos a base de datos...
+    docker exec uns-claudejp-backend python scripts/import_photos_by_name.py >nul 2>&1
+    echo      [OK] Fotos importadas exitosamente.
+) else (
+    echo      [AVISO] No se encontro DATABASEJP o no hay fotos para extraer.
+    echo             (Esto es normal si ejecutas sin la carpeta DATABASEJP presente)
+)
+echo.
+
+echo [Paso 6.4/6] Ejecutando migraciones de base de datos
 docker exec uns-claudejp-backend alembic upgrade head >nul 2>&1
 if !errorlevel! EQU 0 (
     echo      [OK] Migraciones ejecutadas.
@@ -278,12 +299,12 @@ if !errorlevel! EQU 0 (
 )
 echo.
 
-echo [Paso 6.4/6] Sincronizando fotos de candidatos a empleados
-docker exec uns-claudejp-backend python scripts/sync_employee_photos.py >nul 2>&1
+echo [Paso 6.5/6] Sincronizando fotos y estados de candidatos a empleados
+docker exec uns-claudejp-backend python scripts/sync_employee_data_advanced.py >nul 2>&1
 if !errorlevel! EQU 0 (
-    echo      [OK] Sincronizacion de fotos completada.
+    echo      [OK] Sincronizacion de datos completada.
 ) else (
-    echo      [AVISO] Sin fotos para sincronizar (esto es normal si no hay datos de empleados).
+    echo      [AVISO] Sin datos para sincronizar (esto es normal si no hay empleados).
 )
 echo.
 
