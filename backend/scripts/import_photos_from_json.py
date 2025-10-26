@@ -40,7 +40,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # PostgreSQL Configuration
-POSTGRES_URL = "postgresql://uns_admin:57UD10R@localhost:5432/uns_claudejp"
+# Use 'db' as hostname when running inside Docker, 'localhost' when running on host
+if os.path.exists('/.dockerenv'):
+    # Running inside Docker container - use service name
+    POSTGRES_URL = "postgresql://uns_admin:57UD10R@db:5432/uns_claudejp"
+    logger.info("Running in Docker - using 'db' as hostname")
+else:
+    # Running on host machine - use localhost
+    POSTGRES_URL = "postgresql://uns_admin:57UD10R@localhost:5432/uns_claudejp"
+    logger.info("Running on host - using 'localhost' as hostname")
 
 
 def import_photos_from_json(photo_mappings_file: str) -> Dict[str, Any]:
@@ -87,7 +95,7 @@ def import_photos_from_json(photo_mappings_file: str) -> Dict[str, Any]:
         return {}
 
     # Connect to PostgreSQL
-    logger.info(f"\nConnecting to PostgreSQL: {POSTGRES_URL}")
+    logger.info(f"\nConnecting to PostgreSQL: {POSTGRES_URL.replace('57UD10R', '****')}")
     try:
         engine = create_engine(POSTGRES_URL)
         Session = sessionmaker(bind=engine)

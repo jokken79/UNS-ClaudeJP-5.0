@@ -42,7 +42,7 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
       
       # Application
-      APP_NAME: ${APP_NAME:-UNS-ClaudeJP 4.2}
+      APP_NAME: ${APP_NAME:-UNS-ClaudeJP 5.0}
       APP_VERSION: -e
       ENVIRONMENT: ${ENVIRONMENT:-development}
       DEBUG: ${DEBUG:-true}
@@ -63,16 +63,15 @@ services:
         python scripts/create_admin_user.py &&
         echo '--- Running import_data.py ---' &&
         python scripts/import_data.py &&
-        echo '--- Running import_real_candidates_final.py ---' &&
-        python scripts/import_real_candidates_final.py &&
-        echo '--- Falling back to demo candidates if needed ---' &&
-        python scripts/import_demo_candidates.py &&
-        echo '--- Checking for Access database imports ---' &&
+        echo '--- Checking for Access database imports (with photos) ---' &&
         if [ -f '/app/access_candidates_data.json' ] && [ -f '/app/access_photo_mappings.json' ]; then
-          echo '--- Importing Access candidates with photos ---' &&
-          python scripts/import_json_simple.py
+          echo '--- ✓ Found Access data files with photos ---' &&
+          python scripts/import_access_candidates_with_photos.py
         else
-          echo '--- No Access data found, skipping ---'
+          echo '--- No Access data found, trying Excel import ---' &&
+          python scripts/import_real_candidates_final.py &&
+          echo '--- Falling back to demo candidates if needed ---' &&
+          python scripts/import_demo_candidates.py
         fi
       "
 
@@ -96,7 +95,7 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
 
       # Application
-      APP_NAME: ${APP_NAME:-UNS-ClaudeJP 4.2}
+      APP_NAME: ${APP_NAME:-UNS-ClaudeJP 5.0}
       APP_VERSION: -e
       ENVIRONMENT: ${ENVIRONMENT:-development}
       DEBUG: ${DEBUG:-true}
@@ -164,8 +163,8 @@ services:
     restart: always
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000/api
-      NEXT_PUBLIC_APP_VERSION: 4.2.0
-      NEXT_PUBLIC_APP_NAME: UNS-ClaudeJP 4.2
+      NEXT_PUBLIC_APP_VERSION: 5.0.0
+      NEXT_PUBLIC_APP_NAME: UNS-ClaudeJP 5.0
       NODE_ENV: development
     volumes:
       - ./frontend-nextjs:/app

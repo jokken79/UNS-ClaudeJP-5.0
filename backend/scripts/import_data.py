@@ -282,7 +282,18 @@ def import_haken_employees(db: Session):
                 apartment_move_out_date = parse_date(row.get('退去'))
 
                 # Parse status
-                is_active = row.get('現在') != '退社' if pd.notna(row.get('現在')) else True
+                status_text = row.get('現在')
+                current_status = 'active' # Default
+                is_active = True
+
+                if pd.notna(status_text):
+                    if status_text == '退社':
+                        current_status = 'terminated'
+                        is_active = False
+                    elif status_text == '待機中':
+                        current_status = 'suspended'
+                    # '在職中' maps to the default 'active'
+
 
                 # Parse integers
                 jikyu = parse_int(row.get('時給')) or 0
@@ -361,6 +372,7 @@ def import_haken_employees(db: Session):
                     entry_request_date=entry_request_date,
                     notes=get_str('備考'),
                     is_active=is_active,
+                    current_status=current_status,
                     termination_date=termination_date
                 )
 

@@ -1,4 +1,4 @@
-# Documentacion UNS-ClaudeJP 4.2
+# Documentacion UNS-ClaudeJP 5.0
 
 ## Estructura
 

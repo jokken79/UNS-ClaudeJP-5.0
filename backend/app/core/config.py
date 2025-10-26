@@ -1,5 +1,5 @@
 """
-Configuration settings for UNS-ClaudeJP 4.0
+Configuration settings for UNS-ClaudeJP 5.0
 """
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class Settings(BaseSettings):
     # App Info
     APP_NAME: str = "UNS-ClaudeJP"
-    APP_VERSION: str = "4.2.0"
+    APP_VERSION: str = "5.0.0"
     COMPANY_NAME: str = "UNS-Kikaku"
     COMPANY_WEBSITE: str = "https://uns-kikaku.com"
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")

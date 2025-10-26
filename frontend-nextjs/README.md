@@ -1,4 +1,4 @@
-# Frontend Next.js 15 - UNS-ClaudeJP 4.2
+# Frontend Next.js 16 - UNS-ClaudeJP 5.0
 
 ## 🚀 Scripts principales
 
@@ -15,7 +15,7 @@ En Docker estos comandos se ejecutan automáticamente al levantar `docker compos
 ## 🔑 Variables de entorno
 
 - `NEXT_PUBLIC_API_URL` (por defecto `http://localhost:8000`)
-- `NEXT_PUBLIC_APP_NAME` (muestra "UNS-ClaudeJP 4.2")
+- `NEXT_PUBLIC_APP_NAME` (muestra "UNS-ClaudeJP 5.0")
 - `NEXT_PUBLIC_APP_VERSION`
 
 Configura valores adicionales en `.env.local` si desarrollas fuera de Docker.

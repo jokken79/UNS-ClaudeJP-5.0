@@ -2,7 +2,7 @@
 
 Dashboard de gestión de recursos humanos para agencias de empleo japonesas, construido con Next.js 16.0.0, React 19.0.0 y TypeScript 5.6.0.
 
-> 🚀 **Nueva versión 5.0** - Actualizado con Next.js 16, React 19 y Turbopack como bundler por defecto.
+> 🚀 **Nueva versión 5.0** - Actualizado con Next.js 16.0.0, React 19.0.0 y Turbopack como bundler por defecto.
 
 ## Características
 
