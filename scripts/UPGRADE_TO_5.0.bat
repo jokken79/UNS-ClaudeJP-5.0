@@ -17,12 +17,56 @@ echo.
 REM Cambiar al directorio raíz del proyecto
 cd /d "%~dp0.."
 
-echo [1/7] 📋 Verificando estado actual...
+echo [0/8] 🔍 Verificando archivo .env...
+echo.
+
+REM Verificar si existe el archivo .env
+if not exist ".env" (
+    echo ⚠️  Archivo .env no encontrado
+    echo 📝 Creando archivo .env automáticamente...
+    echo.
+
+    REM Intentar generar con Python
+    python generate_env.py >nul 2>&1
+    if !errorlevel! equ 0 (
+        echo ✅ Archivo .env creado con generate_env.py
+    ) else (
+        REM Si Python no está disponible, copiar desde .env.example
+        if exist ".env.example" (
+            copy .env.example .env >nul
+            echo ✅ Archivo .env creado desde .env.example
+        ) else (
+            REM Crear .env básico manualmente
+            (
+                echo # Database Configuration
+                echo POSTGRES_USER=uns_admin
+                echo POSTGRES_PASSWORD=57UD10R
+                echo POSTGRES_DB=uns_claudejp
+                echo.
+                echo # Backend Configuration
+                echo SECRET_KEY=uns-claudejp-secret-key-change-in-production
+                echo DATABASE_URL=postgresql://uns_admin:57UD10R@db:5432/uns_claudejp
+                echo.
+                echo # Frontend Configuration
+                echo NEXT_PUBLIC_API_URL=http://localhost:8000
+            ) > .env
+            echo ✅ Archivo .env creado con valores por defecto
+        )
+    )
+    echo.
+    echo 💡 Tip: Revisa y personaliza el archivo .env según tus necesidades
+    echo.
+) else (
+    echo ✅ Archivo .env encontrado
+    echo.
+)
+
+echo [1/8] 📋 Verificando estado actual...
 echo.
 git status --short
 echo.
 
-echo [2/7] 🛑 Deteniendo containers actuales...
+echo [2/8] 🛑 Deteniendo containers actuales...
 docker compose down
 if !errorlevel! neq 0 (
     echo ❌ Error al detener containers
@@ -32,12 +76,12 @@ if !errorlevel! neq 0 (
 echo ✅ Containers detenidos
 echo.
 
-echo [3/7] 🗑️  Limpiando volúmenes de node_modules...
+echo [3/8] 🗑️  Limpiando volúmenes de node_modules...
 docker volume rm uns-claudejp-42_node_modules 2>nul
 echo ✅ Volúmenes limpiados
 echo.
 
-echo [4/7] 🔨 Rebuilding imagen del frontend (esto puede tardar 5-10 minutos)...
+echo [4/8] 🔨 Rebuilding imagen del frontend (esto puede tardar 5-10 minutos)...
 echo    Instalando Next.js 16, React 19 y todas las dependencias...
 echo.
 docker compose build --no-cache frontend
@@ -52,7 +96,7 @@ if !errorlevel! neq 0 (
 echo ✅ Frontend reconstruido con Next.js 16
 echo.
 
-echo [5/7] 🚀 Iniciando servicios actualizados...
+echo [5/8] 🚀 Iniciando servicios actualizados...
 docker compose up -d
 if !errorlevel! neq 0 (
     echo ❌ Error al iniciar servicios
@@ -62,13 +106,24 @@ if !errorlevel! neq 0 (
 echo ✅ Servicios iniciados
 echo.
 
-echo [6/7] ⏳ Esperando a que el frontend compile (Turbopack)...
+echo [6/8] ⏳ Esperando a que el frontend compile (Turbopack)...
 timeout /t 10 /nobreak >nul
 echo.
 
-echo [7/7] 📊 Verificando estado de los servicios...
+echo [7/8] 📊 Verificando estado de los servicios...
 echo.
 docker compose ps
+echo.
+
+echo [8/8] ✅ Verificando configuración de base de datos...
+echo.
+docker logs uns-claudejp-db --tail 5 2>nul | findstr /C:"database system is ready" >nul
+if !errorlevel! equ 0 (
+    echo ✅ Base de datos PostgreSQL iniciada correctamente
+) else (
+    echo ⚠️  La base de datos puede tardar unos segundos más en iniciar
+    echo    Ejecuta: docker logs uns-claudejp-db
+)
 echo.
 
 echo ╔════════════════════════════════════════════════════════════════════════╗
