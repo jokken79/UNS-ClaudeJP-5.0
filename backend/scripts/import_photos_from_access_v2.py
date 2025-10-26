@@ -7,6 +7,7 @@ import sys
 import os
 import base64
 from pathlib import Path
+from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -14,8 +15,18 @@ import pyodbc
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
+# Load environment variables
+load_dotenv()
+
 ACCESS_DB_PATH = r"D:\ユニバーサル企画㈱データベースv25.3.24.accdb"
-POSTGRES_URL = "postgresql://uns_admin:57UD10R@localhost:5432/uns_claudejp"
+
+# PostgreSQL Configuration from environment
+POSTGRES_USER = os.getenv('POSTGRES_USER', 'uns_admin')
+POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', '')
+POSTGRES_DB = os.getenv('POSTGRES_DB', 'uns_claudejp')
+POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
+POSTGRES_PORT = os.getenv('POSTGRES_PORT', '5432')
+POSTGRES_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
 
 def extract_photos():

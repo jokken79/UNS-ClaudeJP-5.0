@@ -550,22 +550,79 @@ async def upload_document(
             detail="Candidate not found"
         )
 
-    # Validate file type
-    file_ext = os.path.splitext(file.filename)[1].lower().replace('.', '')
+    # Validate file exists and has a filename
+    if not file.filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must have a filename"
+        )
+
+    # Sanitize filename - remove path traversal attempts and special characters
+    import re
+    safe_filename = re.sub(r'[^\w\s\-\.]', '', file.filename.replace('..', ''))
+    if not safe_filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid filename"
+        )
+
+    # Validate file type by extension
+    file_ext = os.path.splitext(safe_filename)[1].lower().replace('.', '')
     if file_ext not in settings.ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"File type not allowed. Allowed types: {settings.ALLOWED_EXTENSIONS}"
         )
 
+    # Validate image file types specifically for photos/documents
+    IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp']
+    if file_ext in IMAGE_EXTENSIONS:
+        # Validate content type matches extension
+        if file.content_type and not file.content_type.startswith('image/'):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File content type does not match image extension"
+            )
+
     # Create upload directory if not exists
     upload_dir = os.path.join(settings.UPLOAD_DIR, "candidates", str(candidate_id))
     os.makedirs(upload_dir, exist_ok=True)
 
+    # Read file content with size limit (10 MB)
+    MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+    file_content = await file.read()
+
+    if len(file_content) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"File size exceeds maximum allowed size of {MAX_FILE_SIZE / (1024*1024):.1f} MB"
+        )
+
+    # If it's an image, validate it's actually a valid image
+    if file_ext in IMAGE_EXTENSIONS:
+        try:
+            from PIL import Image
+            import io
+            image = Image.open(io.BytesIO(file_content))
+            image.verify()  # Verify it's a valid image
+            # Reset file pointer for saving
+            file_content_io = io.BytesIO(file_content)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid or corrupted image file: {str(e)}"
+            )
+
     # Save file
-    file_path = os.path.join(upload_dir, file.filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    file_path = os.path.join(upload_dir, safe_filename)
+    try:
+        with open(file_path, "wb") as buffer:
+            buffer.write(file_content)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save file: {str(e)}"
+        )
 
     # Process with OCR
     ocr_data = None

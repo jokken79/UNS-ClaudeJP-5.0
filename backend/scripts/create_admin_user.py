@@ -1,12 +1,26 @@
 """Create initial admin user"""
 import sys
+import os
+import secrets
+import string
+from dotenv import load_dotenv
+
 sys.path.insert(0, '/app')
 
 from app.core.database import SessionLocal
 from app.models.models import User, UserRole
 from app.services.auth_service import AuthService
 
+# Load environment variables
+load_dotenv()
+
 db = SessionLocal()
+
+def generate_secure_password(length=16):
+    """Generate a cryptographically secure random password"""
+    alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+    password = ''.join(secrets.choice(alphabet) for _ in range(length))
+    return password
 
 print("=" * 80)
 print("CREANDO USUARIO ADMINISTRADOR INICIAL")
@@ -20,11 +34,17 @@ if existing_admin:
     print(f"   Email: {existing_admin.email}")
     print(f"   Rol: {existing_admin.role.value}")
 else:
+    # Get admin password from environment or generate a secure one
+    admin_password = os.getenv('ADMIN_PASSWORD')
+    if not admin_password:
+        admin_password = generate_secure_password()
+        print(f"\n⚠  ADMIN_PASSWORD no establecido en .env. Generando password seguro:")
+
     # Create admin user
     admin_user = User(
         username='admin',
         email='admin@uns-kikaku.com',
-        password_hash=AuthService.get_password_hash('admin123'),
+        password_hash=AuthService.get_password_hash(admin_password),
         role=UserRole.SUPER_ADMIN,
         full_name='Administrador del Sistema',
         is_active=True
@@ -35,18 +55,25 @@ else:
 
     print("\n✓ Usuario administrador creado exitosamente!")
     print(f"\n   Username: admin")
-    print(f"   Password: admin123")
+    print(f"   Password: {admin_password}")
     print(f"   Email:    admin@uns-kikaku.com")
     print(f"   Rol:      SUPER_ADMIN")
+    print(f"\n⚠  IMPORTANTE: Cambie esta contraseña en el primer inicio de sesión!")
+    print(f"   O establezca ADMIN_PASSWORD en el archivo .env para uso automatizado")
 
 # Create a test coordinator user
 existing_coordinator = db.query(User).filter(User.username == 'coordinator').first()
 
 if not existing_coordinator:
+    # Get coordinator password from environment or generate a secure one
+    coord_password = os.getenv('COORDINATOR_PASSWORD')
+    if not coord_password:
+        coord_password = generate_secure_password()
+
     coordinator_user = User(
         username='coordinator',
         email='coordinator@uns-kikaku.com',
-        password_hash=AuthService.get_password_hash('coord123'),
+        password_hash=AuthService.get_password_hash(coord_password),
         role=UserRole.COORDINATOR,
         full_name='Coordinador de Prueba',
         is_active=True
@@ -57,7 +84,7 @@ if not existing_coordinator:
 
     print("\n✓ Usuario coordinador creado!")
     print(f"\n   Username: coordinator")
-    print(f"   Password: coord123")
+    print(f"   Password: {coord_password}")
     print(f"   Email:    coordinator@uns-kikaku.com")
     print(f"   Rol:      COORDINATOR")
 

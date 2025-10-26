@@ -23,12 +23,16 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Tuple
+from dotenv import load_dotenv
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -41,13 +45,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# PostgreSQL Configuration
+# PostgreSQL Configuration from environment
+POSTGRES_USER = os.getenv('POSTGRES_USER', 'uns_admin')
+POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', '')
+POSTGRES_DB = os.getenv('POSTGRES_DB', 'uns_claudejp')
+POSTGRES_PORT = os.getenv('POSTGRES_PORT', '5432')
+
 if os.path.exists('/.dockerenv'):
-    POSTGRES_URL = "postgresql://uns_admin:57UD10R@db:5432/uns_claudejp"
+    POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'db')
     logger.info("Running in Docker - using 'db' as hostname")
 else:
-    POSTGRES_URL = "postgresql://uns_admin:57UD10R@localhost:5432/uns_claudejp"
+    POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
     logger.info("Running on host - using 'localhost' as hostname")
+
+POSTGRES_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
 
 def sync_employee_photos() -> Dict[str, Any]:
