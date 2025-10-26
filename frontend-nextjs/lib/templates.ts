@@ -714,63 +714,7 @@ export const templates: TemplateDefinition[] = [
       "--layout-badge-glow": '0 0 0 4px rgba(244, 114, 182, 0.42)'
     })
   },
-  {
-    id: 'themefisher-venture',
-    name: 'Themefisher Venture',
-    tagline: 'Landing B2B dinámica con secciones de conversión',
-    description:
-      'Inspirada en los themes corporativos de Themefisher: hero escalonado, secciones de casos de éxito y pricing con badges resaltados.',
-    category: 'Corporativo',
-    price: '$186',
-    features: [
-      'Hero escalonado con spotlight lateral y mockups flotantes',
-      'Sección de métricas con tarjetas en columnas y contadores',
-      'Tablas de precios con badges animados y CTA múltiples'
-    ],
-    fonts: {
-      heading: 'Montserrat',
-      body: 'Poppins',
-      ui: 'Inter',
-    },
-    iconography: ['Lucide Corporate', 'Heroicons Business', 'LineAwesome Solid'],
-    buttonStyles: ['Venture Primary', 'Outline Accent', 'CTA con Icono', 'Badge Ghost CTA'],
-    palette: {
-      primary: '#1D4ED8',
-      secondary: '#1E293B',
-      accent: '#F97316',
-      neutral: '#E2E8F0',
-      background: '#F8FAFC'
-    },
-    preview: {
-      gradient: 'linear-gradient(140deg, rgba(29, 78, 216, 0.88) 0%, rgba(30, 41, 59, 0.82) 45%, rgba(249, 115, 22, 0.68) 100%)',
-      spotlight: 'radial-gradient(circle at 26% 20%, rgba(29, 78, 216, 0.42), transparent 60%)',
-      accentShape: 'radial-gradient(circle at 80% 30%, rgba(249, 115, 22, 0.32), transparent 65%)'
-    },
-    variables: withVariables({
-      "--layout-card-radius": '24px',
-      "--layout-card-shadow": '0 40px 110px rgba(29, 78, 216, 0.3)',
-      "--layout-card-border": 'rgba(29, 78, 216, 0.28)',
-      "--layout-card-surface": 'linear-gradient(145deg, rgba(255,255,255,0.96) 0%, rgba(226, 232, 240, 0.92) 100%)',
-      "--layout-button-radius": '20px',
-      "--layout-button-shadow": '0 34px 90px rgba(29, 78, 216, 0.32)',
-      "--layout-font-heading": 'var(--font-montserrat)',
-      "--layout-font-body": 'var(--font-poppins)',
-      "--layout-font-ui": 'var(--font-inter)',
-      "--layout-surface-gradient": 'radial-gradient(circle at 18% -8%, rgba(29, 78, 216, 0.4), transparent 58%), radial-gradient(circle at 82% -6%, rgba(249, 115, 22, 0.32), transparent 62%)',
-      "--layout-surface-overlay": 'rgba(29, 78, 216, 0.18)',
-      "--layout-panel-blur": '22px',
-      "--layout-hero-gradient": 'linear-gradient(135deg, rgba(29,78,216,0.92) 0%, rgba(30,41,59,0.88) 48%, rgba(249,115,22,0.75) 100%)',
-      "--layout-hero-glow": '0 60px 140px rgba(29, 78, 216, 0.42)',
-      "--layout-container-max": '1300px',
-      "--layout-section-gap": '4.2rem',
-      "--layout-navbar-background": 'rgba(255,255,255,0.8)',
-      "--layout-navbar-shadow": '0 30px 85px rgba(29, 78, 216, 0.25)',
-      "--layout-divider-glow": 'linear-gradient(90deg, rgba(29,78,216,0) 0%, rgba(59,130,246,0.55) 45%, rgba(249,115,22,0) 100%)',
-      "--layout-list-stripe": 'linear-gradient(90deg, rgba(30, 64, 175, 0.2) 0%, rgba(148, 163, 184, 0.3) 100%)',
-      "--layout-focus-ring": '0 0 0 4px rgba(29, 78, 216, 0.45)',
-      "--layout-badge-glow": '0 0 0 4px rgba(249, 115, 22, 0.4)'
-    })
-  },
+
   {
     id: 'bento-grid-minimal',
     name: 'Bento Grid Minimalist',
