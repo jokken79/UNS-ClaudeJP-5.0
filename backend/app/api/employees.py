@@ -2,7 +2,7 @@
 Employees API Endpoints
 """
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import Optional
 import pandas as pd
 from datetime import datetime
@@ -385,7 +385,16 @@ async def list_employees(
         query = query.filter(or_(*search_conditions))
 
     total = query.count()
-    employees = query.offset((page - 1) * page_size).limit(page_size).all()
+    # Fix N+1 query: eager load factory and apartment relationships
+    employees = (
+        query.options(
+            joinedload(Employee.factory),
+            joinedload(Employee.apartment)
+        )
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
 
     # Convert to response models and add factory name
     items = []

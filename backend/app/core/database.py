@@ -1,4 +1,4 @@
-"""Database configuration for UNS-ClaudeJP 4.0."""
+"""Database configuration for UNS-ClaudeJP 5.0."""
 
 import logging
 import os

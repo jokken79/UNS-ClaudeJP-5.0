@@ -55,12 +55,12 @@ claude --dangerously-skip-permissions
 
 UNS-ClaudeJP 5.0 is a comprehensive HR management system for Japanese staffing agencies (人材派遣会社), built with:
 - **Backend**: FastAPI 0.115.6 (Python 3.11+) with SQLAlchemy 2.0.36 ORM and PostgreSQL 15
-- **Frontend**: Next.js 16.0.0 with React 19, TypeScript 5.6 and Tailwind CSS 3.4 (App Router)
+- **Frontend**: Next.js 16.0.0 with React 19.0.0, TypeScript 5.6 and Tailwind CSS 3.4 (App Router)
 - **DevOps**: Docker Compose for orchestration
 
 The system manages the complete lifecycle of temporary workers: candidates (履歴書/Rirekisho), employees (派遣社員), factories (派遣先), attendance (タイムカード), payroll (給与), and requests (申請). It includes hybrid OCR processing (Azure + EasyOCR + Tesseract) for Japanese document handling.
 
-**Version 5.0** represents a major upgrade to Next.js 16 with React 19, featuring Turbopack as the default bundler, implementing 15 functional pages across 8 core modules with improved performance and caching.
+**Version 5.0** represents a major upgrade to Next.js 16 with React 19, featuring Turbopack as the default bundler, implementing 45+ functional pages across 8 core modules with advanced theming system (12 predefined themes + custom themes), template designer, and professional design tools.
 
 ## Quick Start Commands
 
@@ -168,8 +168,8 @@ docker exec -it uns-claudejp-backend python scripts/verify_data.py
 ```
 backend/
 ├── app/
-│   ├── main.py                 # FastAPI entry point with 14 router registrations
-│   ├── api/                    # REST API endpoints (14 routers)
+│   ├── main.py                 # FastAPI entry point with 15 router registrations
+│   ├── api/                    # REST API endpoints (15 routers)
 │   │   ├── auth.py            # JWT authentication
 │   │   ├── candidates.py      # 履歴書 CRUD + OCR processing
 │   │   ├── employees.py       # 派遣社員 management
@@ -183,7 +183,8 @@ backend/
 │   │   ├── import_export.py   # Data import/export
 │   │   ├── monitoring.py      # System health monitoring
 │   │   ├── notifications.py   # Email/LINE notifications
-│   │   └── reports.py         # PDF report generation
+│   │   ├── reports.py         # PDF report generation
+│   │   └── settings.py        # Application settings API
 │   ├── models/
 │   │   └── models.py          # SQLAlchemy ORM (13 tables)
 │   ├── schemas/               # Pydantic request/response models
@@ -213,46 +214,107 @@ backend/
 ```
 frontend-nextjs/
 ├── app/
-│   ├── layout.tsx             # Root layout with providers
-│   ├── page.tsx               # Home/landing page
-│   ├── login/page.tsx         # Authentication
-│   ├── dashboard/page.tsx     # Main dashboard
-│   ├── candidates/            # Candidate management (4 pages)
-│   │   ├── page.tsx           # List view with filtering
-│   │   ├── new/page.tsx       # Create new candidate
-│   │   ├── [id]/page.tsx      # Detail view
-│   │   └── [id]/edit/page.tsx # Edit form
-│   ├── employees/             # Employee management (4 pages)
-│   │   ├── page.tsx
-│   │   ├── new/page.tsx
-│   │   ├── [id]/page.tsx
-│   │   └── [id]/edit/page.tsx
-│   ├── factories/page.tsx     # Factory/client management
-│   ├── timercards/            # Attendance tracking
-│   │   ├── page.tsx
-│   │   └── [id]/page.tsx
-│   ├── salary/                # Payroll management
-│   │   ├── page.tsx
-│   │   └── [id]/page.tsx
-│   ├── requests/              # Leave request management
-│   │   ├── page.tsx
-│   │   └── [id]/page.tsx
-│   └── components/            # Page-level components
+│   ├── layout.tsx                    # Root layout with providers
+│   ├── page.tsx                      # Home/landing page
+│   ├── login/page.tsx                # Authentication page
+│   ├── profile/page.tsx              # User profile page
+│   │
+│   ├── (dashboard)/                  # Protected dashboard routes group
+│   │   ├── layout.tsx                # Dashboard layout with sidebar
+│   │   ├── dashboard/                # Main dashboard
+│   │   │   ├── page.tsx              # Dashboard overview
+│   │   │   └── dashboard-context.tsx # Dashboard state context
+│   │   │
+│   │   ├── candidates/               # Candidate management (6 pages)
+│   │   │   ├── page.tsx              # List view with filtering
+│   │   │   ├── new/page.tsx          # Create new candidate
+│   │   │   ├── rirekisho/page.tsx    # Rirekisho (履歴書) view
+│   │   │   ├── [id]/page.tsx         # Detail view
+│   │   │   ├── [id]/edit/page.tsx    # Edit form
+│   │   │   └── [id]/print/page.tsx   # Print-friendly view
+│   │   │
+│   │   ├── employees/                # Employee management (5 pages)
+│   │   │   ├── page.tsx              # List view
+│   │   │   ├── new/page.tsx          # Create new employee
+│   │   │   ├── excel-view/page.tsx   # Excel-like view
+│   │   │   ├── [id]/page.tsx         # Detail view
+│   │   │   └── [id]/edit/page.tsx    # Edit form
+│   │   │
+│   │   ├── factories/                # Factory/client management (2 pages)
+│   │   │   ├── page.tsx              # List view
+│   │   │   └── [id]/edit/page.tsx    # Edit factory
+│   │   │
+│   │   ├── timercards/page.tsx       # Attendance tracking
+│   │   ├── salary/page.tsx           # Payroll management
+│   │   ├── requests/page.tsx         # Leave request management
+│   │   ├── reports/page.tsx          # Reports & analytics
+│   │   │
+│   │   ├── settings/                 # Settings (2 pages)
+│   │   │   ├── layout.tsx            # Settings layout
+│   │   │   └── appearance/page.tsx   # Appearance settings
+│   │   │
+│   │   ├── themes/page.tsx           # Theme gallery (12 themes + custom)
+│   │   ├── customizer/page.tsx       # Visual theme customizer
+│   │   ├── templates/page.tsx        # Template management
+│   │   ├── design-tools/page.tsx     # Design toolkit (gradients, shadows, colors)
+│   │   ├── design-system/page.tsx    # Design system documentation
+│   │   │
+│   │   ├── examples/forms/page.tsx   # Form examples
+│   │   ├── help/page.tsx             # Help & documentation
+│   │   ├── support/page.tsx          # Support page
+│   │   ├── privacy/page.tsx          # Privacy policy
+│   │   └── terms/page.tsx            # Terms of service
+│   │
+│   ├── database-management/          # Database admin tools
+│   │   ├── page.tsx                  # DB management interface
+│   │   └── components/
+│   │       └── table-data-viewer.tsx # Table data viewer
+│   │
+│   ├── settings/                     # Global settings (outside dashboard)
+│   │   ├── page.tsx                  # Main settings page
+│   │   └── components/               # Settings components
+│   │       ├── custom-theme-builder.tsx
+│   │       ├── custom-themes-list.tsx
+│   │       ├── custom-template-designer.tsx
+│   │       ├── custom-template-collection.tsx
+│   │       └── premium-template-gallery.tsx
+│   │
+│   ├── demo/page.tsx                 # Demo page
+│   ├── demo-font-selector/page.tsx   # Font selector demo
+│   └── global-error.tsx              # Global error boundary
+│
 ├── components/
-│   ├── EmployeeForm.tsx       # Shared form (Create/Edit)
-│   ├── CandidateForm.tsx      # Shared form (Create/Edit)
-│   ├── OCRUploader.tsx        # Document OCR uploader
-│   ├── layout/                # Layout components (Header, Sidebar, Navigation)
-│   ├── forms/                 # Reusable form components
-│   └── ui/                    # Shadcn UI components
+│   ├── EmployeeForm.tsx              # Shared form (Create/Edit)
+│   ├── CandidateForm.tsx             # Shared form (Create/Edit)
+│   ├── OCRUploader.tsx               # Document OCR uploader
+│   ├── theme-card.tsx                # Theme preview card
+│   ├── template-preview.tsx          # Template preview component
+│   ├── layout/                       # Layout components
+│   │   ├── Header.tsx                # Header with navigation
+│   │   ├── Sidebar.tsx               # Sidebar navigation
+│   │   └── Navigation.tsx            # Navigation component
+│   ├── forms/                        # Reusable form components
+│   └── ui/                           # Shadcn UI components (40+ components)
+│
 ├── lib/
-│   ├── api.ts                 # Axios API client with interceptors
-│   └── api/                   # API service modules
-├── stores/                    # Zustand state management
-├── types/                     # TypeScript type definitions
-├── proxy.ts                   # Next.js 16 proxy (formerly middleware.ts)
-└── public/                    # Static assets
+│   ├── api.ts                        # Axios API client with interceptors
+│   ├── api/                          # API service modules
+│   ├── themes.ts                     # Theme definitions (12 predefined themes)
+│   ├── custom-themes.ts              # Custom theme management
+│   ├── templates.ts                  # Template system
+│   ├── template-export.ts            # Template export utilities
+│   └── utils.ts                      # Utility functions
+│
+├── stores/                           # Zustand state management
+│   ├── auth-store.ts                 # Authentication state
+│   └── settings-store.ts             # Settings state (visibility, preferences)
+│
+├── types/                            # TypeScript type definitions
+├── proxy.ts                          # Next.js proxy (route protection)
+└── public/                           # Static assets
 ```
+
+**Page Count**: 45+ functional pages organized in 8 core modules
 
 ### Database Schema (13 Tables)
 
@@ -297,6 +359,155 @@ frontend-nextjs/
 - **Zustand**: Global state for auth and settings (lightweight alternative to Redux)
 - **React Query (@tanstack/react-query)**: Server state management with intelligent caching, auto-refetching
 - **Next.js App Router**: File-based routing with dynamic `[id]` routes
+
+### Theme System (Sistema de Temas)
+
+The application features a **professional theming system** with 12 predefined themes plus unlimited custom themes.
+
+**Predefined Themes (12 total)**:
+- **Default**: `default-light`, `default-dark` - Classic themes
+- **Corporate**: `uns-kikaku`, `industrial` - Professional business themes
+- **Nature**: `ocean-blue`, `mint-green`, `forest-green`, `sunset` - Calming natural colors
+- **Premium**: `royal-purple` - Luxury feel
+- **Vibrant**: `vibrant-coral` - High energy
+- **Minimalist**: `monochrome` - Black & white elegance
+- **Warm**: `espresso` - Coffee-inspired tones
+
+**Theme Features**:
+- **Live Preview**: Hover over theme cards to preview (500ms delay)
+- **Favorites**: Mark themes as favorites with heart icon
+- **Category Filtering**: Filter by Corporate, Creative, Minimal, or Custom
+- **Search**: Search themes by name or description
+- **Custom Themes**: Create unlimited custom themes with Theme Builder
+- **Theme Persistence**: Themes saved in localStorage via `next-themes`
+
+**Theme Configuration** (`lib/themes.ts`):
+```typescript
+export interface Theme {
+  name: string;
+  colors: {
+    "--background": string;       // Main background color (HSL)
+    "--foreground": string;       // Main text color (HSL)
+    "--card": string;             // Card background (HSL)
+    "--primary": string;          // Primary brand color (HSL)
+    "--accent": string;           // Accent color (HSL)
+    "--border": string;           // Border color (HSL)
+    // ... more CSS custom properties
+  };
+}
+```
+
+**Custom Theme Creation**:
+- Navigate to `/settings` or `/dashboard/themes`
+- Use **Custom Theme Builder** to create themes
+- Pick colors for each design token (primary, background, card, accent, etc.)
+- Save with custom name
+- Themes stored in localStorage as `custom-{name}`
+- Manage in "Mis Temas Personalizados" tab
+
+**Theme Management Pages**:
+- `/settings` - Main theme configuration with tabs (Predefined, Create, Custom)
+- `/dashboard/themes` - Gallery view with search and filtering
+- `/dashboard/customizer` - Live theme & template customizer
+- `/dashboard/settings/appearance` - Appearance settings
+
+### Template System (Sistema de Plantillas)
+
+**Professional template system** for customizing the visual layout and styling of the application.
+
+**Template Features**:
+- **Premium Templates**: Pre-designed professional layouts
+- **Custom Template Designer**: Create templates with visual editor
+- **Template Variables**: Customize typography, spacing, shadows, borders
+- **Export/Import**: Download templates as JSON, share configurations
+- **Live Preview**: Real-time preview while designing
+
+**Template Variables** (Customizable):
+```typescript
+interface TemplateVariables {
+  // Typography
+  "--layout-font-heading": string;     // Heading font family
+  "--layout-font-body": string;        // Body text font
+  "--layout-font-ui": string;          // UI elements font
+
+  // Layout
+  "--layout-card-radius": string;      // Card border radius (0-32px)
+  "--layout-button-radius": string;    // Button border radius (0-999px)
+  "--layout-panel-blur": string;       // Panel backdrop blur (0-40px)
+  "--layout-container-max": string;    // Max container width
+  "--layout-section-gap": string;      // Section spacing
+
+  // Effects
+  "--layout-card-shadow": string;      // Card shadow CSS
+  "--layout-button-shadow": string;    // Button shadow CSS
+}
+```
+
+**Template Management**:
+- **Create**: `/settings` → "Diseña tu formato a medida" section
+- **Gallery**: "Colección de plantillas premium" section
+- **Collection**: "Mis plantillas personalizadas" - manage saved templates
+- **Storage**: Templates saved in localStorage
+- **Apply**: One-click activation with `applyTemplateToDocument()`
+
+### Design Tools & Customization (Herramientas de Diseño)
+
+The system includes **professional design tools** for creating custom UI elements without code.
+
+#### Customizer (`/dashboard/customizer`)
+
+**Real-time visual customizer** with live preview:
+
+- **Left Panel - Controls**:
+  - Template selector (switch between predefined templates)
+  - Theme selector (apply any theme)
+  - Quick customization sliders:
+    - Card Radius (0-32px)
+    - Button Radius (0-999px)
+    - Panel Blur (0-40px)
+  - Advanced options (accordion):
+    - Typography (heading, body, UI fonts)
+    - Spacing (container max, section gap)
+    - Shadows & Effects (card shadow, button shadow)
+
+- **Right Panel - Live Preview**:
+  - Real-time preview of changes
+  - Device toggle (desktop/mobile/tablet)
+  - Updates instantly as you adjust controls
+
+- **Actions**:
+  - **Apply All**: Apply theme + template to entire app
+  - **Reset**: Restore template defaults
+  - **Export**: Download configuration as JSON
+
+#### Design Tools (`/dashboard/design-tools`)
+
+**Advanced toolkit** for creating design assets:
+
+- **Gradient Generator**: Create CSS gradients visually
+- **Shadow Generator**: Design box-shadows and text-shadows
+- **Color Palette Generator**: Generate harmonious color schemes
+- **Typography Scale**: Preview font sizing and spacing
+- **Border Radius Previewer**: Test different border radius values
+- **Spacing Scale**: Visualize spacing system
+
+#### Design System (`/dashboard/design-system`)
+
+**Complete design system documentation**:
+
+- **Colors**: All theme colors with HSL values
+- **Typography**: Font families, sizes, weights, line heights
+- **Spacing**: Spacing scale (4px base grid)
+- **Components**: Documentation for all UI components
+- **Design Tokens**: All CSS custom properties
+- **Usage Examples**: Code snippets for each component
+
+**Design System Features**:
+- Copy-paste ready code examples
+- Visual previews of all tokens
+- Responsive breakpoints documentation
+- Accessibility guidelines
+- Animation timing functions
 
 ### OCR Integration (Hybrid Approach)
 

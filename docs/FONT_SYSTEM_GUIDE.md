@@ -1,6 +1,6 @@
 # 21-Font Typographic System Guide
 
-**Version:** 4.2
+**Version:** 5.0
 **Last Updated:** 2025-10-26
 **System Name:** 21-Font Professional Typography System
 
@@ -27,7 +27,7 @@
 
 ## 1. Overview
 
-The **21-Font Typographic System** is a comprehensive font management solution built into UNS-ClaudeJP 4.2, providing a curated selection of professional Google Fonts optimized for Japanese HR management interfaces.
+The **21-Font Typographic System** is a comprehensive font management solution built into UNS-ClaudeJP 5.0, providing a curated selection of professional Google Fonts optimized for Japanese HR management interfaces.
 
 ### Key Features
 
@@ -96,7 +96,7 @@ The **21-Font Typographic System** is a comprehensive font management solution b
 
 ## 3. Default Theme Font Assignments
 
-Each of the 13 pre-defined themes in UNS-ClaudeJP 4.2 has a carefully selected default font that complements its visual identity:
+Each of the 13 pre-defined themes in UNS-ClaudeJP 5.0 has a carefully selected default font that complements its visual identity:
 
 | Theme Name | Default Font | Font Category | Design Intent |
 |------------|--------------|---------------|---------------|
@@ -1825,7 +1825,7 @@ const headingFonts = getRecommendedFonts('heading');
 
 **Created**: 2025-10-26
 **Version**: 1.0
-**System Version**: UNS-ClaudeJP 4.2
+**System Version**: UNS-ClaudeJP 5.0
 **Total Fonts**: 21
 **Pre-defined Themes**: 13
 **API Functions**: 11

@@ -5,7 +5,7 @@ const BASE_URL = 'http://localhost:3000';
 const SCREENSHOT_DIR = __dirname;
 
 async function testFrontendPages() {
-  console.log('UNS-ClaudeJP 4.2 Frontend Testing');
+  console.log('UNS-ClaudeJP 5.0 Frontend Testing');
   console.log('==================================
 ');
   
