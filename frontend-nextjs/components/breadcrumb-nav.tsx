@@ -7,6 +7,7 @@
 
 'use client';
 
+import { Fragment } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronRight, Home } from 'lucide-react';
@@ -119,13 +120,15 @@ export function BreadcrumbNav({
         )}
 
         {/* Desktop: Show all items */}
-        <div className="hidden md:flex items-center">
+        <motion.div
+          key="desktop-items"
+          className="hidden md:flex items-center"
+        >
           {items.map((item, index) => (
-            <div key={`desktop-group-${item.href}`}>
+            <Fragment key={item.href}>
               {/* Separator */}
               {(showHome || index > 0) && (
                 <motion.div
-                  key={`desktop-separator-${item.href}`}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
@@ -138,7 +141,6 @@ export function BreadcrumbNav({
 
               {/* Breadcrumb Item */}
               <motion.div
-                key={`desktop-item-${item.href}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
@@ -160,12 +162,15 @@ export function BreadcrumbNav({
                   </Link>
                 )}
               </motion.div>
-            </div>
+            </Fragment>
           ))}
-        </div>
+        </motion.div>
 
         {/* Mobile: Show only last N items */}
-        <div className="flex md:hidden items-center">
+        <motion.div
+          key="mobile-items"
+          className="flex md:hidden items-center"
+        >
           {hasHiddenItems && (
             <motion.div
               key="mobile-ellipsis"
@@ -180,9 +185,8 @@ export function BreadcrumbNav({
           )}
 
           {mobileItems.map((item, index) => (
-            <div key={`mobile-group-${item.href}`}>
+            <Fragment key={item.href}>
               <motion.div
-                key={`mobile-separator-${item.href}`}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
@@ -193,7 +197,6 @@ export function BreadcrumbNav({
               </motion.div>
 
               <motion.div
-                key={`mobile-item-${item.href}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
@@ -213,9 +216,9 @@ export function BreadcrumbNav({
                   </Link>
                 )}
               </motion.div>
-            </div>
+            </Fragment>
           ))}
-        </div>
+        </motion.div>
       </AnimatePresence>
     </nav>
   );
