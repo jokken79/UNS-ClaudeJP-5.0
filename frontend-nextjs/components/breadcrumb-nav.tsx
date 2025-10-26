@@ -121,11 +121,11 @@ export function BreadcrumbNav({
         {/* Desktop: Show all items */}
         <div className="hidden md:flex items-center">
           {items.map((item, index) => (
-            <div key={`desktop-group-${index}-${item.href}`}>
+            <div key={`desktop-group-${item.href}`}>
               {/* Separator */}
               {(showHome || index > 0) && (
                 <motion.div
-                  key={`desktop-separator-${index}-${item.href}`}
+                  key={`desktop-separator-${item.href}`}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
@@ -138,7 +138,7 @@ export function BreadcrumbNav({
 
               {/* Breadcrumb Item */}
               <motion.div
-                key={`desktop-item-${index}-${item.href}`}
+                key={`desktop-item-${item.href}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
@@ -180,9 +180,9 @@ export function BreadcrumbNav({
           )}
 
           {mobileItems.map((item, index) => (
-            <div key={`mobile-group-${index}-${item.href}`}>
+            <div key={`mobile-group-${item.href}`}>
               <motion.div
-                key={`mobile-separator-${index}-${item.href}`}
+                key={`mobile-separator-${item.href}`}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
@@ -193,7 +193,7 @@ export function BreadcrumbNav({
               </motion.div>
 
               <motion.div
-                key={`mobile-item-${index}-${item.href}`}
+                key={`mobile-item-${item.href}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
