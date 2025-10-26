@@ -103,7 +103,9 @@ def import_photos_from_json(photo_mappings_file: str) -> Dict[str, Any]:
         return {}
 
     # Connect to PostgreSQL
-    logger.info(f"\nConnecting to PostgreSQL: {POSTGRES_URL.replace('57UD10R', '****')}")
+    # Mask password in URL for logging
+    safe_url = POSTGRES_URL.replace(f':{POSTGRES_PASSWORD}@', ':****@') if POSTGRES_PASSWORD else POSTGRES_URL
+    logger.info(f"\nConnecting to PostgreSQL: {safe_url}")
     try:
         engine = create_engine(POSTGRES_URL)
         Session = sessionmaker(bind=engine)
