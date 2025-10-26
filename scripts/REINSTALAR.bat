@@ -269,6 +269,24 @@ if exist "%~dp0\..\backend\backups\production_backup.sql" (
 )
 echo.
 
+echo [Paso 6.3/6] Ejecutando migraciones de base de datos
+docker exec uns-claudejp-backend alembic upgrade head >nul 2>&1
+if !errorlevel! EQU 0 (
+    echo      [OK] Migraciones ejecutadas.
+) else (
+    echo      [AVISO] Error en migraciones (esto puede ser normal si ya estan aplicadas).
+)
+echo.
+
+echo [Paso 6.4/6] Sincronizando fotos de candidatos a empleados
+docker exec uns-claudejp-backend python scripts/sync_employee_photos.py >nul 2>&1
+if !errorlevel! EQU 0 (
+    echo      [OK] Sincronizacion de fotos completada.
+) else (
+    echo      [AVISO] Sin fotos para sincronizar (esto es normal si no hay datos de empleados).
+)
+echo.
+
 echo [FASE 3 de 3] Verificacion final
 echo.
 %DOCKER_COMPOSE_CMD% ps

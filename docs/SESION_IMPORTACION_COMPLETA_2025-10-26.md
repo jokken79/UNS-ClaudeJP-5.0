@@ -236,6 +236,60 @@ Containers activos:
 
 ---
 
+## 📸 Sincronización de Fotos: Candidatos → Empleados
+
+### Problema: Empleados sin fotos después de importar
+Después de importar candidatos y vincular sus fotos, los **empleados** (派遣社員) creados desde esos candidatos **no tienen fotos**. Esto ocurre porque:
+
+- Tabla `candidates` tiene `photo_data_url` (✅ fotos sincronizadas)
+- Tabla `employees` tiene `photo_data_url = NULL` (❌ fotos faltantes)
+- Un candidato puede ser empleado en múltiples fábricas (1 candidato → N empleados)
+
+### Solución: Script de Sincronización
+Se creó `sync_employee_photos.py` que:
+
+1. **Busca empleados sin foto**: `WHERE photo_data_url IS NULL`
+2. **Encuentra candidato coincidente**: Compara `full_name_roman` + `date_of_birth`
+3. **Copia la foto**: `UPDATE employees SET photo_data_url = :photo`
+4. **Maneja múltiples empleados**: Si un candidato tiene 3 empleados (3 fábricas), todos reciben la misma foto
+
+**Características**:
+- Ejecuta automáticamente en `reinstalar.bat`
+- Genera log detallado: `sync_employee_photos_YYYYMMDD_HHMMSS.log`
+- Resistente a errores (continúa si hay problemas)
+- Sin sobrescribir fotos existentes
+
+### Ejecución Manual
+```bash
+# Dentro del contenedor backend:
+docker exec uns-claudejp-backend python scripts/sync_employee_photos.py
+
+# O en host (si estás en Windows sin Docker):
+cd backend\scripts
+python sync_employee_photos.py
+```
+
+**Resultado esperado**:
+```
+Employees without photo:        245
+Successfully synced:             240
+Candidates not found:            5
+Success rate:                    98%
+```
+
+### Nota sobre Estados de Empleados (現在)
+El campo `current_status` en empleados debería reflejar:
+- `在職中` (activo/trabajando)
+- `退社` (se fue/terminó)
+- `待機中` (esperando/standby)
+
+Esto debe importarse correctamente desde la base de datos de origen. Si ves que todos muestran "active", es porque el sistema asigna ese valor por defecto y necesitarías:
+
+1. Importar datos de estado desde el Access
+2. Crear un script similar a `sync_employee_photos.py` para sincronizar estados
+
+---
+
 ## 🚀 Cómo Reutilizar Esta Configuración
 
 ### Si necesitas reiniciar desde cero:
