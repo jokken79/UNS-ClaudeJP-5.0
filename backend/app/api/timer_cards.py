@@ -2,7 +2,7 @@
 Timer Cards API Endpoints
 """
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from datetime import time as datetime_time
 import os
 import shutil
@@ -153,7 +153,10 @@ async def list_timer_cards(
     current_user: User = Depends(auth_service.get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """List timer cards"""
+    """List timer cards with eager loaded employee relationship"""
+    # Limit to max 1000
+    limit = min(limit, 1000)
+
     query = db.query(TimerCard)
 
     if employee_id:
@@ -163,7 +166,13 @@ async def list_timer_cards(
     if is_approved is not None:
         query = query.filter(TimerCard.is_approved == is_approved)
 
-    return query.offset(skip).limit(limit).all()
+    # Eager load employee relationship to prevent N+1 queries
+    return (
+        query.options(joinedload(TimerCard.employee))
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 @router.get("/{timer_card_id}", response_model=TimerCardResponse)
@@ -176,7 +185,12 @@ async def get_timer_card(
     Get a specific timer card by ID.
     Includes employee and factory information via relationships.
     """
-    timer_card = db.query(TimerCard).filter(TimerCard.id == timer_card_id).first()
+    timer_card = (
+        db.query(TimerCard)
+        .options(joinedload(TimerCard.employee))
+        .filter(TimerCard.id == timer_card_id)
+        .first()
+    )
 
     if not timer_card:
         raise HTTPException(status_code=404, detail="Timer card not found")

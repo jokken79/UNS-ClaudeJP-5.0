@@ -3,7 +3,7 @@ Candidates API Endpoints
 """
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 import asyncio
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 import os
 import shutil
@@ -414,6 +414,8 @@ async def save_rirekisho_form(
 
 @router.get("/", response_model=PaginatedResponse)
 async def list_candidates(
+    skip: int = 0,
+    limit: int = 50,
     page: int = 1,
     page_size: int = 20,
     status_filter: Optional[CandidateStatus] = None,
@@ -425,7 +427,16 @@ async def list_candidates(
     """
     List all candidates with pagination
     sort options: 'newest' (default), 'oldest'
+    Supports both skip/limit and page/page_size pagination
     """
+    # Use skip/limit if provided, otherwise use page/page_size
+    if skip > 0 or limit != 50:
+        actual_skip = skip
+        actual_limit = min(limit, 1000)  # Max 1000 items
+    else:
+        actual_skip = (page - 1) * page_size
+        actual_limit = page_size
+
     query = db.query(Candidate)
 
     # Apply filters
@@ -449,8 +460,13 @@ async def list_candidates(
     # Get total count
     total = query.count()
 
-    # Apply pagination
-    candidates = query.offset((page - 1) * page_size).limit(page_size).all()
+    # Apply pagination with eager loading to prevent N+1 queries
+    candidates = (
+        query.options(joinedload(Candidate.employee))
+        .offset(actual_skip)
+        .limit(actual_limit)
+        .all()
+    )
 
     # Convert SQLAlchemy objects to Pydantic models
     items = [CandidateResponse.model_validate(c) for c in candidates]
@@ -458,9 +474,12 @@ async def list_candidates(
     return {
         "items": items,
         "total": total,
+        "skip": actual_skip,
+        "limit": actual_limit,
         "page": page,
         "page_size": page_size,
-        "total_pages": (total + page_size - 1) // page_size
+        "total_pages": (total + page_size - 1) // page_size,
+        "has_more": (actual_skip + len(items)) < total
     }
 
 
@@ -471,9 +490,14 @@ async def get_candidate(
     db: Session = Depends(get_db)
 ):
     """
-    Get candidate by ID
+    Get candidate by ID with eager loaded relationships
     """
-    candidate = db.query(Candidate).filter(Candidate.id == candidate_id).first()
+    candidate = (
+        db.query(Candidate)
+        .options(joinedload(Candidate.employee))
+        .filter(Candidate.id == candidate_id)
+        .first()
+    )
     if not candidate:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

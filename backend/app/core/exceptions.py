@@ -52,9 +52,33 @@ class ImportExportError(UNSException):
     pass
 
 
+class ImportError(ImportExportError):
+    """Errores específicos de importación"""
+    pass
+
+
+class ExportError(ImportExportError):
+    """Errores específicos de exportación"""
+    pass
+
+
 class NotificationError(UNSException):
     """Errores en notificaciones"""
     pass
+
+
+class FileUploadError(UNSException):
+    """Errores en carga de archivos"""
+    pass
+
+
+class ConfigurationError(UNSException):
+    """Errores de configuración"""
+    pass
+
+
+# Alias for compatibility
+AppException = UNSException
 
 
 # Funciones para convertir excepciones a HTTPException

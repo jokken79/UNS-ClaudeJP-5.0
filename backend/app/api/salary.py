@@ -2,7 +2,7 @@
 Salary Calculation API Endpoints
 """
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, extract
 from datetime import datetime
 
@@ -256,7 +256,10 @@ async def list_salaries(
     current_user: User = Depends(auth_service.get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """List salary calculations"""
+    """List salary calculations with eager loaded employee relationship"""
+    # Limit to max 1000
+    limit = min(limit, 1000)
+
     query = db.query(SalaryCalculation)
 
     if employee_id:
@@ -268,7 +271,13 @@ async def list_salaries(
     if is_paid is not None:
         query = query.filter(SalaryCalculation.is_paid == is_paid)
 
-    return query.offset(skip).limit(limit).all()
+    # Eager load employee relationship to prevent N+1 queries
+    return (
+        query.options(joinedload(SalaryCalculation.employee))
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 @router.get("/{salary_id}", response_model=SalaryCalculationResponse)
@@ -281,7 +290,12 @@ async def get_salary_calculation(
     Get a specific salary calculation by ID.
     Includes employee information and all deductions/bonuses.
     """
-    salary = db.query(SalaryCalculation).filter(SalaryCalculation.id == salary_id).first()
+    salary = (
+        db.query(SalaryCalculation)
+        .options(joinedload(SalaryCalculation.employee))
+        .filter(SalaryCalculation.id == salary_id)
+        .first()
+    )
 
     if not salary:
         raise HTTPException(status_code=404, detail="Salary calculation not found")
