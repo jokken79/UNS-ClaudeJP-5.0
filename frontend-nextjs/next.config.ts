@@ -70,12 +70,9 @@ const nextConfig: NextConfig = {
   compress: true,
 
   // Configuración de variables de entorno
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION ?? '4.2.0',
+    NEXT_PUBLIC_APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION ?? '5.0.0',
   },
 
   // Optimizaciones de producción
@@ -90,33 +87,9 @@ const nextConfig: NextConfig = {
     scrollRestoration: true,
   },
 
-  // Webpack configuration
-  webpack: (config, { isServer, dev }) => {
-    // Increase chunk loading timeout to 5 minutes (300000ms)
-    config.output = {
-      ...config.output,
-      chunkLoadTimeout: 300000,
-    };
-
-    // Mejorar manejo de errores de carga de chunks
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-      };
-    }
-
-    // Optimización para desarrollo
-    if (dev) {
-      config.watchOptions = {
-        poll: 5000, // Aumentado de 1000ms a 5000ms para mejor rendimiento en Windows+Docker
-        aggregateTimeout: 1000, // Aumentado de 300ms a 1000ms
-        ignored: ['**/node_modules', '**/.git', '**/.next'],
-      };
-    }
-
-    return config;
-  },
+  // Turbopack configuration (Next.js 16 default bundler)
+  // Empty config to silence warning - Turbopack works with no configuration
+  turbopack: {},
 
   // Manejo de errores en producción
   onDemandEntries: {
