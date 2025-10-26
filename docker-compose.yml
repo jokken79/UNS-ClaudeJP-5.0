@@ -63,6 +63,8 @@ services:
         python scripts/create_admin_user.py &&
         echo '--- Running import_data.py ---' &&
         python scripts/import_data.py &&
+        echo '--- Running import_demo_candidates.py ---' &&
+        python scripts/import_demo_candidates.py &&
         echo '--- Checking for Access database imports ---' &&
         if [ -f '/app/access_candidates_data.json' ] && [ -f '/app/access_photo_mappings.json' ]; then
           echo '--- Importing Access candidates with photos ---' &&
