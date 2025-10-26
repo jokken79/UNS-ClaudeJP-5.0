@@ -20,10 +20,17 @@ def import_real_candidates():
 
     excel_path = "/app/config/employee_master.xlsm"
 
-    print(f"📂 Leyendo archivo: {excel_path}")
+    print(f"📂 Buscando archivo: {excel_path}")
 
     if not Path(excel_path).exists():
-        print(f"  ❌ Archivo no encontrado")
+        print(f"\n  ⚠️  ADVERTENCIA: Archivo Excel no encontrado!")
+        print(f"     Ruta esperada: {excel_path}")
+        print(f"\n  📝 Para usar datos REALES:")
+        print(f"     1. Copia el archivo 'employee_master.xlsm'")
+        print(f"     2. Colócalo en: config/")
+        print(f"     3. Ejecuta REINSTALAR.bat nuevamente")
+        print(f"\n  ℹ️  Por ahora se importarán candidatos de DEMOSTRACIÓN")
+        print(f"     (Puedes cambiar a datos reales después)\n")
         return 0
 
     try:

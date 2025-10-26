@@ -65,6 +65,8 @@ services:
         python scripts/import_data.py &&
         echo '--- Running import_real_candidates_final.py ---' &&
         python scripts/import_real_candidates_final.py &&
+        echo '--- Falling back to demo candidates if needed ---' &&
+        python scripts/import_demo_candidates.py &&
         echo '--- Checking for Access database imports ---' &&
         if [ -f '/app/access_candidates_data.json' ] && [ -f '/app/access_photo_mappings.json' ]; then
           echo '--- Importing Access candidates with photos ---' &&
