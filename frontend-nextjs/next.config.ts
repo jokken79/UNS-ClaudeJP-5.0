@@ -1,6 +1,54 @@
 import type { NextConfig } from "next";
 import path from "path";
 
+const resolveApiOrigin = (): string => {
+  const candidate = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  try {
+    const url = new URL(candidate);
+    return url.origin;
+  } catch (error) {
+    console.warn(`Invalid NEXT_PUBLIC_API_URL '${candidate}', falling back to http://localhost:8000`);
+    return "http://localhost:8000";
+  }
+};
+
+const apiOrigin = resolveApiOrigin();
+const connectSrc = new Set<string>(["'self'", apiOrigin]);
+
+if (process.env.NODE_ENV !== "production") {
+  connectSrc.add("http://localhost:3000");
+  connectSrc.add("http://localhost:8000");
+  connectSrc.add("ws://localhost:3000");
+  connectSrc.add("ws://localhost:3001");
+}
+
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "frame-ancestors 'none'",
+  "form-action 'self'",
+  "object-src 'none'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  `connect-src ${Array.from(connectSrc).join(' ')}`,
+].join('; ');
+
+const securityHeaders = [
+  { key: 'Content-Security-Policy', value: contentSecurityPolicy },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  { key: 'X-DNS-Prefetch-Control', value: 'on' },
+  { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+  { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+  { key: 'Origin-Agent-Cluster', value: '?1' },
+  { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
+] satisfies { key: string; value: string }[];
+
 const nextConfig: NextConfig = {
   // Output standalone para Docker
   output: 'standalone',
@@ -36,32 +84,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/:path*',
-        headers: [
-          {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on'
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN'
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin'
-          },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()'
-          },
-          {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' http://localhost:8000;"
-          }
-        ],
+        headers: securityHeaders,
       },
     ];
   },
@@ -73,6 +96,7 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION ?? '5.0.0',
+    NEXT_PUBLIC_AUTH_TOKEN_MAX_AGE: process.env.NEXT_PUBLIC_AUTH_TOKEN_MAX_AGE ?? String(60 * 60 * 8),
   },
 
   // Optimizaciones de producción
