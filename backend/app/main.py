@@ -5,7 +5,7 @@ import os
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
@@ -13,9 +13,11 @@ from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.database import init_db
+from app.core.database import get_db, init_db
 from app.core.logging import app_logger
 from app.core.middleware import ExceptionHandlerMiddleware, LoggingMiddleware, SecurityMiddleware
 
@@ -86,9 +88,17 @@ app.add_middleware(ExceptionHandlerMiddleware)
 app.add_middleware(LoggingMiddleware)
 
 # CORS configuration - restricted for security
+safe_origins = [
+    origin
+    for origin in settings.BACKEND_CORS_ORIGINS
+    if isinstance(origin, str) and origin.startswith(("http://", "https://"))
+]
+if not safe_origins:  # Fallback for misconfiguration
+    safe_origins = ["http://localhost", "http://127.0.0.1"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origins=safe_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-Request-ID", "Accept"],
@@ -124,9 +134,23 @@ async def root() -> dict:
     }
 
 
-@app.get("/api/health")
-async def health_check() -> dict:
-    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+@app.get("/api/health", tags=["Monitoring"], summary="Application readiness probe")
+async def health_check(db: Session = Depends(get_db)) -> dict:
+    """Verify core dependencies used by external health checks."""
+    database_status = "available"
+    try:
+        db.execute(text("SELECT 1"))
+    except Exception as exc:  # pragma: no cover - defensive logging
+        database_status = "unavailable"
+        app_logger.exception("Database health check failed", error=str(exc))
+
+    return {
+        "app": settings.APP_NAME,
+        "status": "healthy" if database_status == "available" else "degraded",
+        "database": database_status,
+        "version": settings.APP_VERSION,
+        "timestamp": datetime.now().isoformat(),
+    }
 
 
 @app.exception_handler(404)

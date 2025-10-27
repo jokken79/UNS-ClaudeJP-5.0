@@ -208,4 +208,41 @@
     height: 0 !important;
     overflow: hidden !important;
   }
+
+  @page {
+    size: A4 landscape;
+    margin: 1cm;
+  }
+
+  :root,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  body {
+    box-shadow: none !important;
+    background-image: none !important;
+  }
+
+  main,
+  section,
+  article {
+    break-inside: avoid;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: avoid;
+  }
+
+  th,
+  td {
+    padding: 6px 8px !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
 }

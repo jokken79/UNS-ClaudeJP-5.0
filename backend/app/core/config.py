@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8 horas
+    JWT_AUDIENCE: str = "uns-claudejp::api"
+    JWT_ISSUER: str = "uns-claudejp"
 
     @field_validator("SECRET_KEY")
     @classmethod
