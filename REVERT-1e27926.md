@@ -1,0 +1,1 @@
+This commit reverts merge commit 1e27926 from PR #22. The changes made in that merge are undone.
