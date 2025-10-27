@@ -186,10 +186,10 @@ echo [Paso 2/4] Verificando estado de contenedores existentes
 docker ps -a --filter "name=uns-claudejp" --format "{{.Names}}" | findstr "uns-claudejp" >nul 2>&1
 if !errorlevel! EQU 0 (
     echo      [i] Contenedores existentes detectados. Actualizando...
-    %DOCKER_COMPOSE_CMD% up -d --remove-orphans
+    %DOCKER_COMPOSE_CMD% --profile dev up -d --remove-orphans
 ) else (
     echo      [i] Creando contenedores desde cero...
-    %DOCKER_COMPOSE_CMD% up -d
+    %DOCKER_COMPOSE_CMD% --profile dev up -d
 )
 if !errorlevel! neq 0 (
     echo [ERROR] ERROR: Fallo al iniciar los contenedores.
