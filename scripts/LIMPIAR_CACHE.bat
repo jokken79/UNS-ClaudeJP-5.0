@@ -32,13 +32,13 @@ echo   [OK] Python cache eliminado
 
 echo.
 echo [2/5] Eliminando cache de Next.js
-if exist "frontend-nextjs\.next" rd /s /q "frontend-nextjs\.next"
-if exist "frontend-nextjs\out" rd /s /q "frontend-nextjs\out"
+if exist "frontend\.next" rd /s /q "frontend\.next"
+if exist "frontend\out" rd /s /q "frontend\out"
 echo   [OK] Next.js cache eliminado
 
 echo.
 echo [3/5] Eliminando cache de npm
-if exist "frontend-nextjs\node_modules\.cache" rd /s /q "frontend-nextjs\node_modules\.cache"
+if exist "frontend\node_modules\.cache" rd /s /q "frontend\node_modules\.cache"
 echo   [OK] npm cache eliminado
 
 echo.

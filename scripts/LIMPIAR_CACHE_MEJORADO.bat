@@ -64,42 +64,42 @@ if exist "backend" (
 
 echo.
 echo [2/6] Eliminando cache de Next.js
-if exist "frontend-nextjs\.next" (
-    echo   Eliminando: frontend-nextjs\.next
-    rd /s /q "frontend-nextjs\.next"
+if exist "frontend\.next" (
+    echo   Eliminando: frontend\.next
+    rd /s /q "frontend\.next"
     if %errorLevel% equ 0 (
         echo   [OK] Next.js .next eliminado
     ) else (
         echo   [ADVERTENCIA] No se pudo eliminar .next
     )
 ) else (
-    echo [INFO] No se encontró frontend-nextjs\.next
+    echo [INFO] No se encontró frontend\.next
 )
 
-if exist "frontend-nextjs\out" (
-    echo   Eliminando: frontend-nextjs\out
-    rd /s /q "frontend-nextjs\out"
+if exist "frontend\out" (
+    echo   Eliminando: frontend\out
+    rd /s /q "frontend\out"
     if %errorLevel% equ 0 (
         echo   [OK] Next.js out eliminado
     ) else (
         echo   [ADVERTENCIA] No se pudo eliminar out
     )
 ) else (
-    echo [INFO] No se encontró frontend-nextjs\out
+    echo [INFO] No se encontró frontend\out
 )
 
 echo.
 echo [3/6] Eliminando cache de npm
-if exist "frontend-nextjs\node_modules\.cache" (
-    echo   Eliminando: frontend-nextjs\node_modules\.cache
-    rd /s /q "frontend-nextjs\node_modules\.cache"
+if exist "frontend\node_modules\.cache" (
+    echo   Eliminando: frontend\node_modules\.cache
+    rd /s /q "frontend\node_modules\.cache"
     if %errorLevel% equ 0 (
         echo   [OK] npm cache eliminado
     ) else (
         echo   [ADVERTENCIA] No se pudo eliminar npm cache
     )
 ) else (
-    echo [INFO] No se encontró frontend-nextjs\node_modules\.cache
+    echo [INFO] No se encontró frontend\node_modules\.cache
 )
 
 echo.
