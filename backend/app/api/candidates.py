@@ -749,6 +749,7 @@ async def approve_candidate(
                 full_name_kanji=employee_name,
                 full_name_kana=candidate.full_name_kana,
                 photo_url=candidate.photo_url,
+                photo_data_url=candidate.photo_data_url,
                 date_of_birth=candidate.date_of_birth,
                 gender=candidate.gender,
                 nationality=candidate.nationality,

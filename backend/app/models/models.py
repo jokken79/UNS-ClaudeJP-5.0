@@ -473,6 +473,7 @@ class ContractWorker(Base):
     full_name_kanji = Column(String(100), nullable=False)
     full_name_kana = Column(String(100))
     photo_url = Column(String(255))
+    photo_data_url = Column(Text)  # Base64 data URL photo synchronized from candidates
     date_of_birth = Column(Date)
     gender = Column(String(10))
     nationality = Column(String(50))
@@ -558,6 +559,7 @@ class Staff(Base):
     full_name_kanji = Column(String(100), nullable=False)
     full_name_kana = Column(String(100))
     photo_url = Column(String(255))
+    photo_data_url = Column(Text)  # Base64 data URL photo synchronized from candidates
     date_of_birth = Column(Date)
     gender = Column(String(10))
     nationality = Column(String(50))

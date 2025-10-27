@@ -73,6 +73,7 @@ class EmployeeResponse(EmployeeBase):
     jikyu: int  # 時給
     jikyu_revision_date: Optional[date]  # 時給改定
     photo_url: Optional[str] = None  # Added photo
+    photo_data_url: Optional[str] = None  # Base64 encoded photo data
     position: Optional[str]
     contract_type: Optional[str]
     current_address: Optional[str] = None  # 現住所 - Base address
