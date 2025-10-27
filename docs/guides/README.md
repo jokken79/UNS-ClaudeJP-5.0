@@ -1,50 +1,66 @@
-# Guias de Usuario y Desarrollo
+# Guías (REORGANIZADO - 2025-10-27)
 
-## Instalacion y Configuracion
+## ⚠️ NOTA IMPORTANTE
 
-- [Instalacion Rapida](INSTALACION_RAPIDA.md) - Guia rapida de inicio
-- [Troubleshooting](TROUBLESHOOTING.md) - Solucion de problemas comunes
-- [Post-Reinstall Verification](POST_REINSTALL_VERIFICATION.md) - Verificacion despues de reinstalar
+**Todos los archivos de esta carpeta han sido reorganizados y movidos a ubicaciones más apropiadas.**
 
-## Base de Datos
+Esta carpeta se mantiene solo por compatibilidad, pero está prácticamente vacía.
 
-- [Migraciones con Alembic](MIGRACIONES_ALEMBIC.md) - Gestion de migraciones de base de datos
+## Dónde Encontrar la Documentación
 
-## Backup y Operacion
+### Instalación y Configuración
+- **Instalación Rápida** → Movido a `/docs/99-archive/guides-old/INSTALACION_RAPIDA.md`
+- **Migraciones Alembic** → Movido a `/docs/02-configuracion/MIGRACIONES_ALEMBIC.md`
+- **Backup y Restauración** → Movido a `/docs/02-configuracion/BACKUP_RESTAURACION.md`
 
-- [Backup y Restauracion](BACKUP_RESTAURACION.md) - Procedimientos de backup y restauracion
+### Troubleshooting
+- **Troubleshooting** → Movido a `/docs/04-troubleshooting/TROUBLESHOOTING.md`
+- **Post-Reinstall Verification** → Movido a `/docs/04-troubleshooting/POST_REINSTALL_VERIFICATION.md`
+- **Limpieza Código Antiguo** → Movido a `/docs/04-troubleshooting/LIMPIEZA_CODIGO_ANTIGUO.md`
 
-## OCR y Documentos
+### OCR y Documentos
+- **Azure OCR Setup** → Movido a `/docs/03-uso/AZURE_OCR_SETUP.md`
+- **Photo Extraction** → Movido a `/docs/03-uso/PHOTO_EXTRACTION.md`
+- **Print Solutions** → Movido a `/docs/03-uso/PRINT_SOLUTION_GUIDE.md`
+- **Rirekisho Print** → Movido a `/docs/03-uso/RIREKISHO_PRINT_MODIFICATIONS_2025-10-23.md`
+- **Importar Tarifas** → Movido a `/docs/03-uso/GUIA_IMPORTAR_TARIFAS_SEGUROS.md`
+- **OCR Multi-Documento** → Movido a `/docs/98-features/OCR_MULTI_DOCUMENT_GUIDE.md`
 
-- [Azure OCR Setup](AZURE_OCR_SETUP.md) - Configuracion de Azure Computer Vision
-- [OCR Multi-Documento](OCR_MULTI_DOCUMENT_GUIDE.md) - Procesamiento de multiples tipos de documentos
-- [Extraccion de Fotos](PHOTO_EXTRACTION.md) - Extraccion de fotos desde Access
-- [Quick Start - Import](QUICK_START_IMPORT.md) - Inicio rapido para importacion
-- [Quick Start - Photos](QUICK_START_PHOTOS.md) - Inicio rapido para fotos
+### Quick Starts (Archivados)
+- **Quick Start Import** → Movido a `/docs/99-archive/guides-old/QUICK_START_IMPORT.md`
+- **Quick Start Photos** → Movido a `/docs/99-archive/guides-old/QUICK_START_PHOTOS.md`
+- **Theme Switcher Quick Start** → Movido a `/docs/99-archive/guides-old/THEME_SWITCHER_QUICK_START.md`
 
-## Importacion de Datos
+### Features y UI
+- **Theme Template Enhancements** → Movido a `/docs/98-features/THEME_TEMPLATE_ENHANCEMENTS.md`
+- **Navigation Animations** → Movido a `/docs/98-features/NAVIGATION_ANIMATIONS_IMPLEMENTATION.md`
 
-- [Importar desde Access (Automatico)](IMPORT_FROM_ACCESS_AUTO.md) - Importacion automatica via REINSTALAR.bat
-- [Importar desde Access (Manual)](IMPORT_FROM_ACCESS_MANUAL.md) - Importacion manual con scripts
-- [Importar Tarifas y Seguros](GUIA_IMPORTAR_TARIFAS_SEGUROS.md) - Importacion de tarifas y seguros
-- [Implementacion de Importacion Access](IMPLEMENTATION_ACCESS_IMPORT.md) - Detalles tecnicos de importacion
-- [Implementacion de Extraccion de Fotos](ACCESS_PHOTO_EXTRACTION_IMPLEMENTATION.md) - Detalles tecnicos de extraccion
+### Git y DevOps
+- **Instrucciones Git** → Movido a `/docs/05-devops/INSTRUCCIONES_GIT.md`
+- **Como Subir a GitHub** → Movido a `/docs/05-devops/COMO_SUBIR_A_GITHUB.md`
+- **Seguridad GitHub** → Movido a `/docs/05-devops/SEGURIDAD_GITHUB.md`
+- **Scripts Mejorados** → Movido a `/docs/05-devops/SCRIPTS_MEJORADOS_GUIDE.md`
 
-## Features y UI
+### Agentes
+- **Agent Systems Clarification** → Movido a `/docs/06-agentes/AGENT_SYSTEMS_CLARIFICATION.md`
 
-- [Theme y Templates](THEME_TEMPLATE_ENHANCEMENTS.md) - Mejoras de temas y plantillas
-- [Theme Switcher](THEME_SWITCHER_QUICK_START.md) - Sistema de cambio de temas
-- [Animaciones de Navegacion](NAVIGATION_ANIMATIONS_IMPLEMENTATION.md) - Implementacion de animaciones
-- [Impresion de Rirekisho](RIREKISHO_PRINT_MODIFICATIONS_2025-10-23.md) - Modificaciones de impresion
-- [Solucion de Impresion](PRINT_SOLUTION_GUIDE.md) - Guia de solucion de problemas de impresion
+---
 
-## Git y GitHub
+## Documentación Actualizada
 
-- [Instrucciones Git](INSTRUCCIONES_GIT.md) - Instrucciones basicas de Git
-- [Como Subir a GitHub](COMO_SUBIR_A_GITHUB.md) - Guia paso a paso
-- [Seguridad GitHub](SEGURIDAD_GITHUB.md) - Mejores practicas de seguridad
+Para acceder a la documentación actual bien organizada, ver:
 
-## Limpieza y Mantenimiento
+- **[docs/README.md](../README.md)** - Índice principal de documentación
+- **[01-instalacion/](../01-instalacion/)** - Instalación y actualización
+- **[02-configuracion/](../02-configuracion/)** - Configuración, migraciones, backups
+- **[03-uso/](../03-uso/)** - Guías de uso, OCR, importación
+- **[04-troubleshooting/](../04-troubleshooting/)** - Solución de problemas
+- **[05-devops/](../05-devops/)** - Scripts, Git, DevOps
+- **[06-agentes/](../06-agentes/)** - Sistema de agentes
+- **[97-reportes/](../97-reportes/)** - Reportes y auditorías
+- **[98-features/](../98-features/)** - Implementaciones técnicas específicas
+- **[99-archive/](../99-archive/)** - Documentación archivada
 
-- [Limpieza de Codigo Antiguo](LIMPIEZA_CODIGO_ANTIGUO.md) - Guia de limpieza de codigo
-- [Scripts Mejorados](SCRIPTS_MEJORADOS_GUIDE.md) - Guia de scripts del sistema
+---
+
+**Reorganizado:** 2025-10-27
