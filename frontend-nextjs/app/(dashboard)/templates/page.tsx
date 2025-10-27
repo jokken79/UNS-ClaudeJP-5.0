@@ -33,7 +33,20 @@ import {
 } from "@/lib/templates";
 import { getCustomTemplates, type CustomTemplate } from "@/lib/custom-templates";
 
-type CategoryFilter = 'all' | 'Corporativo' | 'Creativo' | 'Minimalista' | 'Futurista' | 'Tecnológico' | 'Luxury' | 'Startup' | 'Inmersivo' | 'Editorial' | 'Experimental' | 'Landing Page';
+type CategoryFilter =
+  | 'all'
+  | 'Corporativo'
+  | 'Creativo'
+  | 'Minimalista'
+  | 'Futurista'
+  | 'Tecnológico'
+  | 'Luxury'
+  | 'Startup'
+  | 'Inmersivo'
+  | 'Editorial'
+  | 'Experiencial'
+  | 'Experimental'
+  | 'Landing Page';
 type SortOption = 'name' | 'category' | 'price' | 'popular';
 
 const CATEGORY_FILTERS: { id: CategoryFilter; label: string; emoji: string }[] = [
@@ -45,6 +58,11 @@ const CATEGORY_FILTERS: { id: CategoryFilter; label: string; emoji: string }[] =
   { id: 'Tecnológico', label: 'Tech', emoji: '💻' },
   { id: 'Luxury', label: 'Luxury', emoji: '👑' },
   { id: 'Startup', label: 'Startup', emoji: '⚡' },
+  { id: 'Inmersivo', label: 'Immersive', emoji: '🌊' },
+  { id: 'Editorial', label: 'Editorial', emoji: '📰' },
+  { id: 'Experiencial', label: 'Experiential', emoji: '🎟️' },
+  { id: 'Experimental', label: 'Experimental', emoji: '🧪' },
+  { id: 'Landing Page', label: 'Landing Pages', emoji: '🛬' },
 ];
 
 const FEATURED_TEMPLATES = ['tokyo-neon-grid', 'gradient-mesh-futurism', 'holographic-iridescent'];

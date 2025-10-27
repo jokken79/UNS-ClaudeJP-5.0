@@ -720,7 +720,7 @@ export const templates: TemplateDefinition[] = [
     name: 'Bento Grid Minimalist',
     tagline: 'Apple-inspired clean aesthetics',
     description: 'Ultra-clean design inspired by Apple with grid-based layouts, large card radius, and SF Pro-like typography. Perfect for modern product showcases.',
-    category: 'Minimalist',
+    category: 'Minimalista',
     price: '$215',
     features: [
       'Large card radius (24px) with subtle shadows',
