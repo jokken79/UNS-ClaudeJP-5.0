@@ -13,8 +13,9 @@ import unicodedata
 sys.path.insert(0, '/app')
 
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from app.core.database import SessionLocal
-from app.models.models import Factory, Employee, ContractWorker, Staff, SocialInsuranceRate
+from app.models.models import Factory, Employee, ContractWorker, Staff, SocialInsuranceRate, Candidate
 
 
 def normalize_text(text: str) -> str:
@@ -461,8 +462,22 @@ def import_ukeoi_employees(db: Session):
                     except:
                         pass
 
+                # Search for related candidate by name to sync rirekisho_id and photos
+                candidate = None
+                if pd.notna(name):
+                    search_name = str(name).strip()
+                    candidate = db.query(Candidate).filter(
+                        or_(
+                            Candidate.full_name_kanji == search_name,
+                            Candidate.full_name_kana == search_name
+                        )
+                    ).first()
+
                 contract_worker = ContractWorker(
                     hakenmoto_id=hakenmoto_id,
+                    rirekisho_id=candidate.rirekisho_id if candidate else None,
+                    photo_url=candidate.photo_url if candidate else None,
+                    photo_data_url=candidate.photo_data_url if candidate else None,
                     full_name_kanji=str(name) if pd.notna(name) else '',
                     full_name_kana=str(kana) if pd.notna(kana) else '',
                     gender=str(gender) if pd.notna(gender) else None,
@@ -477,6 +492,12 @@ def import_ukeoi_employees(db: Session):
                 db.add(contract_worker)
                 db.commit()  # Commit individually
                 imported += 1
+
+                # Log synchronization status
+                if candidate:
+                    print(f"  ✓ [{hakenmoto_id}] Sincronizado con candidate: {candidate.rirekisho_id} (foto: {bool(candidate.photo_data_url)})")
+                else:
+                    print(f"  ⚠ [{hakenmoto_id}] No se encontró candidate para: {name}")
 
                 if imported % 50 == 0:
                     print(f"  Procesados {imported} empleados...")
@@ -540,8 +561,22 @@ def import_staff_employees(db: Session):
                     except:
                         pass
 
+                # Search for related candidate by name to sync rirekisho_id and photos
+                candidate = None
+                if pd.notna(name):
+                    search_name = str(name).strip()
+                    candidate = db.query(Candidate).filter(
+                        or_(
+                            Candidate.full_name_kanji == search_name,
+                            Candidate.full_name_kana == search_name
+                        )
+                    ).first()
+
                 staff = Staff(
                     staff_id=staff_id,
+                    rirekisho_id=candidate.rirekisho_id if candidate else None,
+                    photo_url=candidate.photo_url if candidate else None,
+                    photo_data_url=candidate.photo_data_url if candidate else None,
                     full_name_kanji=str(name) if pd.notna(name) else '',
                     full_name_kana=str(kana) if pd.notna(kana) else '',
                     monthly_salary=monthly_salary,
@@ -551,6 +586,12 @@ def import_staff_employees(db: Session):
                 db.add(staff)
                 db.commit()  # Commit individually
                 imported += 1
+
+                # Log synchronization status
+                if candidate:
+                    print(f"  ✓ [{staff_id}] Sincronizado con candidate: {candidate.rirekisho_id} (foto: {bool(candidate.photo_data_url)})")
+                else:
+                    print(f"  ⚠ [{staff_id}] No se encontró candidate para: {name}")
 
             except Exception as e:
                 db.rollback()

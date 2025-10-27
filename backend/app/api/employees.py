@@ -52,6 +52,8 @@ async def create_employee(
     # Copy photo from candidate
     if candidate.photo_url:
         employee_data['photo_url'] = candidate.photo_url
+    if candidate.photo_data_url:
+        employee_data['photo_data_url'] = candidate.photo_data_url
 
     new_employee = Employee(
         hakenmoto_id=hakenmoto_id,
@@ -224,6 +226,7 @@ def _list_staff_members(
                 'factory_name': None,
                 'hakensaki_shain_id': None,
                 'photo_url': member.photo_url,
+                'photo_data_url': member.photo_data_url,
                 'full_name_kanji': member.full_name_kanji,
                 'full_name_kana': member.full_name_kana,
                 'date_of_birth': member.date_of_birth,
