@@ -22,12 +22,16 @@ limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("3/hour")
 async def register(
+    request: Request,
     user_data: UserRegister,
     db: Session = Depends(get_db)
 ):
     """
     Register new user
+
+    Rate limit: 3 registrations per hour per IP address.
     """
     # Check if username exists
     existing_user = db.query(User).filter(User.username == user_data.username).first()

@@ -10,12 +10,15 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict
 
-from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.database import get_db
 from app.core.logging import app_logger
 from app.schemas.responses import CacheStatsResponse, ErrorResponse, OCRResponse
+from app.services.auth_service import AuthService
 from app.services.azure_ocr_service import azure_ocr_service
 
 router = APIRouter()
@@ -42,12 +45,16 @@ async def process_base64_options():
 async def process_ocr_document(
     file: UploadFile = File(..., description="Imagen a procesar"),
     document_type: str = Form("zairyu_card", description="Tipo de documento"),
+    db: Session = Depends(get_db),
+    current_user = Depends(AuthService.get_current_active_user)
 ) -> Dict[str, Any]:
     """
     Process document with OCR
 
     Supports various document types:
     - zairyu_card: Residence Card (在留カード)
+
+    Requires authentication.
     - rirekisho: Resume/CV (履歴書)
     - license: Driver's License (免許証)
 
@@ -96,8 +103,10 @@ async def process_ocr_from_base64(
     image_base64: str = Form(..., description="Imagen en base64"),
     mime_type: str = Form(..., description="Tipo MIME"),
     document_type: str = Form("zairyu_card"),
+    db: Session = Depends(get_db),
+    current_user = Depends(AuthService.get_current_active_user)
 ) -> Dict[str, Any]:
-    """Process OCR from Base64 image"""
+    """Process OCR from Base64 image. Requires authentication."""
     if not image_base64:
         raise HTTPException(status_code=400, detail="image_base64 is required")
     try:
@@ -129,8 +138,12 @@ async def health_check():
 
 
 @router.post("/warm-up")
-async def warm_up_ocr_service(background_tasks: BackgroundTasks) -> Dict[str, Any]:
-    """Warm up OCR service with a dummy image"""
+async def warm_up_ocr_service(
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user = Depends(AuthService.require_role("admin"))
+) -> Dict[str, Any]:
+    """Warm up OCR service with a dummy image. Requires admin role."""
     def _warm_up() -> None:
         try:
             app_logger.info("Azure OCR warm-up started")

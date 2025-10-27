@@ -6,13 +6,30 @@ import io
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
-from sqlalchemy import text, inspect
+from sqlalchemy import text, inspect, MetaData, Table, select, func
 from typing import List, Dict, Any, Optional
 
 from app.core.database import get_db
 from app.services.auth_service import AuthService
 
 router = APIRouter()
+
+
+def _get_table_safely(db: Session, table_name: str) -> Table:
+    """
+    Safely get a SQLAlchemy Table object using reflection.
+    Prevents SQL injection by validating table name exists.
+    """
+    inspector = inspect(db.bind)
+    if table_name not in inspector.get_table_names():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Table '{table_name}' not found"
+        )
+
+    metadata = MetaData()
+    table = Table(table_name, metadata, autoload_with=db.bind)
+    return table
 
 
 @router.get("/tables")
@@ -34,10 +51,11 @@ async def get_tables(
         
         table_info = []
         for table_name in tables:
-            # Get row count
-            result = db.execute(text(f"SELECT COUNT(*) FROM {table_name}"))
+            # Get row count using SQLAlchemy (prevents SQL injection)
+            table = _get_table_safely(db, table_name)
+            result = db.execute(select(func.count()).select_from(table))
             row_count = result.scalar()
-            
+
             # Get column info
             columns = inspector.get_columns(table_name) if inspector else []
             column_info = [
@@ -99,31 +117,29 @@ async def get_table_data(
                 detail="Offset cannot be negative"
             )
 
-        # Build query with bound parameters to avoid SQL injection
-        search_params = {}
-        where_clause = ""
+        # Use SQLAlchemy Table reflection to prevent SQL injection
+        table = _get_table_safely(db, table_name)
+
+        # Build query using SQLAlchemy (prevents SQL injection)
+        query_obj = select(table).limit(limit).offset(offset)
+        count_query_obj = select(func.count()).select_from(table)
+
         if search:
+            # Build search conditions using SQLAlchemy
             search_conditions = []
-            for idx, col in enumerate(columns):
-                param_name = f"search_{idx}"
-                search_conditions.append(f"CAST({col} AS TEXT) ILIKE :{param_name}")
-                search_params[param_name] = f"%{search}%"
+            for col in table.columns:
+                search_conditions.append(col.cast(text('TEXT')).ilike(f"%{search}%"))
             if search_conditions:
-                where_clause = f" WHERE {' OR '.join(search_conditions)}"
+                from sqlalchemy import or_
+                search_filter = or_(*search_conditions)
+                query_obj = query_obj.where(search_filter)
+                count_query_obj = count_query_obj.where(search_filter)
 
-        query = text(
-            f"SELECT * FROM {table_name}{where_clause} LIMIT :limit OFFSET :offset"
-        )
-        params = {"limit": limit, "offset": offset, **search_params}
-
-        count_query = text(f"SELECT COUNT(*) FROM {table_name}{where_clause}")
-        count_params = search_params if search_params else None
-
-        # Execute queries
-        result = db.execute(query, params)
+        # Execute queries (now using SQLAlchemy - SQL injection safe)
+        result = db.execute(query_obj)
         rows = result.mappings().all()
 
-        count_result = db.execute(count_query, count_params or {})
+        count_result = db.execute(count_query_obj)
         total_count = count_result.scalar()
 
         # Convert to dict format
@@ -155,18 +171,13 @@ async def export_table(
     Export table data as CSV
     """
     try:
-        # Validate table name
-        inspector = inspect(db.bind)
-        if not inspector or table_name not in inspector.get_table_names():
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Table '{table_name}' not found"
-            )
-        
-        # Get all data
-        result = db.execute(text(f"SELECT * FROM {table_name}"))
+        # Get table safely (prevents SQL injection)
+        table = _get_table_safely(db, table_name)
+
+        # Get all data using SQLAlchemy (SQL injection safe)
+        result = db.execute(select(table))
         rows = result.fetchall()
-        columns = list(result.keys())
+        columns = [col.name for col in table.columns]
         
         # Create CSV
         output = io.StringIO()

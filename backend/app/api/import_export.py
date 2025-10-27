@@ -6,14 +6,17 @@ from io import BytesIO
 from pathlib import Path
 from typing import Final, Optional
 
-from fastapi import APIRouter, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from app.services.import_service import import_service
+from app.services.auth_service import AuthService
 from app.core.config import settings
+from app.core.database import get_db
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -97,11 +100,17 @@ def _create_template_response(
 
 
 @router.post("/employees")
-async def import_employees(file: UploadFile = File(...)):
+async def import_employees(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user = Depends(AuthService.require_role("admin"))
+):
     """
     Import employees from Excel file
-    
+
     Expected columns: 派遣元ID, 氏名, フリガナ, 生年月日, 性別, 国籍, etc.
+
+    Requires admin role.
     """
     temp_file: Optional[Path] = None
 
@@ -133,12 +142,16 @@ async def import_timer_cards(
     file: UploadFile = File(...),
     factory_id: str = Query(...),
     year: int = Query(...),
-    month: int = Query(...)
+    month: int = Query(...),
+    db: Session = Depends(get_db),
+    current_user = Depends(AuthService.require_role("admin"))
 ):
     """
     Import timer cards from Excel file
-    
+
     Expected columns: 日付, 社員ID, 社員名, 出勤時刻, 退勤時刻
+
+    Requires admin role.
     """
     temp_file: Optional[Path] = None
 

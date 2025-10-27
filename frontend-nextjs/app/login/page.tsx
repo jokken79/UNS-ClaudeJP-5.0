@@ -419,20 +419,26 @@ export default function LoginPage() {
                 デモアカウント
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-slate-200/50 shadow-sm">
-                <p className="text-xs font-semibold text-slate-600 mb-2">ユーザー名</p>
-                <p className="text-base font-mono font-bold text-slate-900">
-                  admin
-                </p>
+            {process.env.NODE_ENV === 'development' ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-slate-200/50 shadow-sm">
+                  <p className="text-xs font-semibold text-slate-600 mb-2">ユーザー名</p>
+                  <p className="text-base font-mono font-bold text-slate-900">
+                    {process.env.NEXT_PUBLIC_DEMO_USER || 'admin'}
+                  </p>
+                </div>
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-slate-200/50 shadow-sm">
+                  <p className="text-xs font-semibold text-slate-600 mb-2">パスワード</p>
+                  <p className="text-base font-mono font-bold text-slate-900">
+                    {process.env.NEXT_PUBLIC_DEMO_PASS || 'admin123'}
+                  </p>
+                </div>
               </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-slate-200/50 shadow-sm">
-                <p className="text-xs font-semibold text-slate-600 mb-2">パスワード</p>
-                <p className="text-base font-mono font-bold text-slate-900">
-                  admin123
-                </p>
-              </div>
-            </div>
+            ) : (
+              <p className="text-sm text-slate-600 text-center">
+                本番環境では管理者にお問い合わせください
+              </p>
+            )}
           </div>
 
           {/* Trust Indicators */}
