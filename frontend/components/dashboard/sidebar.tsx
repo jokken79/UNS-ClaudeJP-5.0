@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { dashboardConfig } from '@/lib/constants/dashboard-config';
-import { ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { useSidebar } from '@/lib/hooks/use-sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -47,7 +47,8 @@ export function Sidebar() {
   return (
     <motion.aside
       className={cn(
-        'h-screen border-r bg-background flex-shrink-0',
+        'h-screen flex-shrink-0 bg-gradient-to-b from-indigo-50 via-white to-slate-100 border-r border-indigo-100/60',
+        'shadow-[inset_-1px_0_0_rgba(148,163,184,0.2)] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:border-slate-800/80 dark:shadow-[inset_-1px_0_0_rgba(15,23,42,0.6)]',
         'transition-all duration-300 ease-in-out'
       )}
       animate={{
@@ -60,7 +61,7 @@ export function Sidebar() {
       }
     >
       {/* Header del Sidebar */}
-      <div className="flex h-16 items-center justify-between px-4 border-b">
+      <div className="flex h-16 items-center justify-between px-4 border-b border-indigo-100/60 bg-white/70 backdrop-blur-sm dark:bg-slate-950/60 dark:border-slate-800/80">
         <AnimatePresence mode="wait">
           {!collapsed && (
             <motion.div
@@ -109,7 +110,12 @@ export function Sidebar() {
       {/* Admin Visibility Toggle */}
       {isAdmin && (
         <>
-          <div className={cn('px-3 py-3 border-b bg-muted/30', collapsed && 'px-2')}>
+          <div
+            className={cn(
+              'px-3 py-3 border-b border-indigo-100/60 bg-white/60 shadow-sm dark:bg-slate-950/40 dark:border-slate-800/80',
+              collapsed && 'px-2'
+            )}
+          >
             <AnimatePresence mode="wait">
               {!collapsed ? (
                 <motion.div
@@ -172,14 +178,14 @@ export function Sidebar() {
 
       {/* Navegación */}
       <ScrollArea className="h-[calc(100vh-4rem)]">
-        <nav className="flex flex-col gap-2 p-2">
+        <nav className="flex flex-col gap-3 p-3">
           {/* Navegación Principal */}
           <div className="space-y-1">
             <AnimatePresence mode="wait">
               {!collapsed && (
                 <motion.h4
                   key="main-nav-title"
-                  className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                  className="px-4 mb-2 text-[11px] font-semibold tracking-[0.2em] text-indigo-400/80 dark:text-indigo-300/60 uppercase"
                   initial={!reducedMotion ? { opacity: 0, x: -20 } : undefined}
                   animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
                   exit={!reducedMotion ? { opacity: 0, x: -20 } : undefined}
@@ -207,11 +213,13 @@ export function Sidebar() {
                       transition={!reducedMotion ? { type: 'spring', stiffness: 400, damping: 25 } : undefined}
                     >
                       <Button
-                        variant={isActive ? 'secondary' : 'ghost'}
+                        variant="ghost"
                         className={cn(
-                          'w-full justify-start gap-3 h-10 transition-all relative overflow-hidden',
-                          collapsed && 'justify-center px-2',
-                          isActive && 'bg-primary/10 text-primary font-medium hover:bg-primary/20 border-l-2 border-primary'
+                          'w-full justify-start gap-3 h-11 rounded-xl transition-all relative overflow-hidden bg-white/30 text-slate-600 hover:!bg-white/70 hover:text-slate-700 hover:shadow-lg hover:border-indigo-100',
+                          'border border-transparent backdrop-blur-sm dark:bg-slate-900/40 dark:text-slate-200 dark:hover:!bg-slate-900/70 dark:hover:text-white/90',
+                          collapsed && 'justify-center px-2 rounded-full',
+                          isActive &&
+                            'bg-white text-indigo-600 shadow-md shadow-indigo-200/60 ring-1 ring-indigo-200/80 hover:!bg-white hover:text-indigo-600 dark:bg-slate-900 dark:text-indigo-300 dark:ring-indigo-500/50 dark:shadow-indigo-900/30'
                         )}
                         title={collapsed ? item.title : undefined}
                       >
@@ -219,7 +227,7 @@ export function Sidebar() {
                           animate={!reducedMotion && isActive ? { scale: [1, 1.2, 1] } : undefined}
                           transition={!reducedMotion && isActive ? { duration: 0.3 } : undefined}
                         >
-                          <Icon className={cn('h-5 w-5', isActive && 'text-primary')} />
+                          <Icon className={cn('h-5 w-5 text-slate-400', isActive && 'text-indigo-500 dark:text-indigo-300')} />
                         </motion.div>
                         <AnimatePresence mode="wait">
                           {!collapsed && (
@@ -239,7 +247,7 @@ export function Sidebar() {
                         {/* Active indicator line */}
                         {isActive && (
                           <motion.div
-                            className="absolute right-0 top-0 bottom-0 w-1 bg-primary rounded-l"
+                            className="absolute right-1 top-1 bottom-1 w-1.5 rounded-full bg-gradient-to-b from-indigo-400 to-indigo-600 dark:from-indigo-500 dark:to-indigo-400"
                             layoutId="activeIndicator"
                             transition={!reducedMotion ? { type: 'spring', stiffness: 300, damping: 30 } : undefined}
                           />
@@ -252,7 +260,7 @@ export function Sidebar() {
             })}
           </div>
 
-          <Separator className="my-2" />
+          <Separator className="my-3 bg-indigo-100/60 dark:bg-slate-800/80" />
 
           {/* Navegación Secundaria */}
           <div className="space-y-1">
@@ -260,7 +268,7 @@ export function Sidebar() {
               {!collapsed && (
                 <motion.h4
                   key="secondary-nav-title"
-                  className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                  className="px-4 mb-2 text-[11px] font-semibold tracking-[0.2em] text-indigo-400/80 dark:text-indigo-300/60 uppercase"
                   initial={!reducedMotion ? { opacity: 0, x: -20 } : undefined}
                   animate={!reducedMotion ? { opacity: 1, x: 0 } : undefined}
                   exit={!reducedMotion ? { opacity: 0, x: -20 } : undefined}
@@ -283,15 +291,17 @@ export function Sidebar() {
                 >
                   <Link href={item.href}>
                     <Button
-                      variant={isActive ? 'secondary' : 'ghost'}
+                      variant="ghost"
                       className={cn(
-                        'w-full justify-start gap-3 h-10 transition-all',
-                        collapsed && 'justify-center px-2',
-                        isActive && 'text-primary font-medium'
+                        'w-full justify-start gap-3 h-11 rounded-xl transition-all bg-white/20 text-slate-500 hover:!bg-white/60 hover:text-slate-700 hover:shadow-md',
+                        'border border-transparent backdrop-blur-sm dark:bg-slate-900/30 dark:text-slate-300 dark:hover:!bg-slate-900/60',
+                        collapsed && 'justify-center px-2 rounded-full',
+                        isActive &&
+                          'bg-white text-indigo-600 shadow-md shadow-indigo-200/40 ring-1 ring-indigo-200/70 hover:!bg-white hover:text-indigo-600 dark:bg-slate-900 dark:text-indigo-300 dark:ring-indigo-500/40'
                       )}
                       title={collapsed ? item.title : undefined}
                     >
-                      <Icon className="h-5 w-5" />
+                      <Icon className="h-5 w-5 text-slate-400" />
                       <AnimatePresence mode="wait">
                         {!collapsed && (
                           <motion.span
@@ -324,8 +334,8 @@ export function Sidebar() {
                 exit={!reducedMotion ? { opacity: 0, y: 20 } : undefined}
                 transition={!reducedMotion ? { duration: 0.2 } : undefined}
               >
-                <div className="px-3 py-2 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">
+                <div className="px-3 py-2 rounded-xl bg-white/40 shadow-sm backdrop-blur-sm dark:bg-slate-900/40">
+                  <p className="text-xs text-slate-500 dark:text-slate-300">
                     Sistema de RRHH para agencias japonesas
                   </p>
                 </div>
