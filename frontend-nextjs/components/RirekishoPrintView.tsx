@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 interface RirekishoPrintViewProps {
   data: any;
@@ -65,7 +66,15 @@ const RirekishoPrintView: React.FC<RirekishoPrintViewProps> = ({ data, photoPrev
         <div className="photo-container">
           <div className="photo-frame">
             {photoPreview ? (
-              <img src={photoPreview} className="photo-img" alt="証明写真" />
+              <Image
+                src={photoPreview}
+                alt="証明写真"
+                width={220}
+                height={280}
+                className="photo-img"
+                priority
+                unoptimized
+              />
             ) : (
               <span className="photo-placeholder">写真</span>
             )}

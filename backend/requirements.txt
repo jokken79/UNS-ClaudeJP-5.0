@@ -75,6 +75,17 @@ loguru==0.7.2
 # Rate Limiting
 slowapi==0.1.9
 
+# Observability & Telemetry
+opentelemetry-api==1.27.0
+opentelemetry-sdk==1.27.0
+opentelemetry-exporter-otlp-proto-grpc==1.27.0
+opentelemetry-instrumentation-fastapi==0.48b0
+opentelemetry-instrumentation-logging==0.48b0
+opentelemetry-instrumentation-requests==0.48b0
+opentelemetry-instrumentation-sqlalchemy==0.48b0
+prometheus-fastapi-instrumentator==6.1.0
+psutil==6.1.0
+
 # Note: pywin32 is NOT needed in Docker (Linux containers)
 # It's only required on Windows host for:
 # - backend/scripts/export_access_to_json.py

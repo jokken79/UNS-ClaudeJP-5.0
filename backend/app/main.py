@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db, init_db
 from app.core.logging import app_logger
+from app.core.observability import configure_observability
 from app.core.middleware import ExceptionHandlerMiddleware, LoggingMiddleware, SecurityMiddleware
 
 # Initialize rate limiter
@@ -78,6 +79,8 @@ Todas las respuestas retornan JSON estructurado con mensajes y códigos claros.
     lifespan=lifespan,
 )
 
+configure_observability(app)
+
 # Add rate limiter state
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -111,6 +114,8 @@ ALLOWED_HOSTS = (
     if settings.DEBUG
     else ["uns-kikaku.com", "api.uns-kikaku.com", "www.uns-kikaku.com"]
 )
+if settings.ADDITIONAL_TRUSTED_HOSTS:
+    ALLOWED_HOSTS.extend(settings.ADDITIONAL_TRUSTED_HOSTS)
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
 
 # Create necessary directories

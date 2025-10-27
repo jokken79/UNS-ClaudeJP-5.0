@@ -6,8 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
-    "type-check": "tsc --noEmit"
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.19",
@@ -63,7 +68,15 @@
     "swiper": "^11.2.10",
     "tailwind-merge": "^2.6.0",
     "zod": "^3.25.76",
-    "zustand": "^5.0.8"
+    "zustand": "^5.0.8",
+    "@vercel/otel": "^1.8.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.55.0",
+    "@opentelemetry/instrumentation-fetch": "^0.55.0",
+    "@opentelemetry/resources": "^1.9.0",
+    "@opentelemetry/sdk-trace-base": "^1.9.0",
+    "@opentelemetry/sdk-trace-web": "^1.9.0",
+    "@opentelemetry/context-zone": "^0.55.0"
   },
   "devDependencies": {
     "@svgr/webpack": "^8.1.0",
@@ -78,6 +91,19 @@
     "prettier-plugin-tailwindcss": "^0.5.11",
     "tailwindcss": "^3.4.13",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/testing-library__jest-dom": "^6.0.0",
+    "@vitest/coverage-v8": "^2.1.5",
+    "@playwright/test": "^1.49.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.5",
+    "@vitejs/plugin-react": "^4.3.2",
+    "wait-on": "^7.2.0"
   }
 }
