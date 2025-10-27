@@ -144,7 +144,7 @@ scripts\CLEAN.bat
 ```bash
 docker compose down -v
 docker system prune -f
-rm -rf backend/__pycache__ frontend-nextjs/.next logs/*
+rm -rf backend/__pycache__ frontend/.next logs/*
 docker compose up --build -d
 ```
 

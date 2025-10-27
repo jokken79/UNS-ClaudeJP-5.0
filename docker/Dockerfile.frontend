@@ -1,19 +1,89 @@
-FROM node:20-alpine
+# Dockerfile para Next.js con soporte multi-stage
 
-# Crear directorio de la aplicación
+# ====================
+# Development Stage
+# ====================
+FROM node:20-alpine AS development
+
 WORKDIR /app
 
-# Copiar package.json y package-lock.json
-COPY package*.json ./
+# Instalar dependencias del sistema
+RUN apk add --no-cache libc6-compat
 
-# Instalar dependencias con legacy peer deps
-RUN npm install --legacy-peer-deps
+# Copiar archivos de dependencias
+COPY package.json package-lock.json* ./
 
-# Copiar código de la aplicación
+# Instalar dependencias
+RUN npm install
+
+# Copiar código fuente
 COPY . .
 
-# Exponer puerto para Vite dev server
+# Exponer puerto
 EXPOSE 3000
 
-# Comando para desarrollo con Vite
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
+# Variables de entorno por defecto
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Comando de desarrollo
+CMD ["npm", "run", "dev"]
+
+# ====================
+# Dependencies Stage (para producción)
+# ====================
+FROM node:20-alpine AS deps
+
+WORKDIR /app
+
+RUN apk add --no-cache libc6-compat
+
+COPY package.json package-lock.json* ./
+
+RUN npm install
+
+# ====================
+# Builder Stage (para producción)
+# ====================
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN npm run build
+
+# ====================
+# Production Runner Stage
+# ====================
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+
+# Crear directorio .next y dar permisos
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
+
+# Copiar archivos de build
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]

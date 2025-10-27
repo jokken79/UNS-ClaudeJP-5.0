@@ -212,7 +212,7 @@ backend/
 ### Frontend Structure (Next.js 16 App Router)
 
 ```
-frontend-nextjs/
+frontend/
 ├── app/
 │   ├── layout.tsx                    # Root layout with providers
 │   ├── page.tsx                      # Home/landing page

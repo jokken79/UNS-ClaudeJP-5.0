@@ -121,11 +121,11 @@ if not exist "backend" (
     echo OK - Carpeta backend encontrada
 )
 
-if not exist "frontend-nextjs" (
-    echo PROBLEMA: Carpeta 'frontend-nextjs' no existe
+if not exist "frontend" (
+    echo PROBLEMA: Carpeta 'frontend' no existe
     goto :error
 ) else (
-    echo OK - Carpeta frontend-nextjs encontrada
+    echo OK - Carpeta frontend encontrada
 )
 
 if not exist "docker" (

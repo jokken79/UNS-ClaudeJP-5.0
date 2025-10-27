@@ -197,8 +197,8 @@ services:
 
   frontend:
     build:
-      context: ./frontend-nextjs
-      dockerfile: ../docker/Dockerfile.frontend-nextjs
+      context: ./frontend
+      dockerfile: ../docker/Dockerfile.frontend
       target: development
     container_name: uns-claudejp-frontend
     restart: always
@@ -211,7 +211,7 @@ services:
       NEXT_PUBLIC_TELEMETRY_SAMPLE_RATE: ${NEXT_PUBLIC_TELEMETRY_SAMPLE_RATE:-1}
       NODE_ENV: development
     volumes:
-      - ./frontend-nextjs:/app
+      - ./frontend:/app
       - /app/node_modules
       - /app/.next
     ports:
@@ -234,8 +234,8 @@ services:
 
   frontend-prod:
     build:
-      context: ./frontend-nextjs
-      dockerfile: ../docker/Dockerfile.frontend-nextjs
+      context: ./frontend
+      dockerfile: ../docker/Dockerfile.frontend
       target: runner
     container_name: uns-claudejp-frontend-prod
     restart: always
