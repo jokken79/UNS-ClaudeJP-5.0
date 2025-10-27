@@ -79,6 +79,7 @@
     "@opentelemetry/context-zone": "^0.55.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
     "@svgr/webpack": "^8.1.0",
     "@types/node": "^22.7.4",
     "@types/react": "^19.0.0",
