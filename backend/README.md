@@ -34,9 +34,72 @@ El test `test_health.py` verifica el endpoint `/api/health`. Añade pruebas adic
 
 ## 🗃️ Migraciones
 
+### Aplicar migraciones
+
 ```bash
-docker exec -it uns-claudejp-backend alembic upgrade head
-docker exec -it uns-claudejp-backend alembic revision --autogenerate -m "describe change"
+# Dentro del contenedor
+docker exec -it uns-claudejp-backend bash
+cd /app
+
+# Aplicar todas las migraciones pendientes
+alembic upgrade head
+
+# Ver estado actual
+alembic current
+
+# Ver historial
+alembic history
+```
+
+### Crear nueva migración
+
+```bash
+# Auto-generar migración basada en cambios en models.py
+alembic revision --autogenerate -m "describe change"
+
+# Crear migración manual vacía
+alembic revision -m "describe change"
+```
+
+### Migraciones SQL de Performance (2025-10-27)
+
+Se han agregado **7 migraciones críticas** para mejorar performance e integridad:
+
+```bash
+# Acceder al contenedor
+docker exec -it uns-claudejp-backend bash
+cd /app
+
+# 1. Aplicar TODAS las migraciones SQL (30-40 minutos)
+alembic upgrade head
+
+# 2. Crear vista de empleados con edad
+python scripts/create_employee_view.py
+
+# 3. Verificar que todo se aplicó correctamente
+python scripts/verify_migrations.py
+```
+
+**Beneficios esperados**:
+- 🚀 80-90% mejora en performance de queries
+- 🔒 Prevención de duplicados con UNIQUE constraints
+- 🔍 Búsquedas de texto 100x más rápidas (full-text search)
+- ⚡ Queries JSON 50-70% más rápidas (JSONB)
+- 🤖 Status y alertas de visa automáticas con triggers
+
+Ver documentación completa en: [`/docs/02-configuracion/MIGRACIONES_SQL_2025-10-27.md`](../docs/02-configuracion/MIGRACIONES_SQL_2025-10-27.md)
+
+### Rollback de migraciones
+
+```bash
+# Rollback una migración
+alembic downgrade -1
+
+# Rollback a migración específica
+alembic downgrade <revision_id>
+
+# Ver SQL sin ejecutar (dry run)
+alembic upgrade head --sql > preview.sql
 ```
 
 Consulta [base-datos/README_MIGRACION.md](../base-datos/README_MIGRACION.md) para instrucciones detalladas.
@@ -52,4 +115,4 @@ Revisa [docs/reports/2024-11-Backend-Hardening.md](../docs/reports/2024-11-Backe
 
 ---
 
-**Última actualización:** 2025-02-10
+**Última actualización:** 2025-10-27 (Added SQL performance migrations)

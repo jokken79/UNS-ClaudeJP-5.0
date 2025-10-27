@@ -61,17 +61,25 @@
 ### 97 – Reportes
 > Auditorías, análisis y reportes de sesiones
 - **[Índice de Reportes](./97-reportes/README.md)** - Todos los reportes organizados por fecha y tipo
-  - Auditorías de Sistema (2025-10-24 a 2025-10-26)
+  - Auditorías de Sistema (2025-10-24 a 2025-10-27)
   - Auditorías de Base de Datos
   - Reportes de Errores y Fixes
   - Análisis de Features (Themes, OCR, Photos)
+  - Reportes de Problemas y Análisis de Sistema
+
+### 98 – Features
+> Documentación técnica de implementaciones específicas
+- **[Índice de Features](./98-features/README.md)** - Implementaciones de features específicas
+  - Sistema de Temas y Templates (12 temas + custom)
+  - Animaciones de Navegación
+  - OCR Multi-documento (Azure + EasyOCR + Tesseract)
 
 ### 99 – Archive
 > Documentación histórica y legacy
-- **[Archive Index](./archive/README.md)** - Documentación obsoleta o completada
-- **[Completed Tasks](./archive/completed-tasks/)** - Tareas completadas (legacy v3.x y v4.x)
-- **[Guides Old](./archive/guides-old/)** - Guías antiguas de importación desde Access
-- **[Reports Old](./archive/reports/)** - Reportes históricos (2024-11 a 2025-02)
+- **[Archive Index](./99-archive/README.md)** - Documentación obsoleta o completada
+- **[Guides Old](./99-archive/guides-old/)** - Quick starts antiguos (consolidados en documentación actual)
+- **[Sessions Old](./99-archive/sessions-old/)** - Sesiones de trabajo archivadas (2025-10-23 y 2025-10-24)
+- **[Root Legacy](./99-archive/root-legacy/)** - Documentación legacy del root (v3.x y v4.x)
 
 ---
 
@@ -80,11 +88,9 @@
 Las siguientes carpetas contienen documentación **NO consolidada** que puede tener información adicional:
 
 - **[database/](./database/)** - Propuestas de diseño de BD (3 propuestas + análisis Excel)
-- **[guides/](./guides/)** - Guías específicas (Azure OCR, Git, Backups, Prints, etc.)
-- **[reports/](./reports/)** - Reportes y análisis diversos
-- **[sessions/](./sessions/)** - Documentación de sesiones de trabajo
+- **[guides/](./guides/)** - Guías específicas (solo queda README.md - todo movido a carpetas apropiadas)
 
-> ⚠️ **Nota:** Estas carpetas serán consolidadas progresivamente. Si no encuentras información en los documentos consolidados, busca aquí.
+> ⚠️ **Nota:** La mayoría de los archivos de `guides/`, `reports/` y `sessions/` han sido reorganizados. Ver las secciones **97 - Reportes**, **98 - Features** y **99 - Archive** más abajo.
 
 ---
 
@@ -96,16 +102,22 @@ UNS-ClaudeJP-5.0/
 ├── frontend-nextjs/      # Next.js 16 + React 19 + Tailwind
 ├── docs/                 # 📚 ESTÁS AQUÍ
 │   ├── 01-instalacion/
-│   ├── 02-configuracion/
-│   ├── 03-uso/
-│   ├── 04-troubleshooting/
-│   ├── 05-devops/
-│   ├── 06-agentes/
-│   ├── 97-reportes/      # ✅ Reportes organizados
-│   ├── 99-archive/       # ✅ Legacy organizado
-│   ├── database/         # (sin consolidar)
-│   ├── guides/           # (sin consolidar)
-│   └── reports/          # (sin consolidar)
+│   ├── 02-configuracion/    # ✅ Incluye migraciones y backups
+│   ├── 03-uso/              # ✅ Incluye OCR, fotos, prints, importación
+│   ├── 04-troubleshooting/  # ✅ Incluye troubleshooting y verificaciones
+│   ├── 05-devops/           # ✅ Incluye scripts y Git/GitHub
+│   ├── 06-agentes/          # ✅ Incluye clarificación de sistemas de agentes
+│   ├── 97-reportes/         # ✅ Reportes y auditorías (de docs/reports/)
+│   ├── 98-features/         # ✅ NUEVO - Implementaciones técnicas específicas
+│   ├── 99-archive/          # ✅ Legacy organizado
+│   │   ├── guides-old/      # ✅ NUEVO - Quick starts antiguos
+│   │   ├── sessions-old/    # ✅ NUEVO - Sesiones archivadas
+│   │   └── root-legacy/
+│   ├── archive/             # Legacy (estructura anterior)
+│   ├── database/            # Propuestas de BD (sin consolidar)
+│   ├── guides/              # ✅ VACÍO - Todo movido a carpetas apropiadas
+│   ├── issues/
+│   └── releases/
 ├── scripts/              # Batch scripts (Windows)
 ├── docker-compose.yml
 ├── CLAUDE.md             # Instrucciones para Claude Code
