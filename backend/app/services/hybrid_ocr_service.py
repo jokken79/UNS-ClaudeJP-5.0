@@ -5,12 +5,19 @@ Servicio híbrido que combina Azure OCR y EasyOCR para máxima precisión
 import os
 import logging
 import base64
+import time
 from typing import Dict, Any, Optional, List
 from io import BytesIO
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+from app.core.observability import (
+    record_ocr_failure,
+    record_ocr_request,
+    trace_ocr_operation,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -227,37 +234,46 @@ class HybridOCRService:
         """Procesar con Azure OCR"""
         if not self.azure_available:
             return None
-            
+
         try:
             # Guardar imagen temporal para Azure
             temp_path = "/tmp/temp_azure_image.jpg"
             with open(temp_path, 'wb') as f:
                 f.write(image_data)
-            
-            # Procesar con Azure
-            result = self.azure_service.process_document(temp_path, document_type)
-            
+
+            started = time.perf_counter()
+            with trace_ocr_operation("azure.process_document", document_type, "azure"):
+                result = self.azure_service.process_document(temp_path, document_type)
+            duration = time.perf_counter() - started
+            record_ocr_request(document_type=document_type, method="azure", duration_seconds=duration)
+
             # Limpiar archivo temporal
             if os.path.exists(temp_path):
                 os.remove(temp_path)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error procesando con Azure: {e}")
+            record_ocr_failure(document_type=document_type, method="azure")
             return {"success": False, "error": str(e)}
-    
+
     def _process_with_easyocr(self, image_data: bytes, document_type: str) -> Optional[Dict[str, Any]]:
         """Procesar con EasyOCR"""
         if not self.easyocr_available:
             return None
-            
+
         try:
-            result = self.easyocr_service.process_document_with_easyocr(image_data, document_type)
+            started = time.perf_counter()
+            with trace_ocr_operation("easyocr.process_document", document_type, "easyocr"):
+                result = self.easyocr_service.process_document_with_easyocr(image_data, document_type)
+            duration = time.perf_counter() - started
+            record_ocr_request(document_type=document_type, method="easyocr", duration_seconds=duration)
             return result
-            
+
         except Exception as e:
             logger.error(f"Error procesando con EasyOCR: {e}")
+            record_ocr_failure(document_type=document_type, method="easyocr")
             return {"success": False, "error": str(e)}
     
     def _has_missing_fields(self, result: Dict[str, Any], document_type: str) -> bool:

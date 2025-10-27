@@ -1,5 +1,4 @@
 services:
-  # PostgreSQL Database
   db:
     image: postgres:15-alpine
     container_name: uns-claudejp-db
@@ -20,9 +19,9 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
-      start_period: 90s  # Aumentado de 60s a 90s para sistemas lentos
+      start_period: 90s
+    profiles: ["dev", "prod"]
 
-  # Data Importer
   importer:
     build:
       context: ./backend
@@ -30,20 +29,15 @@ services:
     container_name: uns-claudejp-importer
     restart: 'no'
     environment:
-      # Database
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      
-      # Security
       SECRET_KEY: ${SECRET_KEY}
       ALGORITHM: ${ALGORITHM:-HS256}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
-      
-      # Application
       APP_NAME: ${APP_NAME:-UNS-ClaudeJP 5.0}
-      APP_VERSION: -e
+      APP_VERSION: ${APP_VERSION:-5.0.1}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       DEBUG: ${DEBUG:-true}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
@@ -58,33 +52,15 @@ services:
     command: >
       sh -c "
         echo '--- Running Alembic migrations ---' &&
-        alembic upgrade head &&
-        echo '--- Running create_admin_user.py ---' &&
-        python scripts/create_admin_user.py &&
+        python scripts/manage_db.py migrate &&
+        echo '--- Seeding demo data ---' &&
+        python scripts/manage_db.py seed &&
         echo '--- Running import_data.py ---' &&
         python scripts/import_data.py &&
-        echo '--- Seeding demo candidates when database is empty ---' &&
-        python scripts/import_demo_candidates.py &&
-        echo '--- Checking for Access candidate dataset (optional) ---' &&
-        if [ -f '/app/access_candidates_data.json' ]; then
-          echo '--- ⚠ access_candidates_data.json detected. Import tooling must be run manually after reinstall. ---'
-        else
-          echo '--- No Access candidate dataset supplied. Skipping Access import. ---'
-        fi &&
-        echo '--- Checking for Access photo mappings (optional) ---' &&
-        if [ -f '/app/access_photo_mappings.json' ]; then
-          echo '--- Access photo mappings found. Importing photos into database. ---' &&
-          if python scripts/unified_photo_import.py import-photos --file /app/access_photo_mappings.json --batch-size 100; then
-            echo '--- ✓ Photo import completed. ---'
-          else
-            echo '--- ⚠ Photo import failed. Review unified_photo_import logs for details. ---'
-          fi
-        else
-          echo '--- No Access photo mappings supplied. Skipping photo import. ---'
-        fi
+        echo '--- Import tasks completed ---'
       "
+    profiles: ["dev", "prod"]
 
-  # Backend API (FastAPI)
   backend:
     build:
       context: ./backend
@@ -92,29 +68,20 @@ services:
     container_name: uns-claudejp-backend
     restart: always
     environment:
-      # Database
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
-      # Security
       SECRET_KEY: ${SECRET_KEY}
       ALGORITHM: ${ALGORITHM:-HS256}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
-
-      # Application
       APP_NAME: ${APP_NAME:-UNS-ClaudeJP 5.0}
-      APP_VERSION: -e
+      APP_VERSION: ${APP_VERSION:-5.0.1}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       DEBUG: ${DEBUG:-true}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
-
-      # File Upload
       UPLOAD_DIR: /app/uploads
       MAX_UPLOAD_SIZE: ${MAX_UPLOAD_SIZE:-10485760}
-
-      # OCR Services
       OCR_ENABLED: ${OCR_ENABLED:-true}
       TESSERACT_LANG: ${TESSERACT_LANG:-jpn+eng}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
@@ -123,22 +90,22 @@ services:
       AZURE_COMPUTER_VISION_ENDPOINT: ${AZURE_COMPUTER_VISION_ENDPOINT}
       AZURE_COMPUTER_VISION_KEY: ${AZURE_COMPUTER_VISION_KEY}
       AZURE_COMPUTER_VISION_API_VERSION: ${AZURE_COMPUTER_VISION_API_VERSION:-2023-02-01-preview}
-
-      # Notifications
       LINE_CHANNEL_ACCESS_TOKEN: ${LINE_CHANNEL_ACCESS_TOKEN:-}
       SMTP_SERVER: ${SMTP_SERVER:-smtp.gmail.com}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM: ${SMTP_FROM:-noreply@uns-kikaku.com}
-
-      # Logging
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_FILE: ${LOG_FILE:-/app/logs/uns-claudejp.log}
-
-      # Company Info
       COMPANY_NAME: ${COMPANY_NAME:-UNS-Kikaku}
       COMPANY_WEBSITE: ${COMPANY_WEBSITE:-https://www.uns-kikaku.com}
+      ENABLE_TELEMETRY: ${ENABLE_TELEMETRY:-true}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-uns-claudejp-backend}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4317}
+      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-http://otel-collector:4317}
+      OTEL_METRICS_EXPORT_INTERVAL_MS: ${OTEL_METRICS_EXPORT_INTERVAL_MS:-60000}
+      PROMETHEUS_METRICS_PATH: ${PROMETHEUS_METRICS_PATH:-/metrics}
     volumes:
       - ./backend:/app
       - ./uploads:/app/uploads
@@ -152,6 +119,8 @@ services:
         condition: service_healthy
       importer:
         condition: service_completed_successfully
+      otel-collector:
+        condition: service_healthy
     networks:
       - uns-network
     healthcheck:
@@ -159,10 +128,73 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 90s  # Aumentado de 40s a 90s para dar tiempo a migraciones
+      start_period: 90s
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    profiles: ["dev"]
 
-  # Frontend (Next.js 15)
+  backend-prod:
+    build:
+      context: ./backend
+      dockerfile: ../docker/Dockerfile.backend
+    container_name: uns-claudejp-backend-prod
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
+      APP_NAME: ${APP_NAME:-UNS-ClaudeJP 5.0}
+      APP_VERSION: ${APP_VERSION:-5.0.1}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      DEBUG: ${DEBUG:-false}
+      FRONTEND_URL: ${FRONTEND_URL:-https://app.uns-kikaku.com}
+      UPLOAD_DIR: /app/uploads
+      MAX_UPLOAD_SIZE: ${MAX_UPLOAD_SIZE:-10485760}
+      OCR_ENABLED: ${OCR_ENABLED:-true}
+      TESSERACT_LANG: ${TESSERACT_LANG:-jpn+eng}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GOOGLE_CLOUD_VISION_ENABLED: ${GOOGLE_CLOUD_VISION_ENABLED:-false}
+      GOOGLE_CLOUD_VISION_API_KEY: ${GOOGLE_CLOUD_VISION_API_KEY}
+      AZURE_COMPUTER_VISION_ENDPOINT: ${AZURE_COMPUTER_VISION_ENDPOINT}
+      AZURE_COMPUTER_VISION_KEY: ${AZURE_COMPUTER_VISION_KEY}
+      AZURE_COMPUTER_VISION_API_VERSION: ${AZURE_COMPUTER_VISION_API_VERSION:-2023-02-01-preview}
+      LINE_CHANNEL_ACCESS_TOKEN: ${LINE_CHANNEL_ACCESS_TOKEN:-}
+      SMTP_SERVER: ${SMTP_SERVER:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-noreply@uns-kikaku.com}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FILE: ${LOG_FILE:-/app/logs/uns-claudejp.log}
+      COMPANY_NAME: ${COMPANY_NAME:-UNS-Kikaku}
+      COMPANY_WEBSITE: ${COMPANY_WEBSITE:-https://www.uns-kikaku.com}
+      ENABLE_TELEMETRY: ${ENABLE_TELEMETRY:-true}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-uns-claudejp-backend}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4317}
+      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-http://otel-collector:4317}
+      OTEL_METRICS_EXPORT_INTERVAL_MS: ${OTEL_METRICS_EXPORT_INTERVAL_MS:-60000}
+      PROMETHEUS_METRICS_PATH: ${PROMETHEUS_METRICS_PATH:-/metrics}
+    depends_on:
+      db:
+        condition: service_healthy
+      importer:
+        condition: service_completed_successfully
+      otel-collector:
+        condition: service_healthy
+    networks:
+      - uns-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+    profiles: ["prod"]
+
   frontend:
     build:
       context: ./frontend-nextjs
@@ -172,8 +204,11 @@ services:
     restart: always
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000/api
-      NEXT_PUBLIC_APP_VERSION: 5.0.0
-      NEXT_PUBLIC_APP_NAME: UNS-ClaudeJP 5.0
+      NEXT_PUBLIC_APP_VERSION: ${APP_VERSION:-5.0.1}
+      NEXT_PUBLIC_APP_NAME: ${APP_NAME:-UNS-ClaudeJP 5.0}
+      NEXT_PUBLIC_OTEL_EXPORTER_URL: ${NEXT_PUBLIC_OTEL_EXPORTER_URL:-http://otel-collector:4318/v1/traces}
+      NEXT_PUBLIC_GRAFANA_URL: ${NEXT_PUBLIC_GRAFANA_URL:-http://localhost:3001}
+      NEXT_PUBLIC_TELEMETRY_SAMPLE_RATE: ${NEXT_PUBLIC_TELEMETRY_SAMPLE_RATE:-1}
       NODE_ENV: development
     volumes:
       - ./frontend-nextjs:/app
@@ -188,9 +223,45 @@ services:
       - uns-network
     stdin_open: true
     tty: true
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     command: npm run dev
+    profiles: ["dev"]
 
-  # Database Management (Adminer)
+  frontend-prod:
+    build:
+      context: ./frontend-nextjs
+      dockerfile: ../docker/Dockerfile.frontend-nextjs
+      target: runner
+    container_name: uns-claudejp-frontend-prod
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.uns-kikaku.com/api}
+      NEXT_PUBLIC_APP_VERSION: ${APP_VERSION:-5.0.1}
+      NEXT_PUBLIC_APP_NAME: ${APP_NAME:-UNS-ClaudeJP 5.0}
+      NEXT_PUBLIC_OTEL_EXPORTER_URL: ${NEXT_PUBLIC_OTEL_EXPORTER_URL:-http://otel-collector:4318/v1/traces}
+      NEXT_PUBLIC_GRAFANA_URL: ${NEXT_PUBLIC_GRAFANA_URL:-http://localhost:3001}
+      NEXT_PUBLIC_TELEMETRY_SAMPLE_RATE: ${NEXT_PUBLIC_TELEMETRY_SAMPLE_RATE:-1}
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend-prod:
+        condition: service_healthy
+    networks:
+      - uns-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    profiles: ["prod"]
+
   adminer:
     image: adminer
     container_name: uns-claudejp-adminer
@@ -202,9 +273,93 @@ services:
         condition: service_healthy
     networks:
       - uns-network
+    profiles: ["dev"]
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.103.0
+    container_name: uns-claudejp-otel
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./docker/observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "13133:13133"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:13133/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    networks:
+      - uns-network
+    profiles: ["dev", "prod"]
+
+  tempo:
+    image: grafana/tempo:2.5.0
+    container_name: uns-claudejp-tempo
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./docker/observability/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/var/tempo
+    ports:
+      - "3200:3200"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3200/status" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - uns-network
+    profiles: ["dev", "prod"]
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: uns-claudejp-prometheus
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus"]
+    volumes:
+      - ./docker/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - uns-network
+    profiles: ["dev", "prod"]
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: uns-claudejp-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/observability/grafana/dashboards:/etc/grafana/dashboards:ro
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+    networks:
+      - uns-network
+    profiles: ["dev", "prod"]
 
 volumes:
   postgres_data:
+    driver: local
+  grafana_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  tempo_data:
     driver: local
 
 networks:

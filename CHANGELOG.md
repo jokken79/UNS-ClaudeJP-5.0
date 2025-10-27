@@ -2,6 +2,24 @@
 
 All notable changes to UNS-ClaudeJP will be documented in this file.
 
+## [5.0.1] - 2025-12-05
+
+### Added
+- ✅ Generadores de configuración multiplataforma (`generate_env.py`) y archivos `.env.example` para backend, frontend y raíz.
+- ✅ Pipelines de calidad completos: Vitest + Testing Library, Playwright E2E, ruff/black/mypy y GitHub Actions orquestando lint → test → build.
+- ✅ Observabilidad lista para producción: OpenTelemetry en backend y frontend, métricas Prometheus, Tempo + Grafana con dashboard base.
+- ✅ Stack Docker con perfiles `dev`/`prod`, healthchecks encadenados y servicios de telemetría (otel-collector, prometheus, tempo, grafana).
+
+### Changed
+- 🔄 `docker-compose.yml` reorganizado con perfiles, nuevos healthchecks y dependencia explícita en collector OTLP.
+- 🔄 `RirekishoPrintView` migrado a `next/image` y estilos de impresión afinados para ocultar botones.
+- 🔄 Scripts npm estandarizados (`lint`, `lint:fix`, `format`, `typecheck`, `test`, `test:e2e`) con TypeScript estricto y Prettier integrado.
+- 🔄 Configuración de seguridad reforzada (CORS dinámico, encabezados estrictos, Rate limiting documentado) y pipelines de secret scanning con Gitleaks.
+
+### Fixed
+- 🐛 Errores de configuración al carecer de variables obligatorias; ahora `generate_env.py` valida y genera credenciales seguras automáticamente.
+- 🐛 Flujo de impresión sin backend disponible durante pruebas; los tests E2E interceptan llamadas y evitan bloqueos del diálogo de impresión.
+
 ## [4.2.0] - 2025-02-10
 
 ### Added

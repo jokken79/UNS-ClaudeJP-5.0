@@ -4,6 +4,7 @@ import { ThemeProvider } from 'next-themes';
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
+import { useTelemetry } from '@/lib/telemetry';
 
 // Dynamic imports to prevent chunk loading errors
 import dynamic from 'next/dynamic';
@@ -86,6 +87,7 @@ const getAllThemeNames = () => {
 };
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  useTelemetry();
   const [queryClient] = useState(
     () =>
       new QueryClient({

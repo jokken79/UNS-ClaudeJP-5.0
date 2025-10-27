@@ -1,12 +1,11 @@
-"""
-Configuration settings for UNS-ClaudeJP 5.0
-"""
+"""Configuration settings for UNS-ClaudeJP 5.0."""
+
+import logging
+import os
+from typing import Optional
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
-from typing import Optional
-import os
-import secrets
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -132,22 +131,40 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = "INFO"
     LOG_FILE: str = "/app/logs/uns-claudejp.log"
-    
+
     # Environment
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     DEBUG: bool = os.getenv("DEBUG", "true").lower() == "true"
-    
+
+    # Telemetry / Observability
+    ENABLE_TELEMETRY: bool = os.getenv("ENABLE_TELEMETRY", "true").lower() == "true"
+    OTEL_SERVICE_NAME: str = os.getenv("OTEL_SERVICE_NAME", "uns-claudejp-backend")
+    OTEL_EXPORTER_OTLP_ENDPOINT: str = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://otel-collector:4317")
+    OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: str = os.getenv("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT", "http://otel-collector:4317")
+    OTEL_METRICS_EXPORT_INTERVAL_MS: int = int(os.getenv("OTEL_METRICS_EXPORT_INTERVAL_MS", "60000"))
+    PROMETHEUS_METRICS_PATH: str = os.getenv("PROMETHEUS_METRICS_PATH", "/metrics")
+
     # CORS
-    BACKEND_CORS_ORIGINS: list = [
-        "http://localhost",
-        "http://localhost:3000",
-        "http://localhost:3001",  # Next.js frontend
-        "http://localhost:8000",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:3001",  # Next.js frontend
-        "http://127.0.0.1:8000",
-    ]
+    BACKEND_CORS_ORIGINS: list[str] | str = os.getenv(
+        "BACKEND_CORS_ORIGINS",
+        "http://localhost,http://localhost:3000,http://127.0.0.1:3000",
+    )
+    ADDITIONAL_TRUSTED_HOSTS: list[str] | str = os.getenv("ADDITIONAL_TRUSTED_HOSTS", "")
     
+    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
+    @classmethod
+    def _parse_cors_origins(cls, value):
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(",") if item.strip()]
+        return value
+
+    @field_validator("ADDITIONAL_TRUSTED_HOSTS", mode="before")
+    @classmethod
+    def _parse_trusted_hosts(cls, value):
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(",") if item.strip()]
+        return value
+
     class Config:
         env_file = ".env"
         case_sensitive = True
