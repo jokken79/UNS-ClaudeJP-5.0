@@ -76,7 +76,7 @@
     "@opentelemetry/resources": "^1.9.0",
     "@opentelemetry/sdk-trace-base": "^1.9.0",
     "@opentelemetry/sdk-trace-web": "^1.9.0",
-    "@opentelemetry/context-zone": "^0.55.0"
+    "@opentelemetry/context-zone": "^2.2.0"
   },
   "devDependencies": {
     "@svgr/webpack": "^8.1.0",
