@@ -1,5 +1,9 @@
-def test_health_endpoint_returns_ok(client):
-    response = client.get("/api/health", headers={"host": "localhost"})
+import pytest
+
+
+@pytest.mark.parametrize("path", ["/api/health", "/health"])
+def test_health_endpoints_return_ok(client, path):
+    response = client.get(path, headers={"host": "localhost"})
 
     assert response.status_code == 200
     data = response.json()

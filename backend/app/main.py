@@ -21,6 +21,11 @@ from app.core.database import get_db, init_db
 from app.core.logging import app_logger
 from app.core.middleware import ExceptionHandlerMiddleware, LoggingMiddleware, SecurityMiddleware
 
+try:  # Optional OpenTelemetry instrumentation
+    from app.otel_init import init_otel
+except ImportError:  # pragma: no cover - instrumentation is optional
+    init_otel = None  # type: ignore[assignment]
+
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
 
@@ -82,6 +87,12 @@ Todas las respuestas retornan JSON estructurado con mensajes y códigos claros.
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+if init_otel is not None:  # pragma: no branch - executed only during app startup
+    try:
+        init_otel(app)
+    except Exception:  # pragma: no cover - never break the API if telemetry fails
+        app_logger.exception("Failed to initialize OpenTelemetry instrumentation")
+
 # Add custom middlewares
 app.add_middleware(SecurityMiddleware)
 app.add_middleware(ExceptionHandlerMiddleware)
@@ -134,16 +145,17 @@ async def root() -> dict:
     }
 
 
-@app.get("/api/health", tags=["Monitoring"], summary="Application readiness probe")
-async def health_check(db: Session = Depends(get_db)) -> dict:
-    """Verify core dependencies used by external health checks."""
-    database_status = "available"
+def _database_status(db: Session) -> str:
+    status = "available"
     try:
         db.execute(text("SELECT 1"))
     except Exception as exc:  # pragma: no cover - defensive logging
-        database_status = "unavailable"
+        status = "unavailable"
         app_logger.exception("Database health check failed", error=str(exc))
+    return status
 
+
+def _health_payload(database_status: str) -> dict:
     return {
         "app": settings.APP_NAME,
         "status": "healthy" if database_status == "available" else "degraded",
@@ -151,6 +163,18 @@ async def health_check(db: Session = Depends(get_db)) -> dict:
         "version": settings.APP_VERSION,
         "timestamp": datetime.now().isoformat(),
     }
+
+
+@app.get("/api/health", tags=["Monitoring"], summary="Application readiness probe")
+async def health_check(db: Session = Depends(get_db)) -> dict:
+    """Verify core dependencies used by external health checks."""
+    return _health_payload(_database_status(db))
+
+
+@app.get("/health", tags=["Monitoring"], summary="Container healthcheck")
+async def root_health(db: Session = Depends(get_db)) -> dict:
+    """Expose a lightweight healthcheck for orchestrators and Docker health checks."""
+    return {**_health_payload(_database_status(db)), "path": "/health"}
 
 
 @app.exception_handler(404)
