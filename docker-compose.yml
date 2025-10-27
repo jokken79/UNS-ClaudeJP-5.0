@@ -63,15 +63,24 @@ services:
         python scripts/create_admin_user.py &&
         echo '--- Running import_data.py ---' &&
         python scripts/import_data.py &&
-        echo '--- Checking for Access database imports (with photos) ---' &&
-        if [ -f '/app/access_candidates_data.json' ] && [ -f '/app/access_photo_mappings.json' ]; then
-          echo '--- ✓ Found Access data files with photos ---' &&
-          python scripts/import_access_candidates_with_photos.py
+        echo '--- Seeding demo candidates when database is empty ---' &&
+        python scripts/import_demo_candidates.py &&
+        echo '--- Checking for Access candidate dataset (optional) ---' &&
+        if [ -f '/app/access_candidates_data.json' ]; then
+          echo '--- ⚠ access_candidates_data.json detected. Import tooling must be run manually after reinstall. ---'
         else
-          echo '--- No Access data found, trying Excel import ---' &&
-          python scripts/import_real_candidates_final.py &&
-          echo '--- Falling back to demo candidates if needed ---' &&
-          python scripts/import_demo_candidates.py
+          echo '--- No Access candidate dataset supplied. Skipping Access import. ---'
+        fi &&
+        echo '--- Checking for Access photo mappings (optional) ---' &&
+        if [ -f '/app/access_photo_mappings.json' ]; then
+          echo '--- Access photo mappings found. Importing photos into database. ---' &&
+          if python scripts/unified_photo_import.py import-photos --file /app/access_photo_mappings.json --batch-size 100; then
+            echo '--- ✓ Photo import completed. ---'
+          else
+            echo '--- ⚠ Photo import failed. Review unified_photo_import logs for details. ---'
+          fi
+        else
+          echo '--- No Access photo mappings supplied. Skipping photo import. ---'
         fi
       "
 

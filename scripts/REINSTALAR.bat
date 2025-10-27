@@ -270,23 +270,49 @@ if exist "%~dp0\..\backend\backups\production_backup.sql" (
 echo.
 
 echo [Paso 6.3/6] Auto-extrayendo fotos desde carpeta DATABASEJP
-echo      [>] Buscando base de datos de Access en DATABASEJP...
 cd /d "%~dp0\.."
-%PYTHON_CMD% backend\scripts\auto_extract_photos_from_databasejp.py >nul 2>&1
-if !errorlevel! EQU 0 (
-    echo      [OK] Fotos extraidas automáticamente desde DATABASEJP
+set "PHOTO_JSON=access_photo_mappings.json"
+set "PHOTO_GENERATED=0"
 
-    REM Copiar archivo JSON al contenedor Docker
-    echo      [>] Copiando fotos al contenedor Docker...
-    docker cp access_photo_mappings.json uns-claudejp-backend:/app/ >nul 2>&1
-
-    REM Ejecutar importación de fotos
-    echo      [>] Importando fotos a base de datos...
-    docker exec uns-claudejp-backend python scripts/import_photos_by_name.py >nul 2>&1
-    echo      [OK] Fotos importadas exitosamente.
+if exist "!PHOTO_JSON!" (
+    echo      [i] Se detecto !PHOTO_JSON!. Usando archivo existente.
 ) else (
-    echo      [AVISO] No se encontro DATABASEJP o no hay fotos para extraer.
-    echo             (Esto es normal si ejecutas sin la carpeta DATABASEJP presente)
+    echo      [>] Buscando base de datos de Access en DATABASEJP...
+    %PYTHON_CMD% backend\scripts\auto_extract_photos_from_databasejp.py >nul 2>&1
+    if !errorlevel! EQU 0 (
+        if exist "!PHOTO_JSON!" (
+            echo      [OK] Fotos extraidas automaticamente desde DATABASEJP
+            set "PHOTO_GENERATED=1"
+        ) else (
+            echo      [AVISO] El proceso termino sin generar !PHOTO_JSON!.
+            echo             Revisa el log auto_extract_photos_*.log para mas detalles.
+        )
+    ) else (
+        echo      [AVISO] No se encontro DATABASEJP o fallo la extracción automatica.
+        echo             (Esto es normal si ejecutas sin la carpeta DATABASEJP presente)
+    )
+)
+
+if exist "!PHOTO_JSON!" (
+    echo      [>] Copiando !PHOTO_JSON! al contenedor Docker...
+    docker cp "!PHOTO_JSON!" uns-claudejp-backend:/app/ >nul 2>&1
+    if !errorlevel! EQU 0 (
+        echo      [>] Importando fotos a base de datos con unified_photo_import.py...
+        docker exec uns-claudejp-backend python scripts/unified_photo_import.py import-photos --file !PHOTO_JSON! --batch-size 100 >nul 2>&1
+        if !errorlevel! EQU 0 (
+            echo      [OK] Fotos importadas exitosamente.
+        ) else (
+            echo      [AVISO] Error al importar fotos. Revisa unified_photo_import.log en el contenedor.
+        )
+    ) else (
+        echo      [AVISO] No se pudo copiar !PHOTO_JSON! al contenedor uns-claudejp-backend.
+    )
+) else (
+    if "!PHOTO_GENERATED!"=="1" (
+        echo      [AVISO] Se ejecuto la extracción pero no se encontro !PHOTO_JSON!.
+    ) else (
+        echo      [i] No se encontro !PHOTO_JSON!. Saltando importacion de fotos.
+    )
 )
 echo.
 
