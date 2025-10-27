@@ -10,7 +10,7 @@ logger = logging.getLogger("app.telemetry")
 
 
 def init_otel(app: FastAPI) -> None:
-    """Initialise OpenTelemetry instrumentation if dependencies are available."""
+    """Initialize OpenTelemetry instrumentation if dependencies are available."""
     endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
     if not endpoint:
         logger.info("OTEL_EXPORTER_OTLP_ENDPOINT not set; skipping OpenTelemetry setup")
