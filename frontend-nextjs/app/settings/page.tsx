@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Check, Palette, Sparkles, Paintbrush, Grid3x3, Layers, ArrowLeft, Home, Gem, PenTool } from 'lucide-react';
+import { Check, Palette, Sparkles, Paintbrush, Grid3x3, Layers, ArrowLeft, Home, Gem, PenTool, Sun, Moon } from 'lucide-react';
 import { themes } from '@/lib/themes';
 import { cn } from '@/lib/utils';
 import { CustomThemeBuilder } from './components/custom-theme-builder';
@@ -18,71 +18,172 @@ import { CustomTemplateCollection } from './components/custom-template-collectio
 
 // Theme metadata with emojis and descriptions
 const themeMetadata: Record<string, { emoji: string; label: string; description: string; category: string }> = {
+  // DEFAULT THEMES
   "default-light": {
     emoji: "☀️",
-    label: "Light Default",
-    description: "Classic light theme with professional blue accents",
-    category: "Default"
+    label: "Claro Predeterminado",
+    description: "Tema claro profesional con acentos azules",
+    category: "Predeterminado"
   },
   "default-dark": {
     emoji: "🌙",
-    label: "Dark Default",
-    description: "Classic dark theme for reduced eye strain",
-    category: "Default"
+    label: "Oscuro Predeterminado",
+    description: "Tema oscuro para reducir fatiga visual",
+    category: "Predeterminado"
   },
-  "ocean-blue": {
+
+  // UNS-KIKAKU THEMES
+  "uns-kikaku-light": {
+    emoji: "🏢",
+    label: "UNS-Kikaku Claro",
+    description: "Tema corporativo claro con azul profesional",
+    category: "Corporativo"
+  },
+  "uns-kikaku-dark": {
+    emoji: "🏢",
+    label: "UNS-Kikaku Oscuro",
+    description: "Tema corporativo oscuro elegante",
+    category: "Corporativo"
+  },
+
+  // OCEAN BLUE THEMES
+  "ocean-blue-light": {
     emoji: "🌊",
-    label: "Ocean Blue",
-    description: "Calming ocean waves for a peaceful work environment",
-    category: "Nature"
+    label: "Océano Azul Claro",
+    description: "Olas tranquilas en día soleado",
+    category: "Naturaleza"
   },
-  "sunset": {
+  "ocean-blue-dark": {
+    emoji: "🌊",
+    label: "Océano Azul Oscuro",
+    description: "Profundidades del océano de noche",
+    category: "Naturaleza"
+  },
+
+  // SUNSET THEMES
+  "sunset-light": {
     emoji: "🌅",
-    label: "Sunset",
-    description: "Warm sunset colors to inspire creativity",
-    category: "Nature"
+    label: "Atardecer Claro",
+    description: "Colores cálidos de atardecer inspiradores",
+    category: "Naturaleza"
   },
-  "mint-green": {
+  "sunset-dark": {
+    emoji: "🌅",
+    label: "Atardecer Oscuro",
+    description: "Tonos profundos del crepúsculo",
+    category: "Naturaleza"
+  },
+
+  // MINT GREEN THEMES
+  "mint-green-light": {
     emoji: "🌿",
-    label: "Mint Green",
-    description: "Fresh mint vibes for a refreshing experience",
-    category: "Nature"
+    label: "Verde Menta Claro",
+    description: "Frescura de menta revitalizante",
+    category: "Naturaleza"
   },
-  "royal-purple": {
+  "mint-green-dark": {
+    emoji: "🌿",
+    label: "Verde Menta Oscuro",
+    description: "Bosque de menta en la noche",
+    category: "Naturaleza"
+  },
+
+  // ROYAL PURPLE THEMES
+  "royal-purple-light": {
     emoji: "👑",
-    label: "Royal Purple",
-    description: "Majestic purple tones for a premium feel",
+    label: "Púrpura Real Claro",
+    description: "Majestuosidad púrpura premium",
     category: "Premium"
   },
-  "industrial": {
+  "royal-purple-dark": {
+    emoji: "👑",
+    label: "Púrpura Real Oscuro",
+    description: "Elegancia real en la oscuridad",
+    category: "Premium"
+  },
+
+  // INDUSTRIAL THEMES
+  "industrial-light": {
     emoji: "🏭",
-    label: "Industrial",
-    description: "Professional steel blue for serious work",
-    category: "Professional"
+    label: "Industrial Claro",
+    description: "Azul acero profesional para trabajo serio",
+    category: "Profesional"
   },
-  "vibrant-coral": {
+  "industrial-dark": {
+    emoji: "🏭",
+    label: "Industrial Oscuro",
+    description: "Tonos industriales oscuros potentes",
+    category: "Profesional"
+  },
+
+  // VIBRANT CORAL THEMES
+  "vibrant-coral-light": {
     emoji: "🪸",
-    label: "Vibrant Coral",
-    description: "Energetic coral pink to boost productivity",
-    category: "Vibrant"
+    label: "Coral Vibrante Claro",
+    description: "Energía coral para impulsar productividad",
+    category: "Vibrante"
   },
-  "forest-green": {
+  "vibrant-coral-dark": {
+    emoji: "🪸",
+    label: "Coral Vibrante Oscuro",
+    description: "Coral brillante en fondo oscuro",
+    category: "Vibrante"
+  },
+
+  // FOREST GREEN THEMES
+  "forest-green-light": {
     emoji: "🌲",
-    label: "Forest Green",
-    description: "Natural forest tones for focus and concentration",
-    category: "Nature"
+    label: "Verde Bosque Claro",
+    description: "Tonos naturales para concentración",
+    category: "Naturaleza"
   },
-  "monochrome": {
+  "forest-green-dark": {
+    emoji: "🌲",
+    label: "Verde Bosque Oscuro",
+    description: "Profundidad del bosque nocturno",
+    category: "Naturaleza"
+  },
+
+  // MONOCHROME THEMES
+  "monochrome-light": {
     emoji: "⚫",
-    label: "Monochrome",
-    description: "Black and white elegance with timeless style",
-    category: "Minimalist"
+    label: "Monocromo Claro",
+    description: "Elegancia en blanco y negro atemporal",
+    category: "Minimalista"
   },
-  "espresso": {
+  "monochrome-dark": {
+    emoji: "⚫",
+    label: "Monocromo Oscuro",
+    description: "Sofisticación monocromática oscura",
+    category: "Minimalista"
+  },
+
+  // ESPRESSO THEMES
+  "espresso-light": {
     emoji: "☕",
-    label: "Espresso",
-    description: "Warm coffee tones for cozy productivity",
-    category: "Warm"
+    label: "Espresso Claro",
+    description: "Tonos de café cálidos y acogedores",
+    category: "Cálido"
+  },
+  "espresso-dark": {
+    emoji: "☕",
+    label: "Espresso Oscuro",
+    description: "Café profundo para productividad nocturna",
+    category: "Cálido"
+  },
+
+  // JPKKEN THEMES
+  "jpkken-light": {
+    emoji: "🎨",
+    label: "JPKKen Claro",
+    description: "Tema personalizado con acentos vibrantes",
+    category: "Personalizado"
+  },
+  "jpkken-dark": {
+    emoji: "🎨",
+    label: "JPKKen Oscuro",
+    description: "Diseño personalizado para modo oscuro",
+    category: "Personalizado"
   },
 };
 
@@ -211,6 +312,55 @@ export default function SettingsPage() {
               <Badge variant="secondary" className="px-4 py-2">
                 {isCustomTheme ? 'Personalizado' : themeMetadata[theme || 'default-light']?.category}
               </Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Dark/Light Mode Toggle */}
+        <Card className="mb-8 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {theme?.includes('-dark') ? '🌙' : '☀️'} Modo de Apariencia
+            </CardTitle>
+            <CardDescription>
+              Cambia entre modo claro y oscuro
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-1">
+                <span className="font-semibold">
+                  {theme?.includes('-dark') ? 'Modo Oscuro' : 'Modo Claro'}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {theme?.includes('-dark')
+                    ? 'Reduce el brillo para entornos con poca luz'
+                    : 'Maximiza el contraste para entornos luminosos'
+                  }
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const currentBase = theme?.replace('-light', '').replace('-dark', '') || 'default';
+                  const isDark = theme?.includes('-dark');
+                  setTheme(`${currentBase}-${isDark ? 'light' : 'dark'}`);
+                  handleThemeChange();
+                }}
+                className="flex items-center gap-2"
+              >
+                {theme?.includes('-dark') ? (
+                  <>
+                    <Sun className="h-4 w-4" />
+                    Cambiar a Claro
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4" />
+                    Cambiar a Oscuro
+                  </>
+                )}
+              </Button>
             </div>
           </CardContent>
         </Card>
