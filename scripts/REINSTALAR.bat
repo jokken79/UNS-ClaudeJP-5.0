@@ -228,11 +228,11 @@ echo.
 
 echo [Paso 5/6] Iniciando servicios
 echo      [5.1] Iniciando PostgreSQL
-%DOCKER_COMPOSE_CMD% up -d db --remove-orphans
+%DOCKER_COMPOSE_CMD% --profile dev up -d db --remove-orphans
 echo      [5.2] Esperando 60s a que la base de datos se estabilice
 timeout /t 60 /nobreak >nul
 echo      [5.3] Iniciando el resto de servicios
-%DOCKER_COMPOSE_CMD% up -d --remove-orphans
+%DOCKER_COMPOSE_CMD% --profile dev up -d --remove-orphans
 if !errorlevel! neq 0 (
     echo [ERROR] ERROR: Fallo al iniciar los servicios.
     pause

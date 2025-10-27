@@ -45,7 +45,7 @@ if %errorlevel% EQU 0 (
 echo.
 
 echo [3/3] Deteniendo todos los servicios...
-%DOCKER_COMPOSE_CMD% down
+%DOCKER_COMPOSE_CMD% --profile dev down
 
 if %errorlevel% EQU 0 (
     echo.
@@ -63,7 +63,7 @@ if %errorlevel% EQU 0 (
 echo.
 
 echo Estado final de contenedores:
-%DOCKER_COMPOSE_CMD% ps
+%DOCKER_COMPOSE_CMD% --profile dev ps
 echo.
 
 :end
