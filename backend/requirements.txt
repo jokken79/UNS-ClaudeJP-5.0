@@ -47,7 +47,7 @@ pytz==2024.2
 
 # HTTP Requests
 httpx==0.28.1
-aiohttp==3.11.11
+aiohttp==3.13.1
 
 # Utilities
 python-slugify==8.0.4
