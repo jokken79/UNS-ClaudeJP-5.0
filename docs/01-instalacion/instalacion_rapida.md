@@ -1,6 +1,14 @@
 # Instalación Rápida
 
-> Este documento fue consolidado automáticamente desde:
+> ⚠️ **ADVERTENCIA - ARCHIVO SOBRE-CONSOLIDADO**
+>
+> Este documento fue automáticamente consolidado desde **23 fuentes diferentes** y puede contener información mezclada.
+> **Se recomienda consultar estos documentos más focalizados:**
+> - **[Inicio Rápido (5 min)](../00-START-HERE/QUICK_START.md)** - Guía de inicio simplificada
+> - **[Arquitectura](../00-START-HERE/ARCHITECTURE.md)** - Estructura del sistema
+> - **[Backend Setup](../../backend/README.md)** - Configuración backend
+>
+> **Fuentes originales consolidadas:**
 - AUDITORIA_COMPLETA_2025-10-26.md
 - CHANGELOG.md
 - CLAUDE.md
