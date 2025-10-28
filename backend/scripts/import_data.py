@@ -85,9 +85,16 @@ def find_factory_match(factory_name_excel: str, db: Session) -> str:
     1. Exact match (normalized)
     2. Bidirectional substring match (Excel name in DB or vice versa)
     3. Word-based matching (split by spaces, match significant words)
+    4. Company name fallback (NEW! - if factory not found, match by company only)
+
+    Strategy 4 Example:
+    Excel: "高雄工業 Nueva Planta" (fábrica no existe en JSON)
+    → Extrae empresa: "高雄工業"
+    → Busca todas las fábricas de 高雄工業
+    → Asigna: 本社工場 (si existe) o primera disponible
 
     Args:
-        factory_name_excel: Factory name from Excel file
+        factory_name_excel: Factory name from Excel file (simplified name)
         db: Database session
 
     Returns:
@@ -149,7 +156,56 @@ def find_factory_match(factory_name_excel: str, db: Session) -> str:
                 best_score = score
                 best_match = factory.factory_id
 
-    return best_match
+    if best_match:
+        return best_match
+
+    # Strategy 4: FALLBACK by company name (NEW!)
+    # If specific factory not found, try to match by company name only
+    # and assign to the first available factory of that company (prefer 本社工場)
+
+    # Extract company name (usually first part before space or numbers)
+    company_patterns = [
+        r'^([^\s\d]+)',  # Everything before first space or number
+        r'^(.{3,})',     # At least 3 characters
+    ]
+
+    excel_company = None
+    for pattern in company_patterns:
+        match = re.search(pattern, excel_norm)
+        if match:
+            excel_company = match.group(1).strip()
+            if len(excel_company) >= 3:  # Minimum 3 characters for company name
+                break
+
+    if excel_company:
+        # Find all factories from this company
+        company_factories = []
+        honsha_factory = None  # 本社工場 (headquarters factory)
+
+        for factory in all_factories:
+            db_norm = normalize_text(factory.name)
+
+            # Check if company name is in factory name
+            if excel_company in db_norm:
+                company_factories.append(factory)
+
+                # Check if this is 本社工場 (headquarters)
+                if '本社' in db_norm or 'honsha' in db_norm:
+                    honsha_factory = factory
+
+        # If found factories from this company
+        if company_factories:
+            # Priority 1: 本社工場 (headquarters factory)
+            if honsha_factory:
+                print(f"  [FALLBACK] '{factory_name_excel}' → {honsha_factory.factory_id} (本社工場)")
+                return honsha_factory.factory_id
+
+            # Priority 2: First factory found
+            first_factory = company_factories[0]
+            print(f"  [FALLBACK] '{factory_name_excel}' → {first_factory.factory_id} (primera de {len(company_factories)})")
+            return first_factory.factory_id
+
+    return None
 
 
 def import_factories(db: Session):
