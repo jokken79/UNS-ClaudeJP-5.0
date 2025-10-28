@@ -403,10 +403,15 @@ def import_haken_employees(db: Session):
 
 
 def import_ukeoi_employees(db: Session):
-    """Import 請負社員 (Contract employees)"""
+    """Import 請負社員 (Contract employees) - TODOS son de 高雄工業 岡山工場"""
     print("=" * 50)
     print("IMPORTANDO 請負社員 (CONTRACT EMPLOYEES)")
     print("=" * 50)
+
+    # FIXED FACTORY: Todos los 請負 son de 高雄工業 岡山工場
+    UKEOI_FACTORY_ID = "高雄工業株式会社__岡山工場"
+    UKEOI_COMPANY_NAME = "高雄工業株式会社"
+    UKEOI_PLANT_NAME = "岡山工場"
 
     try:
         df = pd.read_excel('/app/config/employee_master.xlsm', sheet_name='請負社員', header=2)
@@ -417,6 +422,33 @@ def import_ukeoi_employees(db: Session):
 
         for idx, row in df.iterrows():
             try:
+                # Helper functions
+                def parse_date(value):
+                    if pd.notna(value):
+                        try:
+                            return pd.to_datetime(value).date()
+                        except:
+                            pass
+                    return None
+
+                def parse_int(value):
+                    if pd.notna(value):
+                        try:
+                            return int(float(value))
+                        except:
+                            pass
+                    return None
+
+                def get_str(index_or_key):
+                    try:
+                        if isinstance(index_or_key, int):
+                            val = row.iloc[index_or_key] if len(row) > index_or_key else None
+                        else:
+                            val = row.get(index_or_key)
+                        return str(val).strip() if pd.notna(val) else None
+                    except:
+                        return None
+
                 # Get column by index since names might be problematic
                 status = row.iloc[0] if len(row) > 0 else None
                 shain_no = row.iloc[1] if len(row) > 1 else None
@@ -433,34 +465,41 @@ def import_ukeoi_employees(db: Session):
                     skipped += 1
                     continue
 
-                name = row.iloc[3] if len(row) > 3 else ''
-                kana = row.iloc[4] if len(row) > 4 else ''
-                gender = row.iloc[5] if len(row) > 5 else None
-                nationality = row.iloc[6] if len(row) > 6 else None
+                # Basic info (by index - más confiable)
+                name = get_str(3) or ''
+                kana = get_str(4) or ''
+                gender = get_str(5)
+                nationality = get_str(6)
+
+                # Try to get date of birth (common column positions)
+                date_of_birth = parse_date(row.iloc[7]) if len(row) > 7 else None
 
                 # Jikyu
-                jikyu = 0
-                if len(row) > 9 and pd.notna(row.iloc[9]):
-                    try:
-                        jikyu = int(float(row.iloc[9]))
-                    except:
-                        pass
+                jikyu = parse_int(row.iloc[9]) if len(row) > 9 else 0
 
                 # Dates
-                hire_date = None
-                if len(row) > 25 and pd.notna(row.iloc[25]):
-                    try:
-                        hire_date = pd.to_datetime(row.iloc[25]).date()
-                    except:
-                        pass
+                hire_date = parse_date(row.iloc[25]) if len(row) > 25 else None
+                termination_date = parse_date(row.iloc[26]) if len(row) > 26 else None
+                current_hire_date = parse_date(row.iloc[27]) if len(row) > 27 else None
+                jikyu_revision_date = parse_date(row.iloc[28]) if len(row) > 28 else None
 
-                termination_date = None
+                # Status
                 is_active = status != '退社' if pd.notna(status) else True
-                if len(row) > 26 and pd.notna(row.iloc[26]):
-                    try:
-                        termination_date = pd.to_datetime(row.iloc[26]).date()
-                    except:
-                        pass
+                current_status = 'terminated' if status == '退社' else 'active'
+
+                # Financial info (common positions)
+                hourly_rate_charged = parse_int(row.iloc[10]) if len(row) > 10 else None
+                profit_difference = parse_int(row.iloc[11]) if len(row) > 11 else None
+                standard_compensation = parse_int(row.iloc[12]) if len(row) > 12 else None
+                health_insurance = parse_int(row.iloc[13]) if len(row) > 13 else None
+                nursing_insurance = parse_int(row.iloc[14]) if len(row) > 14 else None
+                pension_insurance = parse_int(row.iloc[15]) if len(row) > 15 else None
+
+                # Position/assignment (try common positions)
+                position = get_str(20) if len(row) > 20 else None
+                assignment_location = get_str(21) if len(row) > 21 else None
+                assignment_line = get_str(22) if len(row) > 22 else None
+                job_description = get_str(23) if len(row) > 23 else None
 
                 # Search for related candidate by name to sync rirekisho_id and photos
                 candidate = None
@@ -474,19 +513,55 @@ def import_ukeoi_employees(db: Session):
                     ).first()
 
                 contract_worker = ContractWorker(
+                    # IDs
                     hakenmoto_id=hakenmoto_id,
                     rirekisho_id=candidate.rirekisho_id if candidate else None,
+
+                    # FIXED FACTORY - Todos son de 高雄工業 岡山工場
+                    factory_id=UKEOI_FACTORY_ID,
+                    company_name=UKEOI_COMPANY_NAME,
+                    plant_name=UKEOI_PLANT_NAME,
+
+                    # Photos
                     photo_url=candidate.photo_url if candidate else None,
                     photo_data_url=candidate.photo_data_url if candidate else None,
-                    full_name_kanji=str(name) if pd.notna(name) else '',
-                    full_name_kana=str(kana) if pd.notna(kana) else '',
-                    gender=str(gender) if pd.notna(gender) else None,
-                    nationality=str(nationality) if pd.notna(nationality) else None,
+
+                    # Basic info
+                    full_name_kanji=name,
+                    full_name_kana=kana,
+                    date_of_birth=date_of_birth,
+                    gender=gender,
+                    nationality=nationality,
+
+                    # Employment
                     hire_date=hire_date,
+                    current_hire_date=current_hire_date,
                     jikyu=jikyu,
+                    jikyu_revision_date=jikyu_revision_date,
+                    position=position,
                     contract_type='請負',
+
+                    # Assignment
+                    assignment_location=assignment_location,
+                    assignment_line=assignment_line,
+                    job_description=job_description,
+
+                    # Financial
+                    hourly_rate_charged=hourly_rate_charged,
+                    profit_difference=profit_difference,
+                    standard_compensation=standard_compensation,
+                    health_insurance=health_insurance,
+                    nursing_insurance=nursing_insurance,
+                    pension_insurance=pension_insurance,
+
+                    # Status
                     is_active=is_active,
-                    termination_date=termination_date
+                    termination_date=termination_date,
+
+                    # Yukyu defaults
+                    yukyu_total=0,
+                    yukyu_used=0,
+                    yukyu_remaining=0
                 )
 
                 db.add(contract_worker)
@@ -495,9 +570,9 @@ def import_ukeoi_employees(db: Session):
 
                 # Log synchronization status
                 if candidate:
-                    print(f"  ✓ [{hakenmoto_id}] Sincronizado con candidate: {candidate.rirekisho_id} (foto: {bool(candidate.photo_data_url)})")
+                    print(f"  ✓ [{hakenmoto_id}] {name} → {UKEOI_FACTORY_ID} | Foto: {bool(candidate.photo_data_url)}")
                 else:
-                    print(f"  ⚠ [{hakenmoto_id}] No se encontró candidate para: {name}")
+                    print(f"  ⚠ [{hakenmoto_id}] {name} → {UKEOI_FACTORY_ID} | Sin candidate")
 
                 if imported % 50 == 0:
                     print(f"  Procesados {imported} empleados...")
@@ -507,7 +582,9 @@ def import_ukeoi_employees(db: Session):
                 errors += 1
                 if errors < 10:
                     print(f"  ✗ Error en fila {idx}: {e}")
+
         print(f"✓ Importados {imported} empleados 請負社員")
+        print(f"  Todos asignados a: {UKEOI_FACTORY_ID}")
         if skipped > 0:
             print(f"  ⚠ {skipped} duplicados omitidos")
         if errors > 0:
@@ -521,7 +598,7 @@ def import_ukeoi_employees(db: Session):
 
 
 def import_staff_employees(db: Session):
-    """Import スタッフ (Staff employees)"""
+    """Import スタッフ (Staff employees) - Office/HR Personnel"""
     print("=" * 50)
     print("IMPORTANDO スタッフ (STAFF)")
     print("=" * 50)
@@ -535,6 +612,33 @@ def import_staff_employees(db: Session):
 
         for idx, row in df.iterrows():
             try:
+                # Helper functions
+                def parse_date(value):
+                    if pd.notna(value):
+                        try:
+                            return pd.to_datetime(value).date()
+                        except:
+                            pass
+                    return None
+
+                def parse_int(value):
+                    if pd.notna(value):
+                        try:
+                            return int(float(value))
+                        except:
+                            pass
+                    return None
+
+                def get_str(index_or_key):
+                    try:
+                        if isinstance(index_or_key, int):
+                            val = row.iloc[index_or_key] if len(row) > index_or_key else None
+                        else:
+                            val = row.get(index_or_key)
+                        return str(val).strip() if pd.notna(val) else None
+                    except:
+                        return None
+
                 # Get by index
                 status = row.iloc[0] if len(row) > 0 else None
                 shain_no = row.iloc[1] if len(row) > 1 else None
@@ -550,16 +654,47 @@ def import_staff_employees(db: Session):
                     skipped += 1
                     continue
 
-                name = row.iloc[2] if len(row) > 2 else ''
-                kana = row.iloc[3] if len(row) > 3 else ''
+                # Basic info
+                name = get_str(2) or ''
+                kana = get_str(3) or ''
+                gender = get_str(4)
+                date_of_birth = parse_date(row.iloc[5]) if len(row) > 5 else None
+                nationality = get_str(6)
 
                 # Monthly salary (staff typically have monthly salary, not hourly)
-                monthly_salary = 0
-                if len(row) > 7 and pd.notna(row.iloc[7]):
-                    try:
-                        monthly_salary = int(float(row.iloc[7]))
-                    except:
-                        pass
+                monthly_salary = parse_int(row.iloc[7]) if len(row) > 7 else 0
+
+                # Dates
+                hire_date = parse_date(row.iloc[8]) if len(row) > 8 else None
+                termination_date = parse_date(row.iloc[9]) if len(row) > 9 else None
+                social_insurance_date = parse_date(row.iloc[10]) if len(row) > 10 else None
+
+                # Contact info
+                postal_code = get_str(11)
+                address = get_str(12)
+                phone = get_str(13)
+                email = get_str(14)
+
+                # Emergency contact
+                emergency_contact_name = get_str(15)
+                emergency_contact_phone = get_str(16)
+                emergency_contact_relationship = get_str(17)
+
+                # Position
+                position = get_str(18)
+                department = get_str(19)
+
+                # Social insurance
+                health_insurance = parse_int(row.iloc[20]) if len(row) > 20 else None
+                nursing_insurance = parse_int(row.iloc[21]) if len(row) > 21 else None
+                pension_insurance = parse_int(row.iloc[22]) if len(row) > 22 else None
+
+                # Status
+                is_active = status != '退社' if pd.notna(status) else True
+                termination_reason = get_str(23) if status == '退社' else None
+
+                # Notes
+                notes = get_str(24)
 
                 # Search for related candidate by name to sync rirekisho_id and photos
                 candidate = None
@@ -573,14 +708,52 @@ def import_staff_employees(db: Session):
                     ).first()
 
                 staff = Staff(
+                    # IDs
                     staff_id=staff_id,
                     rirekisho_id=candidate.rirekisho_id if candidate else None,
+
+                    # Photos
                     photo_url=candidate.photo_url if candidate else None,
                     photo_data_url=candidate.photo_data_url if candidate else None,
-                    full_name_kanji=str(name) if pd.notna(name) else '',
-                    full_name_kana=str(kana) if pd.notna(kana) else '',
+
+                    # Basic info
+                    full_name_kanji=name,
+                    full_name_kana=kana,
+                    date_of_birth=date_of_birth,
+                    gender=gender,
+                    nationality=nationality,
+
+                    # Contact info
+                    postal_code=postal_code,
+                    address=address,
+                    phone=phone,
+                    email=email,
+                    emergency_contact_name=emergency_contact_name,
+                    emergency_contact_phone=emergency_contact_phone,
+                    emergency_contact_relationship=emergency_contact_relationship,
+
+                    # Employment
+                    hire_date=hire_date,
+                    position=position,
+                    department=department,
                     monthly_salary=monthly_salary,
-                    is_active=status != '退社' if pd.notna(status) else True
+
+                    # Social insurance
+                    health_insurance=health_insurance,
+                    nursing_insurance=nursing_insurance,
+                    pension_insurance=pension_insurance,
+                    social_insurance_date=social_insurance_date,
+
+                    # Yukyu defaults
+                    yukyu_total=0,
+                    yukyu_used=0,
+                    yukyu_remaining=0,
+
+                    # Status
+                    is_active=is_active,
+                    termination_date=termination_date,
+                    termination_reason=termination_reason,
+                    notes=notes
                 )
 
                 db.add(staff)
@@ -589,15 +762,19 @@ def import_staff_employees(db: Session):
 
                 # Log synchronization status
                 if candidate:
-                    print(f"  ✓ [{staff_id}] Sincronizado con candidate: {candidate.rirekisho_id} (foto: {bool(candidate.photo_data_url)})")
+                    print(f"  ✓ [{staff_id}] {name} | Foto: {bool(candidate.photo_data_url)}")
                 else:
-                    print(f"  ⚠ [{staff_id}] No se encontró candidate para: {name}")
+                    print(f"  ⚠ [{staff_id}] {name} | Sin candidate")
+
+                if imported % 25 == 0:
+                    print(f"  Procesados {imported} staff...")
 
             except Exception as e:
                 db.rollback()
                 errors += 1
                 if errors < 10:
                     print(f"  ✗ Error en fila {idx}: {e}")
+
         print(f"✓ Importados {imported} empleados スタッフ")
         if skipped > 0:
             print(f"  ⚠ {skipped} duplicados omitidos")
