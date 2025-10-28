@@ -1,6 +1,14 @@
 # Temas (Theme) y UI
 
-> Este documento fue consolidado automáticamente desde:
+> ⚠️ **ADVERTENCIA - ARCHIVO SOBRE-CONSOLIDADO**
+>
+> Este documento fue automáticamente consolidado desde **25 fuentes diferentes** y puede contener información mezclada.
+> **Se recomienda consultar estos documentos más focalizados:**
+> - **[Inicio Rápido](../00-START-HERE/QUICK_START.md)** - Sección de temas y UI
+> - **[Arquitectura](../00-START-HERE/ARCHITECTURE.md)** - Sistema de temas
+> - **Documentación en código:** `frontend/lib/themes.ts`, `frontend/lib/templates.ts`
+>
+> **Fuentes originales consolidadas:**
 - .claude/commands/openspec/apply.md
 - .claude/commands/openspec/archive.md
 - .claude/commands/openspec/proposal.md

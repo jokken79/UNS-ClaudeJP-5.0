@@ -1,6 +1,15 @@
 # Base de Datos y Migraciones
 
-> Este documento fue consolidado automáticamente desde:
+> ⚠️ **ADVERTENCIA - ARCHIVO SOBRE-CONSOLIDADO**
+>
+> Este documento fue automáticamente consolidado desde **31 fuentes diferentes** y puede contener información mezclada.
+> **Se recomienda consultar estos documentos más focalizados:**
+> - **[Esquema de BD Actual](../database/BD_PROPUESTA_3_HIBRIDA.md)** - Esquema actual (13 tablas)
+> - **[Migraciones Alembic](MIGRACIONES_ALEMBIC.md)** - Guía de migraciones
+> - **[Backup y Restauración](BACKUP_RESTAURACION.md)** - Procedimientos de respaldo
+> - **[Arquitectura](../00-START-HERE/ARCHITECTURE.md)** - Arquitectura de BD
+>
+> **Fuentes originales consolidadas:**
 - .github/prompts/speckit.implement.prompt.md
 - .github/prompts/speckit.specify.prompt.md
 - .playwright-mcp/FRONTEND-VERIFICATION-REPORT-2025-10-23.md
