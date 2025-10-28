@@ -12,8 +12,26 @@ logger = logging.getLogger(__name__)
 
 
 class ImportService:
-    """Service for mass data import from Excel"""
-    
+    """Servicio de importación masiva de datos desde archivos Excel/JSON.
+
+    Permite importar grandes volúmenes de datos con validación automática:
+    - Empleados desde Excel con validación de campos requeridos
+    - Tarjetas de tiempo (timer cards) desde Excel
+    - Configuraciones de fábrica desde archivos JSON
+
+    Note:
+        - Valida datos antes de importar
+        - Retorna reporte detallado con éxitos y errores
+        - No realiza commit a base de datos (TODO: implementar)
+        - Maneja errores por fila para continuar importación
+
+    Examples:
+        >>> service = ImportService()
+        >>> result = service.import_employees_from_excel("employees.xlsx")
+        >>> print(f"Importados: {result['imported']}")
+        >>> print(f"Errores: {result['failed']}")
+    """
+
     def import_employees_from_excel(self, file_path: str) -> Dict:
         """
         Import employees from Excel file

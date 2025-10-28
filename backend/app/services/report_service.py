@@ -12,9 +12,37 @@ logger = logging.getLogger(__name__)
 
 
 class ReportService:
-    """Service for automatic report generation"""
-    
+    """Servicio de generación automática de reportes en Excel y PDF.
+
+    Genera reportes profesionales con:
+    - Excel con formato, fórmulas y gráficos (openpyxl)
+    - PDF con diseño profesional (reportlab)
+    - Análisis mensuales y anuales de fábrica
+    - Recibos de pago individuales
+
+    Attributes:
+        reports_dir (Path): Directorio donde se guardan reportes ("reports/")
+
+    Note:
+        - Reportes Excel incluyen gráficos automáticos
+        - PDF requiere fuentes japonesas para caracteres correctos
+        - Todos los reportes se guardan en directorio "reports/"
+        - Nombres de archivo incluyen fecha/ID para organización
+
+    Examples:
+        >>> service = ReportService()
+        >>> result = service.generate_monthly_factory_report(
+        ...     factory_id="F001",
+        ...     year=2025,
+        ...     month=10,
+        ...     payrolls=[...],
+        ...     factory_config={...}
+        ... )
+        >>> print(f"Reporte generado: {result['report_path']}")
+    """
+
     def __init__(self):
+        """Inicializa el servicio y crea directorio de reportes si no existe."""
         self.reports_dir = Path("reports")
         self.reports_dir.mkdir(exist_ok=True)
     
