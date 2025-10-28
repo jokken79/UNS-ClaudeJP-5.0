@@ -88,10 +88,28 @@ def calculate_employee_salary(db: Session, employee_id: int, month: int, year: i
             apartment_deduction = int((employee.apartment_rent / days_in_month) * work_days)
         else:
             apartment_deduction = employee.apartment_rent
-    
+
+    # Social Insurance Deductions - Use actual employee insurance amounts
+    insurance_deduction = 0
+    if employee.health_insurance:
+        insurance_deduction += employee.health_insurance
+    if employee.nursing_insurance:
+        insurance_deduction += employee.nursing_insurance
+    if employee.pension_insurance:
+        insurance_deduction += employee.pension_insurance
+
+    # Income Tax Deduction - Simplified withholding calculation
+    tax_deduction = 0
+    gross_before_deductions = base_salary + overtime_pay + night_pay + holiday_pay + bonus + gasoline_allowance
+    if gross_before_deductions > 88000:  # Tax threshold (¥88,000)
+        # 5% simplified withholding rate on amount over threshold
+        # TODO: Use actual progressive tax rates from official tax tables
+        tax_deduction = int((gross_before_deductions - 88000) * 0.05)
+
     # Calculate gross and net
     gross_salary = base_salary + overtime_pay + night_pay + holiday_pay + bonus + gasoline_allowance
-    net_salary = gross_salary - apartment_deduction
+    total_deductions = apartment_deduction + insurance_deduction + tax_deduction
+    net_salary = gross_salary - total_deductions
     
     # Calculate factory payment (時給単価)
     factory_payment = 0
@@ -121,7 +139,7 @@ def calculate_employee_salary(db: Session, employee_id: int, month: int, year: i
         "bonus": bonus,
         "gasoline_allowance": gasoline_allowance,
         "apartment_deduction": apartment_deduction,
-        "other_deductions": 0,
+        "other_deductions": insurance_deduction + tax_deduction,  # Include insurance and tax
         "gross_salary": gross_salary,
         "net_salary": net_salary,
         "factory_payment": factory_payment,

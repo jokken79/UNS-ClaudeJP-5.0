@@ -974,8 +974,9 @@ class AzureOCRService:
                 image = Image.open(BytesIO(image_data)).convert("RGB")
                 img_array = np.array(image)
                 return self._extract_photo_with_fixed_coordinates(img_array, document_type, image_data)
-            except:
+            except Exception as e:
                 # Último fallback - imagen completa
+                logger.warning(f"Photo extraction failed, returning full image: {e}")
                 import base64
                 base64_image = base64.b64encode(image_data).decode('utf-8')
                 return f"data:image/jpeg;base64,{base64_image}"

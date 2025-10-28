@@ -120,7 +120,7 @@ async def import_employees(
         logger.info(f"Importing employees from {file.filename}")
 
         # Import
-        results = import_service.import_employees_from_excel(str(temp_file))
+        results = import_service.import_employees_from_excel(str(temp_file), db)
 
         return results
         
@@ -159,14 +159,15 @@ async def import_timer_cards(
         temp_file = _write_upload_to_temp(file, (".xlsx", ".xls"))
 
         logger.info(f"Importing timer cards for {factory_id} - {year}/{month}")
-        
+
         results = import_service.import_timer_cards_from_excel(
             str(temp_file),
             factory_id,
             year,
-            month
+            month,
+            db
         )
-        
+
         return results
         
     except HTTPException:
@@ -183,25 +184,37 @@ async def import_timer_cards(
 
 
 @router.post("/factory-configs")
-async def import_factory_configs(directory_path: str):
+async def import_factory_configs(
+    directory_path: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(AuthService.require_role("admin"))
+):
     """
     Import factory configurations from JSON files
-    
+
     Args:
         directory_path: Path to directory containing factory JSON files
+
+    Requires admin role.
     """
     try:
-        results = import_service.import_factory_configs_from_json(directory_path)
+        results = import_service.import_factory_configs_from_json(directory_path, db)
         return results
-        
+
     except Exception as e:
         logger.error(f"Error importing factory configs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/template/employees")
-async def download_employee_template():
-    """Download Excel template for employee import"""
+async def download_employee_template(
+    current_user = Depends(AuthService.require_role("coordinator"))
+):
+    """
+    Download Excel template for employee import
+
+    Requires coordinator role or higher.
+    """
     try:
         columns = [
             "派遣元ID",
@@ -251,8 +264,14 @@ async def download_employee_template():
 
 
 @router.get("/template/timer-cards")
-async def download_timer_cards_template():
-    """Download Excel template for timer cards import"""
+async def download_timer_cards_template(
+    current_user = Depends(AuthService.require_role("coordinator"))
+):
+    """
+    Download Excel template for timer cards import
+
+    Requires coordinator role or higher.
+    """
     try:
         columns = [
             "日付 (YYYY-MM-DD)",

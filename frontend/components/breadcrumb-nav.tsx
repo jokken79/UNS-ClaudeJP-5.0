@@ -125,10 +125,11 @@ export function BreadcrumbNav({
           className="hidden md:flex items-center"
         >
           {items.map((item, index) => (
-            <div key={`desktop-${item.href}-${index}`} className="flex items-center">
+            <React.Fragment key={`desktop-${item.href}-${index}`}>
               {/* Separator */}
               {(showHome || index > 0) && (
                 <motion.div
+                  key={`desktop-sep-${index}`}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
@@ -141,6 +142,7 @@ export function BreadcrumbNav({
 
               {/* Breadcrumb Item */}
               <motion.div
+                key={`desktop-item-${index}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
@@ -162,7 +164,7 @@ export function BreadcrumbNav({
                   </Link>
                 )}
               </motion.div>
-            </div>
+            </React.Fragment>
           ))}
         </motion.div>
 
@@ -185,8 +187,9 @@ export function BreadcrumbNav({
           )}
 
           {mobileItems.map((item, index) => (
-            <div key={`mobile-${item.href}-${index}`} className="flex items-center">
+            <React.Fragment key={`mobile-${item.href}-${index}`}>
               <motion.div
+                key={`mobile-sep-${index}`}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
@@ -197,6 +200,7 @@ export function BreadcrumbNav({
               </motion.div>
 
               <motion.div
+                key={`mobile-item-${index}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
@@ -216,7 +220,7 @@ export function BreadcrumbNav({
                   </Link>
                 )}
               </motion.div>
-            </div>
+            </React.Fragment>
           ))}
         </motion.div>
       </AnimatePresence>

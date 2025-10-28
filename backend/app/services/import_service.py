@@ -5,8 +5,12 @@ Mass import from Excel with validation
 import pandas as pd
 import logging
 from typing import Dict, List
-from datetime import datetime
+from datetime import datetime, time as dt_time
 from pathlib import Path
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+
+from app.models.models import Employee, TimerCard, Factory
 
 logger = logging.getLogger(__name__)
 
@@ -14,16 +18,17 @@ logger = logging.getLogger(__name__)
 class ImportService:
     """Service for mass data import from Excel"""
     
-    def import_employees_from_excel(self, file_path: str) -> Dict:
+    def import_employees_from_excel(self, file_path: str, db: Session) -> Dict:
         """
         Import employees from Excel file
-        
+
         Expected columns:
         - 派遣元ID, 氏名, フリガナ, 生年月日, 性別, 国籍, 住所, 電話番号, etc.
-        
+
         Args:
             file_path: Path to Excel file
-            
+            db: Database session
+
         Returns:
             Dict with import results
         """
@@ -61,17 +66,45 @@ class ImportService:
                     
                     # Prepare employee data
                     employee_data = self._prepare_employee_data(row)
-                    
-                    # TODO: Insert into database
-                    # For now, just validate and log
-                    logger.info(f"Row {i + 2}: {employee_data.get('full_name_kanji')}")
-                    
-                    results["success"].append({
-                        "row": i + 2,
-                        "name": employee_data.get('full_name_kanji'),
-                        "id": employee_data.get('hakenmoto_id')
-                    })
-                    results["imported"] += 1
+
+                    # Insert into database
+                    try:
+                        # Check if employee with this hakenmoto_id already exists
+                        existing = db.query(Employee).filter(
+                            Employee.hakenmoto_id == employee_data.get('hakenmoto_id')
+                        ).first()
+
+                        if existing:
+                            # Update existing employee
+                            for key, value in employee_data.items():
+                                setattr(existing, key, value)
+                            db.commit()
+                            db.refresh(existing)
+                            logger.info(f"Row {i + 2}: Updated employee {employee_data.get('full_name_kanji')}")
+                        else:
+                            # Create new employee
+                            employee = Employee(**employee_data)
+                            db.add(employee)
+                            db.commit()
+                            db.refresh(employee)
+                            logger.info(f"Row {i + 2}: Created employee {employee_data.get('full_name_kanji')}")
+
+                        results["success"].append({
+                            "row": i + 2,
+                            "name": employee_data.get('full_name_kanji'),
+                            "id": employee_data.get('hakenmoto_id')
+                        })
+                        results["imported"] += 1
+
+                    except IntegrityError as e:
+                        db.rollback()
+                        logger.error(f"Row {i + 2}: Integrity error - {e}")
+                        results["errors"].append({
+                            "row": i + 2,
+                            "error": f"Database integrity error: {str(e)}"
+                        })
+                        results["failed"] += 1
+                        continue
                     
                 except Exception as e:
                     logger.error(f"Error processing row {i + 2}: {e}")
@@ -143,7 +176,7 @@ class ImportService:
         
         # Map Excel columns to database fields
         column_mapping = {
-            '派遣元ID': 'hakenmoto_id',
+            '派遣元ID': 'hakenmoto_id',  # This must be an integer
             '氏名': 'full_name_kanji',
             'フリガナ': 'full_name_kana',
             'ローマ字': 'full_name_roman',
@@ -170,14 +203,18 @@ class ImportService:
         for excel_col, db_field in column_mapping.items():
             if excel_col in row and not pd.isna(row[excel_col]):
                 value = row[excel_col]
-                
+
+                # Convert hakenmoto_id to integer
+                if db_field == 'hakenmoto_id':
+                    value = int(value)
+
                 # Convert dates
-                if 'date' in db_field or 'expiry' in db_field or db_field == 'date_of_birth':
+                elif 'date' in db_field or 'expiry' in db_field or db_field == 'date_of_birth':
                     if isinstance(value, str):
                         value = datetime.strptime(value, '%Y-%m-%d').date()
                     elif isinstance(value, datetime):
                         value = value.date()
-                
+
                 data[db_field] = value
         
         return data
@@ -187,20 +224,22 @@ class ImportService:
         file_path: str,
         factory_id: str,
         year: int,
-        month: int
+        month: int,
+        db: Session
     ) -> Dict:
         """
         Import timer cards from Excel
-        
+
         Expected columns:
         - 日付, 社員ID, 社員名, 出勤時刻, 退勤時刻
-        
+
         Args:
             file_path: Path to Excel file
             factory_id: Factory ID
             year: Year
             month: Month
-            
+            db: Database session
+
         Returns:
             Dict with import results
         """
@@ -233,25 +272,82 @@ class ImportService:
                         continue
                     
                     # Prepare timer card data
-                    timer_data = {
-                        "factory_id": factory_id,
-                        "employee_id": row['社員ID'],
-                        "work_date": row['日付'] if isinstance(row['日付'], datetime) else datetime.strptime(str(row['日付']), '%Y-%m-%d'),
-                        "clock_in": str(row['出勤時刻']),
-                        "clock_out": str(row['退勤時刻']),
-                        "year": year,
-                        "month": month
-                    }
-                    
-                    # TODO: Insert into database
-                    logger.info(f"Row {i + 2}: Timer card for {timer_data['employee_id']}")
-                    
-                    results["success"].append({
-                        "row": i + 2,
-                        "employee_id": timer_data['employee_id'],
-                        "date": timer_data['work_date']
-                    })
-                    results["imported"] += 1
+                    # Convert work_date to date object
+                    work_date = row['日付']
+                    if isinstance(work_date, str):
+                        work_date = datetime.strptime(work_date, '%Y-%m-%d').date()
+                    elif isinstance(work_date, datetime):
+                        work_date = work_date.date()
+
+                    # Convert clock_in and clock_out to time objects
+                    def parse_time(time_value):
+                        """Parse time from string or datetime.time"""
+                        if isinstance(time_value, dt_time):
+                            return time_value
+                        if isinstance(time_value, datetime):
+                            return time_value.time()
+                        if isinstance(time_value, str):
+                            # Handle formats like "08:30" or "08:30:00"
+                            parts = time_value.split(':')
+                            hour = int(parts[0])
+                            minute = int(parts[1]) if len(parts) > 1 else 0
+                            second = int(parts[2]) if len(parts) > 2 else 0
+                            return dt_time(hour, minute, second)
+                        return None
+
+                    clock_in = parse_time(row['出勤時刻'])
+                    clock_out = parse_time(row['退勤時刻'])
+                    hakenmoto_id = int(row['社員ID'])
+
+                    # Insert into database
+                    try:
+                        # Check if timer card already exists (same employee + date)
+                        existing = db.query(TimerCard).filter(
+                            TimerCard.hakenmoto_id == hakenmoto_id,
+                            TimerCard.work_date == work_date
+                        ).first()
+
+                        if existing:
+                            # Skip duplicate
+                            logger.warning(f"Row {i + 2}: Timer card already exists for employee {hakenmoto_id} on {work_date}")
+                            results["errors"].append({
+                                "row": i + 2,
+                                "error": f"Duplicate timer card for employee {hakenmoto_id} on {work_date}"
+                            })
+                            results["failed"] += 1
+                            continue
+
+                        # Create new timer card
+                        timer_card = TimerCard(
+                            hakenmoto_id=hakenmoto_id,
+                            employee_id=hakenmoto_id,  # For easier querying
+                            factory_id=factory_id,
+                            work_date=work_date,
+                            clock_in=clock_in,
+                            clock_out=clock_out
+                        )
+                        db.add(timer_card)
+                        db.commit()
+                        db.refresh(timer_card)
+
+                        logger.info(f"Row {i + 2}: Created timer card for employee {hakenmoto_id}")
+
+                        results["success"].append({
+                            "row": i + 2,
+                            "employee_id": hakenmoto_id,
+                            "date": work_date
+                        })
+                        results["imported"] += 1
+
+                    except IntegrityError as e:
+                        db.rollback()
+                        logger.error(f"Row {i + 2}: Integrity error - {e}")
+                        results["errors"].append({
+                            "row": i + 2,
+                            "error": f"Database integrity error: {str(e)}"
+                        })
+                        results["failed"] += 1
+                        continue
                     
                 except Exception as e:
                     logger.error(f"Error processing row {i + 2}: {e}")
@@ -274,13 +370,14 @@ class ImportService:
                 "failed": 0
             }
     
-    def import_factory_configs_from_json(self, directory_path: str) -> Dict:
+    def import_factory_configs_from_json(self, directory_path: str, db: Session) -> Dict:
         """
         Import factory configurations from JSON files
-        
+
         Args:
             directory_path: Directory containing factory JSON files
-            
+            db: Database session
+
         Returns:
             Dict with import results
         """
@@ -308,7 +405,7 @@ class ImportService:
                     # Validate config structure
                     required = ['factory_id', 'client_company', 'plant', 'assignment', 'job']
                     missing = [f for f in required if f not in config]
-                    
+
                     if missing:
                         results["errors"].append({
                             "file": json_file.name,
@@ -316,16 +413,55 @@ class ImportService:
                         })
                         results["failed"] += 1
                         continue
-                    
-                    # TODO: Insert into database
-                    logger.info(f"Imported factory config: {config['factory_id']}")
-                    
-                    results["success"].append({
-                        "file": json_file.name,
-                        "factory_id": config['factory_id'],
-                        "name": config['name']
-                    })
-                    results["imported"] += 1
+
+                    # Insert into database
+                    try:
+                        # Check if factory already exists
+                        existing = db.query(Factory).filter(
+                            Factory.factory_id == config['factory_id']
+                        ).first()
+
+                        # Prepare factory data
+                        factory_data = {
+                            'factory_id': config['factory_id'],
+                            'name': config.get('name', config['factory_id']),
+                            'company_name': config.get('client_company'),
+                            'plant_name': config.get('plant'),
+                            'config': config,  # Store entire config as JSON
+                            'is_active': True
+                        }
+
+                        if existing:
+                            # Update existing factory
+                            for key, value in factory_data.items():
+                                setattr(existing, key, value)
+                            db.commit()
+                            db.refresh(existing)
+                            logger.info(f"Updated factory config: {config['factory_id']}")
+                        else:
+                            # Create new factory
+                            factory = Factory(**factory_data)
+                            db.add(factory)
+                            db.commit()
+                            db.refresh(factory)
+                            logger.info(f"Created factory config: {config['factory_id']}")
+
+                        results["success"].append({
+                            "file": json_file.name,
+                            "factory_id": config['factory_id'],
+                            "name": config.get('name', config['factory_id'])
+                        })
+                        results["imported"] += 1
+
+                    except IntegrityError as e:
+                        db.rollback()
+                        logger.error(f"Integrity error for {json_file.name}: {e}")
+                        results["errors"].append({
+                            "file": json_file.name,
+                            "error": f"Database integrity error: {str(e)}"
+                        })
+                        results["failed"] += 1
+                        continue
                     
                 except Exception as e:
                     logger.error(f"Error importing {json_file.name}: {e}")

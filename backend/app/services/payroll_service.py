@@ -26,18 +26,20 @@ class PayrollService:
         year: int,
         month: int,
         timer_cards: List[Dict],
-        factory_config: Dict
+        factory_config: Dict,
+        db_session=None
     ) -> Dict:
         """
         Calculate complete monthly payroll
-        
+
         Args:
             employee_id: Employee ID
             year: Year
             month: Month
             timer_cards: List of timer card records
             factory_config: Factory configuration with jikyu_tanka, etc.
-            
+            db_session: Optional database session for querying employee data
+
         Returns:
             Dict with complete payroll breakdown
         """
@@ -69,7 +71,8 @@ class PayrollService:
             employee_id,
             base_pay + overtime_pay + night_pay + holiday_pay,
             year,
-            month
+            month,
+            db_session=db_session
         )
         
         # 6. Calculate totals
@@ -259,11 +262,21 @@ class PayrollService:
         employee_id: int,
         gross_income: Decimal,
         year: int,
-        month: int
+        month: int,
+        db_session=None,
+        employee_data=None
     ) -> Dict:
         """
         Calculate deductions (apartment, insurance, tax, etc.)
-        
+
+        Args:
+            employee_id: Employee ID
+            gross_income: Gross income for the month
+            year: Year
+            month: Month
+            db_session: Optional database session for querying employee data
+            employee_data: Optional pre-loaded employee data dict
+
         Returns:
             Dict with deduction breakdown
         """
@@ -274,31 +287,82 @@ class PayrollService:
             'other': Decimal('0'),
             'total': Decimal('0')
         }
-        
-        # TODO: Get employee-specific deductions from database
-        # For now, using placeholder values
-        
-        # Apartment rent (prorated if moved in/out during month)
-        deductions['apartment'] = Decimal('30000')
-        
-        # Social insurance (simplified calculation)
-        # Real calculation would use official tables
-        if gross_income > 0:
-            insurance_rate = Decimal('0.15')  # ~15% for health + pension
-            deductions['insurance'] = gross_income * insurance_rate
-        
-        # Income tax (simplified withholding)
-        if gross_income > 88000:  # Tax threshold
-            tax_rate = Decimal('0.05')  # 5% simplified
+
+        # Get employee data if not provided
+        employee = employee_data
+        if not employee and db_session:
+            try:
+                from sqlalchemy.orm import joinedload
+                from app.models.models import Employee
+
+                employee_obj = db_session.query(Employee).options(
+                    joinedload(Employee.apartment)
+                ).filter(Employee.id == employee_id).first()
+
+                if employee_obj:
+                    employee = {
+                        'apartment': employee_obj.apartment,
+                        'apartment_rent': employee_obj.apartment_rent,
+                        'health_insurance': employee_obj.health_insurance,
+                        'nursing_insurance': employee_obj.nursing_insurance,
+                        'pension_insurance': employee_obj.pension_insurance,
+                    }
+            except Exception as e:
+                logger.warning(f"Could not load employee data for deductions: {e}")
+                employee = None
+
+        # 1. APARTMENT DEDUCTION - Use actual apartment rent
+        if employee:
+            # First priority: apartment relationship (monthly_rent from Apartment table)
+            if employee.get('apartment') and hasattr(employee['apartment'], 'monthly_rent'):
+                deductions['apartment'] = Decimal(str(employee['apartment'].monthly_rent or 0))
+            # Second priority: apartment_rent stored directly on Employee
+            elif employee.get('apartment_rent'):
+                deductions['apartment'] = Decimal(str(employee['apartment_rent']))
+
+            # TODO: Prorate if employee moved in/out during month
+            # (Would need apartment_start_date and apartment_move_out_date)
+        else:
+            # Fallback: No apartment deduction if no employee data
+            logger.warning(f"No employee data available for apartment deduction (employee_id={employee_id})")
+
+        # 2. SOCIAL INSURANCE DEDUCTION - Use actual insurance amounts
+        # Employee model stores health_insurance, nursing_insurance, pension_insurance as amounts
+        if employee:
+            health_ins = employee.get('health_insurance') or 0
+            nursing_ins = employee.get('nursing_insurance') or 0
+            pension_ins = employee.get('pension_insurance') or 0
+
+            # Sum all insurance deductions
+            deductions['insurance'] = Decimal(str(health_ins + nursing_ins + pension_ins))
+        else:
+            # Fallback: Calculate using default rate if no employee data
+            if gross_income > 0:
+                # Use configurable default rate (15% = health + pension combined)
+                default_rate = Decimal('0.15')
+                deductions['insurance'] = gross_income * default_rate
+                logger.warning(
+                    f"Using default insurance rate {default_rate} for employee_id={employee_id}. "
+                    "Consider setting health_insurance, nursing_insurance, and pension_insurance in Employee record."
+                )
+
+        # 3. INCOME TAX DEDUCTION - Simplified withholding calculation
+        # Note: Employee model doesn't have a tax_rate field, so we use simplified calculation
+        # Real calculation would use official tax tables and withholding rates
+        if gross_income > 88000:  # Tax threshold (¥88,000)
+            # 5% simplified withholding rate
+            # TODO: Use actual progressive tax rates from official tax tables
+            tax_rate = Decimal('0.05')
             deductions['tax'] = (gross_income - Decimal('88000')) * tax_rate
-        
+
+        # Calculate total deductions
         deductions['total'] = sum([
             deductions['apartment'],
             deductions['insurance'],
             deductions['tax'],
             deductions['other']
         ])
-        
+
         return deductions
     
     def _get_expected_work_days(self, year: int, month: int) -> int:
