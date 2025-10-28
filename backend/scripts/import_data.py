@@ -232,8 +232,8 @@ def import_haken_employees(db: Session):
         df = pd.read_excel('/app/config/employee_master.xlsm', sheet_name='派遣社員', header=1)
 
         imported = 0
+        updated = 0
         errors = 0
-        skipped = 0
 
         for idx, row in df.iterrows():
             try:
@@ -242,12 +242,6 @@ def import_haken_employees(db: Session):
                     continue
 
                 hakenmoto_id = int(row['社員№'])
-
-                # Check if employee already exists (skip duplicates)
-                existing = db.query(Employee).filter(Employee.hakenmoto_id == hakenmoto_id).first()
-                if existing:
-                    skipped += 1
-                    continue
 
                 # Helper function to parse dates safely
                 def parse_date(value):
@@ -313,88 +307,193 @@ def import_haken_employees(db: Session):
                 # Find factory_id by looking up the factory name from '派遣先'
                 factory_name_from_excel = get_str('派遣先')
                 db_factory_id = None
+                company_name = None
+                plant_name = None
+
                 if factory_name_from_excel:
                     # Use improved matching function
                     db_factory_id = find_factory_match(factory_name_from_excel, db)
                     if not db_factory_id:
                         print(f"  [WARN] Factory '{factory_name_from_excel}' not found for employee {hakenmoto_id}. Skipping factory link.")
+                    else:
+                        # Extract company_name and plant_name from factory config
+                        factory = db.query(Factory).filter(Factory.factory_id == db_factory_id).first()
+                        if factory and factory.config:
+                            company_name = factory.config.get('client_company', {}).get('name')
+                            plant_name = factory.config.get('plant', {}).get('name')
 
-                # Create employee record with ALL fields
-                employee = Employee(
-                    hakenmoto_id=hakenmoto_id,
-                    factory_id=db_factory_id,
-                    hakensaki_shain_id=get_str('派遣先社員ID'),
-                    full_name_kanji=get_str('氏名') or '',
-                    full_name_kana=get_str('カナ') or '',
-                    date_of_birth=dob,
-                    gender=get_str('性別'),
-                    nationality=get_str('国籍'),
-                    zairyu_expire_date=zairyu_expire,
-                    visa_type=get_str('ビザ種類'),
-                    postal_code=get_str('〒'),
-                    address=get_str('住所'),
-                    current_address=get_str('現住所'),  # 現住所 - Base address
-                    address_banchi=get_str('番地'),  # 番地 - Block/lot number
-                    address_building=get_str('物件名'),  # 物件名 - Building name
-                    phone=None,
-                    email=None,
-                    # Employment
-                    hire_date=hire_date,
-                    current_hire_date=current_hire_date,
-                    jikyu=jikyu,
-                    jikyu_revision_date=jikyu_revision_date,
-                    position=get_str('職種'),
-                    contract_type='派遣',
-                    # Assignment
-                    assignment_location=get_str('配属先'),
-                    assignment_line=get_str('配属ライン'),
-                    job_description=get_str('仕事内容'),
-                    # Financial
-                    hourly_rate_charged=hourly_rate_charged,
-                    billing_revision_date=billing_revision_date,
-                    profit_difference=profit_difference,
-                    standard_compensation=standard_compensation,
-                    health_insurance=health_insurance,
-                    nursing_insurance=nursing_insurance,
-                    pension_insurance=pension_insurance,
-                    social_insurance_date=social_insurance_date,
-                    # License
-                    license_type=get_str('免許種類'),
-                    license_expire_date=license_expire_date,
-                    commute_method=get_str('通勤方法'),
-                    optional_insurance_expire=optional_insurance_expire,
-                    # Skills
-                    japanese_level=get_str('日本語検定'),
-                    career_up_5years=get_str('キャリアアップ5年目') == 'はい',
-                    # Apartment
-                    apartment_start_date=apartment_start_date,
-                    apartment_move_out_date=apartment_move_out_date,
-                    # Other
-                    entry_request_date=entry_request_date,
-                    notes=get_str('備考'),
-                    is_active=is_active,
-                    current_status=current_status,
-                    termination_date=termination_date
-                )
+                # Search for related candidate by name AND date of birth (robust matching)
+                candidate = None
+                employee_name = get_str('氏名')
+                employee_kana = get_str('カナ')
 
-                db.add(employee)
-                db.commit()  # Commit individually
-                imported += 1
+                if employee_name and dob:
+                    # Try exact match with name + DOB (most reliable)
+                    candidate = db.query(Candidate).filter(
+                        Candidate.full_name_kanji == employee_name,
+                        Candidate.date_of_birth == dob
+                    ).first()
 
-                if imported % 100 == 0:
-                    print(f"  Procesados {imported} empleados...")
+                    # Fallback: try kana + DOB
+                    if not candidate and employee_kana:
+                        candidate = db.query(Candidate).filter(
+                            Candidate.full_name_kana == employee_kana,
+                            Candidate.date_of_birth == dob
+                        ).first()
+
+                    # Last resort: name only (less reliable)
+                    if not candidate:
+                        candidate = db.query(Candidate).filter(
+                            or_(
+                                Candidate.full_name_kanji == employee_name,
+                                Candidate.full_name_kana == employee_name
+                            )
+                        ).first()
+
+                # Check if employee already exists
+                existing = db.query(Employee).filter(Employee.hakenmoto_id == hakenmoto_id).first()
+
+                if existing:
+                    # UPDATE existing employee with new data
+                    existing.factory_id = db_factory_id
+                    existing.company_name = company_name
+                    existing.plant_name = plant_name
+                    existing.hakensaki_shain_id = get_str('派遣先社員ID')
+                    existing.full_name_kanji = get_str('氏名') or ''
+                    existing.full_name_kana = get_str('カナ') or ''
+                    existing.date_of_birth = dob
+                    existing.gender = get_str('性別')
+                    existing.nationality = get_str('国籍')
+                    existing.zairyu_expire_date = zairyu_expire
+                    existing.visa_type = get_str('ビザ種類')
+                    existing.postal_code = get_str('〒')
+                    existing.address = get_str('住所')
+                    existing.current_address = get_str('現住所')
+                    existing.address_banchi = get_str('番地')
+                    existing.address_building = get_str('物件名')
+                    existing.hire_date = hire_date
+                    existing.current_hire_date = current_hire_date
+                    existing.jikyu = jikyu
+                    existing.jikyu_revision_date = jikyu_revision_date
+                    existing.position = get_str('職種')
+                    existing.assignment_location = get_str('配属先')
+                    existing.assignment_line = get_str('配属ライン')
+                    existing.job_description = get_str('仕事内容')
+                    existing.hourly_rate_charged = hourly_rate_charged
+                    existing.billing_revision_date = billing_revision_date
+                    existing.profit_difference = profit_difference
+                    existing.standard_compensation = standard_compensation
+                    existing.health_insurance = health_insurance
+                    existing.nursing_insurance = nursing_insurance
+                    existing.pension_insurance = pension_insurance
+                    existing.social_insurance_date = social_insurance_date
+                    existing.license_type = get_str('免許種類')
+                    existing.license_expire_date = license_expire_date
+                    existing.commute_method = get_str('通勤方法')
+                    existing.optional_insurance_expire = optional_insurance_expire
+                    existing.japanese_level = get_str('日本語検定')
+                    existing.career_up_5years = get_str('キャリアアップ5年目') == 'はい'
+                    existing.apartment_start_date = apartment_start_date
+                    existing.apartment_move_out_date = apartment_move_out_date
+                    existing.entry_request_date = entry_request_date
+                    existing.notes = get_str('備考')
+
+                    # CRITICAL: Update status fields
+                    existing.is_active = is_active
+                    existing.current_status = current_status
+                    existing.termination_date = termination_date
+
+                    # Update candidate link and photos if found
+                    if candidate:
+                        existing.rirekisho_id = candidate.rirekisho_id
+                        existing.photo_url = candidate.photo_url
+                        existing.photo_data_url = candidate.photo_data_url
+
+                    db.commit()
+                    updated += 1
+
+                else:
+                    # CREATE new employee record
+                    employee = Employee(
+                        hakenmoto_id=hakenmoto_id,
+                        rirekisho_id=candidate.rirekisho_id if candidate else None,
+                        factory_id=db_factory_id,
+                        company_name=company_name,
+                        plant_name=plant_name,
+                        hakensaki_shain_id=get_str('派遣先社員ID'),
+                        full_name_kanji=get_str('氏名') or '',
+                        full_name_kana=get_str('カナ') or '',
+                        date_of_birth=dob,
+                        gender=get_str('性別'),
+                        nationality=get_str('国籍'),
+                        zairyu_expire_date=zairyu_expire,
+                        visa_type=get_str('ビザ種類'),
+                        postal_code=get_str('〒'),
+                        address=get_str('住所'),
+                        current_address=get_str('現住所'),
+                        address_banchi=get_str('番地'),
+                        address_building=get_str('物件名'),
+                        phone=None,
+                        email=None,
+                        # Photos from candidate
+                        photo_url=candidate.photo_url if candidate else None,
+                        photo_data_url=candidate.photo_data_url if candidate else None,
+                        # Employment
+                        hire_date=hire_date,
+                        current_hire_date=current_hire_date,
+                        jikyu=jikyu,
+                        jikyu_revision_date=jikyu_revision_date,
+                        position=get_str('職種'),
+                        contract_type='派遣',
+                        # Assignment
+                        assignment_location=get_str('配属先'),
+                        assignment_line=get_str('配属ライン'),
+                        job_description=get_str('仕事内容'),
+                        # Financial
+                        hourly_rate_charged=hourly_rate_charged,
+                        billing_revision_date=billing_revision_date,
+                        profit_difference=profit_difference,
+                        standard_compensation=standard_compensation,
+                        health_insurance=health_insurance,
+                        nursing_insurance=nursing_insurance,
+                        pension_insurance=pension_insurance,
+                        social_insurance_date=social_insurance_date,
+                        # License
+                        license_type=get_str('免許種類'),
+                        license_expire_date=license_expire_date,
+                        commute_method=get_str('通勤方法'),
+                        optional_insurance_expire=optional_insurance_expire,
+                        # Skills
+                        japanese_level=get_str('日本語検定'),
+                        career_up_5years=get_str('キャリアアップ5年目') == 'はい',
+                        # Apartment
+                        apartment_start_date=apartment_start_date,
+                        apartment_move_out_date=apartment_move_out_date,
+                        # Other
+                        entry_request_date=entry_request_date,
+                        notes=get_str('備考'),
+                        is_active=is_active,
+                        current_status=current_status,
+                        termination_date=termination_date
+                    )
+
+                    db.add(employee)
+                    db.commit()
+                    imported += 1
+
+                if (imported + updated) % 100 == 0:
+                    print(f"  Procesados {imported + updated} empleados...")
 
             except Exception as e:
                 db.rollback()
                 errors += 1
                 if errors < 10:  # Only show first 10 errors
                     print(f"  ✗ Error en fila {idx}: {e}")
-        print(f"✓ Importados {imported} empleados 派遣社員")
-        if skipped > 0:
-            print(f"  ⚠ {skipped} duplicados omitidos")
+
+        print(f"✓ 派遣社員: {imported} nuevos, {updated} actualizados (Total: {imported + updated})")
         if errors > 0:
             print(f"  ⚠ {errors} errores encontrados\n")
-        return imported
+        return imported + updated
 
     except Exception as e:
         db.rollback()
@@ -501,16 +600,33 @@ def import_ukeoi_employees(db: Session):
                 assignment_line = get_str(22) if len(row) > 22 else None
                 job_description = get_str(23) if len(row) > 23 else None
 
-                # Search for related candidate by name to sync rirekisho_id and photos
+                # Search for related candidate by name AND date of birth (robust matching)
                 candidate = None
-                if pd.notna(name):
+                if pd.notna(name) and date_of_birth:
                     search_name = str(name).strip()
+                    search_kana = str(kana).strip() if pd.notna(kana) else None
+
+                    # Try exact match with name + DOB (most reliable)
                     candidate = db.query(Candidate).filter(
-                        or_(
-                            Candidate.full_name_kanji == search_name,
-                            Candidate.full_name_kana == search_name
-                        )
+                        Candidate.full_name_kanji == search_name,
+                        Candidate.date_of_birth == date_of_birth
                     ).first()
+
+                    # Fallback: try kana + DOB
+                    if not candidate and search_kana:
+                        candidate = db.query(Candidate).filter(
+                            Candidate.full_name_kana == search_kana,
+                            Candidate.date_of_birth == date_of_birth
+                        ).first()
+
+                    # Last resort: name only (less reliable)
+                    if not candidate:
+                        candidate = db.query(Candidate).filter(
+                            or_(
+                                Candidate.full_name_kanji == search_name,
+                                Candidate.full_name_kana == search_name
+                            )
+                        ).first()
 
                 contract_worker = ContractWorker(
                     # IDs
@@ -696,16 +812,33 @@ def import_staff_employees(db: Session):
                 # Notes
                 notes = get_str(24)
 
-                # Search for related candidate by name to sync rirekisho_id and photos
+                # Search for related candidate by name AND date of birth (robust matching)
                 candidate = None
-                if pd.notna(name):
+                if pd.notna(name) and date_of_birth:
                     search_name = str(name).strip()
+                    search_kana = str(kana).strip() if pd.notna(kana) else None
+
+                    # Try exact match with name + DOB (most reliable)
                     candidate = db.query(Candidate).filter(
-                        or_(
-                            Candidate.full_name_kanji == search_name,
-                            Candidate.full_name_kana == search_name
-                        )
+                        Candidate.full_name_kanji == search_name,
+                        Candidate.date_of_birth == date_of_birth
                     ).first()
+
+                    # Fallback: try kana + DOB
+                    if not candidate and search_kana:
+                        candidate = db.query(Candidate).filter(
+                            Candidate.full_name_kana == search_kana,
+                            Candidate.date_of_birth == date_of_birth
+                        ).first()
+
+                    # Last resort: name only (less reliable)
+                    if not candidate:
+                        candidate = db.query(Candidate).filter(
+                            or_(
+                                Candidate.full_name_kanji == search_name,
+                                Candidate.full_name_kana == search_name
+                            )
+                        ).first()
 
                 staff = Staff(
                     # IDs
