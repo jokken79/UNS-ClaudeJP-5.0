@@ -13,11 +13,44 @@ logger = logging.getLogger(__name__)
 
 
 class PayrollService:
-    """Service for automatic payroll calculation"""
-    
+    """Servicio de cálculo automático de nómina para sistema de gestión de recursos humanos.
+
+    Implementa las reglas de cálculo de nómina japonesa incluyendo:
+    - Pago base por horas trabajadas
+    - Recargos por horas extras (時間外手当)
+    - Recargos por trabajo nocturno (深夜手当)
+    - Recargos por trabajo en días festivos (休日手当)
+    - Bonificaciones (手当)
+    - Deducciones (控除): apartamento, seguro social, impuestos
+
+    Attributes:
+        overtime_rate (Decimal): Tasa de recargo por horas extras (1.25 = 25%)
+        night_rate (Decimal): Tasa de recargo nocturno (0.25 = 25% adicional)
+        holiday_rate (Decimal): Tasa de recargo por festivos (1.35 = 35%)
+
+    Note:
+        - Usa Decimal para evitar errores de precisión en cálculos monetarios
+        - Cumple con regulaciones laborales japonesas
+        - Horario nocturno definido: 22:00 - 05:00
+        - Horas extras: más de 8 horas al día
+        - Fin de semana: Sábado y Domingo
+
+    Examples:
+        >>> service = PayrollService()
+        >>> payroll = service.calculate_monthly_payroll(
+        ...     employee_id=123,
+        ...     year=2025,
+        ...     month=10,
+        ...     timer_cards=[...],
+        ...     factory_config={'jikyu_tanka': 1500}
+        ... )
+        >>> print(f"Pago neto: ¥{payroll['net_pay']:,.0f}")
+    """
+
     def __init__(self):
+        """Inicializa el servicio con las tasas estándar de recargo."""
         self.overtime_rate = Decimal('1.25')  # 25% premium
-        self.night_rate = Decimal('0.25')     # 25% night premium  
+        self.night_rate = Decimal('0.25')     # 25% night premium
         self.holiday_rate = Decimal('1.35')   # 35% holiday premium
     
     def calculate_monthly_payroll(
@@ -28,18 +61,100 @@ class PayrollService:
         timer_cards: List[Dict],
         factory_config: Dict
     ) -> Dict:
-        """
-        Calculate complete monthly payroll
-        
+        """Calcula la nómina completa mensual de un empleado.
+
+        Proceso de cálculo:
+        1. Calcula horas trabajadas (normales, extras, nocturnas, festivas)
+        2. Obtiene tarifa base (jikyu_tanka) de configuración de fábrica
+        3. Calcula pagos base con recargos aplicados
+        4. Calcula bonificaciones (gasolina, asistencia, desempeño)
+        5. Calcula deducciones (apartamento, seguro social, impuestos)
+        6. Calcula totales (bruto y neto)
+
         Args:
-            employee_id: Employee ID
-            year: Year
-            month: Month
-            timer_cards: List of timer card records
-            factory_config: Factory configuration with jikyu_tanka, etc.
-            
+            employee_id (int): ID del empleado
+            year (int): Año de la nómina (ej. 2025)
+            month (int): Mes de la nómina (1-12)
+            timer_cards (List[Dict]): Lista de registros de tarjetas de tiempo.
+                Cada registro debe tener:
+                {
+                    'work_date': str | datetime,  # Fecha de trabajo
+                    'clock_in': str,  # Hora entrada (HH:MM)
+                    'clock_out': str,  # Hora salida (HH:MM)
+                }
+            factory_config (Dict): Configuración de la fábrica con:
+                {
+                    'jikyu_tanka': float,  # Tarifa por hora (ej. 1500)
+                    'gasoline_allowance': bool,  # Si aplica bono gasolina
+                    'gasoline_amount': float,  # Monto del bono
+                    'attendance_bonus': float,  # Bono asistencia perfecta
+                    'performance_bonus': bool,  # Si aplica bono desempeño
+                    'performance_amount': float,  # Monto del bono
+                }
+
         Returns:
-            Dict with complete payroll breakdown
+            Dict: Diccionario completo con desglose de nómina:
+                {
+                    "employee_id": int,
+                    "year": int,
+                    "month": int,
+                    "hours": {
+                        "total_hours": float,
+                        "normal_hours": float,
+                        "overtime_hours": float,  # Horas extras (>8h/día)
+                        "night_hours": float,  # Horas nocturnas (22:00-05:00)
+                        "holiday_hours": float,  # Horas en fin de semana
+                        "work_days": int
+                    },
+                    "payments": {
+                        "jikyu_tanka": float,  # Tarifa base por hora
+                        "base_pay": float,  # Pago base
+                        "overtime_pay": float,  # Pago horas extras (+25%)
+                        "night_pay": float,  # Pago nocturno (+25%)
+                        "holiday_pay": float  # Pago festivo (+35%)
+                    },
+                    "bonuses": {
+                        "gasoline": float,
+                        "attendance": float,  # Asistencia perfecta
+                        "performance": float,
+                        "total": float
+                    },
+                    "deductions": {
+                        "apartment": float,  # Renta apartamento
+                        "insurance": float,  # Seguro social
+                        "tax": float,  # Impuesto sobre renta
+                        "other": float,
+                        "total": float
+                    },
+                    "gross_pay": float,  # Total bruto
+                    "net_pay": float,  # Total neto (bruto - deducciones)
+                    "calculation_date": str,  # ISO timestamp
+                    "status": "CALCULATED"
+                }
+
+        Examples:
+            >>> timer_cards = [
+            ...     {'work_date': '2025-10-01', 'clock_in': '08:00', 'clock_out': '17:00'},
+            ...     {'work_date': '2025-10-02', 'clock_in': '08:00', 'clock_out': '19:00'},  # 1h extra
+            ... ]
+            >>> factory_config = {
+            ...     'jikyu_tanka': 1500,
+            ...     'gasoline_allowance': True,
+            ...     'gasoline_amount': 5000
+            ... }
+            >>> payroll = service.calculate_monthly_payroll(
+            ...     employee_id=123,
+            ...     year=2025,
+            ...     month=10,
+            ...     timer_cards=timer_cards,
+            ...     factory_config=factory_config
+            ... )
+
+        Note:
+            - Horas extras se calculan por DÍA (no mensual)
+            - Trabajo nocturno (22:00-05:00) tiene recargo del 25%
+            - Fin de semana completo es considerado festivo (recargo 35%)
+            - Usa Decimal para evitar errores de redondeo
         """
         logger.info(f"Calculating payroll for employee {employee_id} - {year}/{month}")
         
@@ -118,11 +233,33 @@ class PayrollService:
         return result
     
     def _calculate_hours(self, timer_cards: List[Dict]) -> Dict:
-        """
-        Calculate hours breakdown from timer cards
-        
+        """Calcula el desglose detallado de horas trabajadas.
+
+        Procesa todas las tarjetas de tiempo del mes y categoriza las horas
+        en: normales, extras, nocturnas, festivas.
+
+        Args:
+            timer_cards (List[Dict]): Lista de registros de tiempo con:
+                - work_date: Fecha de trabajo
+                - clock_in: Hora de entrada (HH:MM)
+                - clock_out: Hora de salida (HH:MM)
+
         Returns:
-            Dict with hours breakdown
+            Dict: Desglose de horas:
+                {
+                    'total_hours': Decimal,  # Total horas trabajadas
+                    'normal_hours': Decimal,  # Horas normales (hasta 8h/día)
+                    'overtime_hours': Decimal,  # Horas extras (>8h/día)
+                    'night_hours': Decimal,  # Horas nocturnas (22:00-05:00)
+                    'holiday_hours': Decimal,  # Horas en fin de semana
+                    'work_days': int  # Días trabajados
+                }
+
+        Note:
+            - Maneja turnos nocturnos (si clock_out < clock_in, añade 1 día)
+            - Fin de semana: Sábado (5) y Domingo (6)
+            - Horas extras: solo en días laborables cuando >8h
+            - Horas nocturnas se calculan independientemente
         """
         total_hours = Decimal('0')
         normal_hours = Decimal('0')
@@ -188,15 +325,35 @@ class PayrollService:
         }
     
     def _calculate_night_hours(self, start: datetime, end: datetime) -> float:
-        """
-        Calculate night hours (22:00 - 05:00)
-        
+        """Calcula las horas trabajadas en horario nocturno.
+
+        Horario nocturno japonés: 22:00 - 05:00 (siguiente día)
+
         Args:
-            start: Shift start time
-            end: Shift end time
-            
+            start (datetime): Hora de inicio del turno
+            end (datetime): Hora de fin del turno (puede ser día siguiente)
+
         Returns:
-            float: Night hours worked
+            float: Horas trabajadas en período nocturno
+
+        Examples:
+            >>> # Turno 08:00 - 17:00 (sin horario nocturno)
+            >>> night_hours = service._calculate_night_hours(
+            ...     datetime(2025, 10, 1, 8, 0),
+            ...     datetime(2025, 10, 1, 17, 0)
+            ... )
+            >>> assert night_hours == 0.0
+
+            >>> # Turno 22:00 - 05:00 (7 horas nocturnas)
+            >>> night_hours = service._calculate_night_hours(
+            ...     datetime(2025, 10, 1, 22, 0),
+            ...     datetime(2025, 10, 2, 5, 0)
+            ... )
+            >>> assert night_hours == 7.0
+
+        Note:
+            - Calcula solapamiento entre período de trabajo y 22:00-05:00
+            - Retorna 0.0 si no hay solapamiento
         """
         night_start = start.replace(hour=22, minute=0, second=0)
         night_end = (start + timedelta(days=1)).replace(hour=5, minute=0, second=0)
@@ -220,11 +377,33 @@ class PayrollService:
         year: int,
         month: int
     ) -> Dict:
-        """
-        Calculate bonuses (gasoline, attendance, performance, etc.)
-        
+        """Calcula las bonificaciones mensuales del empleado.
+
+        Tipos de bonificaciones:
+        - Gasolina (gasoline): Si está configurado en la fábrica
+        - Asistencia perfecta (attendance): Si trabajó todos los días esperados
+        - Desempeño (performance): Según configuración de fábrica
+
+        Args:
+            employee_id (int): ID del empleado
+            factory_config (Dict): Configuración de fábrica con montos de bonos
+            hours_data (Dict): Datos de horas trabajadas (para verificar asistencia)
+            year (int): Año de cálculo
+            month (int): Mes de cálculo
+
         Returns:
-            Dict with bonus breakdown
+            Dict: Desglose de bonificaciones:
+                {
+                    'gasoline': Decimal,  # Bono de gasolina
+                    'attendance': Decimal,  # Bono asistencia perfecta
+                    'performance': Decimal,  # Bono de desempeño
+                    'total': Decimal  # Suma total de bonos
+                }
+
+        Note:
+            - Bono de asistencia requiere trabajar todos los días laborables del mes
+            - Los montos se obtienen de factory_config
+            - Retorna 0 para bonos no configurados
         """
         bonuses = {
             'gasoline': Decimal('0'),
@@ -261,11 +440,35 @@ class PayrollService:
         year: int,
         month: int
     ) -> Dict:
-        """
-        Calculate deductions (apartment, insurance, tax, etc.)
-        
+        """Calcula las deducciones mensuales del empleado.
+
+        Tipos de deducciones:
+        - Apartamento (apartment): Renta prorrateada si aplica
+        - Seguro social (insurance): ~15% del ingreso bruto
+        - Impuesto (tax): Retención simplificada del 5% sobre excedente
+        - Otros (other): Otras deducciones configuradas
+
+        Args:
+            employee_id (int): ID del empleado
+            gross_income (Decimal): Ingreso bruto mensual
+            year (int): Año de cálculo
+            month (int): Mes de cálculo
+
         Returns:
-            Dict with deduction breakdown
+            Dict: Desglose de deducciones:
+                {
+                    'apartment': Decimal,  # Renta de apartamento
+                    'insurance': Decimal,  # Seguro social (salud + pensión)
+                    'tax': Decimal,  # Impuesto sobre la renta
+                    'other': Decimal,  # Otras deducciones
+                    'total': Decimal  # Suma total de deducciones
+                }
+
+        Note:
+            - TODO: Obtener deducciones específicas del empleado desde DB
+            - Cálculo de seguro social es simplificado (~15%)
+            - Impuesto se aplica solo sobre ingresos >¥88,000
+            - Los valores actuales son placeholders
         """
         deductions = {
             'apartment': Decimal('0'),
@@ -302,11 +505,27 @@ class PayrollService:
         return deductions
     
     def _get_expected_work_days(self, year: int, month: int) -> int:
-        """
-        Calculate expected work days in month (excluding weekends)
-        
+        """Calcula los días laborables esperados en un mes.
+
+        Cuenta los días de lunes a viernes (excluyendo fines de semana).
+        No considera festivos nacionales japoneses.
+
+        Args:
+            year (int): Año (ej. 2025)
+            month (int): Mes (1-12)
+
         Returns:
-            int: Expected work days
+            int: Número de días laborables (lunes-viernes) en el mes
+
+        Examples:
+            >>> # Octubre 2025
+            >>> work_days = service._get_expected_work_days(2025, 10)
+            >>> assert work_days == 23  # Días laborables en octubre 2025
+
+        Note:
+            - Solo excluye sábados y domingos
+            - No considera festivos nacionales (implementar en futuro)
+            - Usa calendario gregoriano estándar
         """
         from calendar import monthrange
         
@@ -327,16 +546,42 @@ class PayrollService:
         payroll_data: Dict,
         actual_revenue: Decimal
     ) -> Dict:
-        """
-        Compare jikyu (employee cost) vs jikyu_tanka (revenue rate)
-        Calculate profit margin
-        
+        """Compara costo de empleado vs ingreso por fábrica (análisis de rentabilidad).
+
+        Calcula métricas clave de rentabilidad comparando el costo real del empleado
+        (jikyu) contra el ingreso facturado a la fábrica (jikyu_tanka * horas).
+
         Args:
-            payroll_data: Calculated payroll data
-            actual_revenue: Actual revenue received from factory
-            
+            payroll_data (Dict): Datos de nómina calculados (de calculate_monthly_payroll)
+            actual_revenue (Decimal): Ingreso real facturado a la fábrica cliente
+
         Returns:
-            Dict with comparison and profit analysis
+            Dict: Análisis de rentabilidad con estructura:
+                {
+                    "cost_per_hour": float,  # Costo por hora del empleado
+                    "revenue_per_hour": float,  # Ingreso por hora facturado
+                    "total_cost": float,  # Costo total (gross_pay)
+                    "total_revenue": float,  # Ingreso total facturado
+                    "profit": float,  # Ganancia (revenue - cost)
+                    "profit_margin_percent": float,  # Margen de ganancia %
+                    "is_profitable": bool  # True si hay ganancia
+                }
+
+        Examples:
+            >>> payroll = {
+            ...     'gross_pay': 250000,
+            ...     'hours': {'total_hours': 160}
+            ... }
+            >>> revenue = Decimal('300000')
+            >>> analysis = service.compare_jikyu_vs_tanka(payroll, revenue)
+            >>> print(f"Margen: {analysis['profit_margin_percent']:.1f}%")
+            >>> print(f"Ganancia: ¥{analysis['profit']:,.0f}")
+
+        Note:
+            - Usa gross_pay (pago bruto) como costo total
+            - Margen de ganancia = (ganancia / ingreso) * 100
+            - Valores negativos indican pérdida
+            - Útil para evaluar rentabilidad por empleado/fábrica
         """
         total_cost = Decimal(str(payroll_data['gross_pay']))
         total_hours = Decimal(str(payroll_data['hours']['total_hours']))

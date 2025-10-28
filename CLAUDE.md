@@ -735,7 +735,7 @@ app/
 
 ## Important Notes
 
-- **LIXO folder**: Contains obsolete v3.x files (old Vite frontend), can be ignored
+- **LIXO folder**: Previously contained obsolete v3.x files (old Vite frontend) - **Already removed in previous cleanup** (see .gitignore line 104)
 - **Default credentials**: `admin` / `admin123` (CHANGE IN PRODUCTION!)
 - **Docker required**: All services run in containers
 - **Port requirements**: 3000, 8000, 5432, 8080

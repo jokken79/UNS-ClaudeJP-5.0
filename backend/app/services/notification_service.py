@@ -18,9 +18,45 @@ logger = logging.getLogger(__name__)
 
 
 class NotificationService:
-    """Centralized notification service"""
-    
+    """Servicio centralizado de notificaciones multi-canal.
+
+    Soporta envío de notificaciones por:
+    - Email (SMTP): Notificaciones formales con HTML y adjuntos
+    - LINE: Mensajes push instantáneos a usuarios LINE
+    - WhatsApp: (Futuro) Mensajes WhatsApp Business
+
+    Attributes:
+        smtp_server (str): Servidor SMTP para email
+        smtp_port (int): Puerto SMTP (normalmente 587 para TLS)
+        smtp_user (str): Usuario SMTP
+        smtp_password (str): Contraseña SMTP
+        smtp_from (str): Email remitente
+        line_channel_token (str): Token de acceso LINE Messaging API
+
+    Note:
+        - Requiere configuración en settings (SMTP_*, LINE_CHANNEL_ACCESS_TOKEN)
+        - Maneja fallos gracefully (retorna False si falla)
+        - Soporta HTML en emails para formateo rico
+        - LINE requiere channel token válido
+
+    Examples:
+        >>> service = NotificationService()
+        >>> # Enviar email
+        >>> success = service.send_email(
+        ...     to="employee@example.com",
+        ...     subject="給与明細書",
+        ...     body="<h1>給与明細書が発行されました</h1>",
+        ...     is_html=True
+        ... )
+        >>> # Enviar notificación LINE
+        >>> success = service.send_line_notification(
+        ...     user_id="U1234567890abcdef",
+        ...     message="給与明細書が発行されました"
+        ... )
+    """
+
     def __init__(self):
+        """Inicializa el servicio con configuración de settings."""
         self.smtp_server = settings.SMTP_SERVER
         self.smtp_port = settings.SMTP_PORT
         self.smtp_user = settings.SMTP_USER
@@ -29,25 +65,47 @@ class NotificationService:
         self.line_channel_token = settings.LINE_CHANNEL_ACCESS_TOKEN
     
     def send_email(
-        self, 
-        to: str, 
-        subject: str, 
-        body: str, 
+        self,
+        to: str,
+        subject: str,
+        body: str,
         attachments: Optional[List[str]] = None,
         is_html: bool = True
     ) -> bool:
-        """
-        Send email via SMTP
-        
+        """Envía un email via SMTP con soporte para HTML y adjuntos.
+
         Args:
-            to: Recipient email
-            subject: Email subject
-            body: Email body (HTML or plain text)
-            attachments: List of file paths to attach
-            is_html: Whether body is HTML
-            
+            to (str): Email del destinatario
+            subject (str): Asunto del email
+            body (str): Cuerpo del email (HTML o texto plano)
+            attachments (Optional[List[str]]): Lista de rutas de archivos a adjuntar
+            is_html (bool): Si True, body se trata como HTML. Default: True
+
         Returns:
-            bool: True if sent successfully
+            bool: True si se envió exitosamente, False si falló
+
+        Examples:
+            >>> # Email simple de texto
+            >>> success = service.send_email(
+            ...     to="user@example.com",
+            ...     subject="Test",
+            ...     body="Hello!",
+            ...     is_html=False
+            ... )
+            >>> # Email HTML con adjunto
+            >>> success = service.send_email(
+            ...     to="employee@example.com",
+            ...     subject="給与明細書",
+            ...     body="<html><body><h1>給与明細書</h1></body></html>",
+            ...     attachments=["/path/to/payslip.pdf"],
+            ...     is_html=True
+            ... )
+
+        Note:
+            - Usa TLS para conexión segura (starttls)
+            - Valida que archivos adjuntos existan antes de adjuntar
+            - Registra errores en logs pero no lanza excepciones
+            - Requiere configuración SMTP válida en settings
         """
         try:
             msg = MIMEMultipart()
@@ -87,15 +145,26 @@ class NotificationService:
             return False
     
     def send_line_notification(self, user_id: str, message: str) -> bool:
-        """
-        Send LINE notification
-        
+        """Envía una notificación push via LINE Messaging API.
+
         Args:
-            user_id: LINE user ID
-            message: Message text
-            
+            user_id (str): ID de usuario LINE (formato: U + 32 caracteres hex)
+            message (str): Texto del mensaje (máx 5000 caracteres)
+
         Returns:
-            bool: True if sent successfully
+            bool: True si se envió exitosamente, False si falló
+
+        Examples:
+            >>> success = service.send_line_notification(
+            ...     user_id="U1234567890abcdef1234567890abcdef",
+            ...     message="あなたの有給申請が承認されました"
+            ... )
+
+        Note:
+            - Requiere LINE_CHANNEL_ACCESS_TOKEN válido en settings
+            - Retorna False si token no está configurado
+            - Usuario debe haber agregado el bot LINE oficial
+            - API endpoint: https://api.line.me/v2/bot/message/push
         """
         if not self.line_channel_token or self.line_channel_token == 'YOUR_LINE_TOKEN':
             logger.warning("LINE token not configured")

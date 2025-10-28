@@ -1,8 +1,11 @@
-# UNS-ClaudeJP 3.0 - .gitignore
+# =====================================
+# UNS-ClaudeJP 5.0 - Git Ignore
+# Last updated: 2025-10-28
+# =====================================
 
-# ========================================
-# Python
-# ========================================
+# =====================================
+# Python Backend
+# =====================================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -12,101 +15,143 @@ build/
 env/
 venv/
 ENV/
+.venv
 *.egg-info/
 .installed.cfg
 *.egg
-*.log
-.env
-.env.local
-.env.development
-.env.production
-backend/.env
-genkit-service/.env
-.venv
 backend/__pycache__/
 backend/app/__pycache__/
 backend/app/**/__pycache__/
 
-# ========================================
-# Node / React / Frontend
-# ========================================
+# Python testing
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# =====================================
+# Node.js / Next.js Frontend
+# =====================================
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 .pnp/
 .pnp.js
 coverage/
 build/
+dist/
+
+# Next.js specific
+.next/
+out/
+.turbo/
+
+# Frontend directories
+/frontend/.next/
+/frontend/out/
+/frontend/build/
+/frontend/dist/
+
+# =====================================
+# Environment Variables
+# =====================================
+.env
 .env.local
+.env.development
 .env.development.local
 .env.test.local
+.env.production
 .env.production.local
+backend/.env
+genkit-service/.env
 
-# ========================================
-# IDEs and Editors
-# ========================================
+# Keep example files
+!.env.example
+
+# =====================================
+# Database
+# =====================================
+postgres_data/
+*.sql.backup
+*.dump
+*.db
+*.sqlite
+*.sqlite3
+
+# Database backups (keep README only)
+backend/backups/*.sql
+!backend/backups/README.md
+
+# =====================================
+# Docker
+# =====================================
+docker-compose.override.yml
+
+# =====================================
+# Logs
+# =====================================
+logs/
+*.log
+/backend/logs/
+
+# =====================================
+# Uploads and Media
+# =====================================
+uploads/*
+!uploads/.gitkeep
+/backend/uploads/
+/backend/static/temp/
+
+# =====================================
+# Temporary Files
+# =====================================
+*.bak
+*.backup
+*.old
+*.tmp
+*.temp
+tmp/
+temp/
+.cache/
+
+# =====================================
+# IDE & Editors
+# =====================================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.project
+.classpath
+.settings/
 
-# ========================================
+# =====================================
 # Claude Code Settings (Personal)
-# ========================================
+# =====================================
 .claude/settings.local.json
 
-# ========================================
-# OS Files
-# ========================================
+# =====================================
+# OS Generated Files
+# =====================================
 .DS_Store
 Thumbs.db
 Desktop.ini
 nul
 NUL
 
-# ========================================
-# Docker & Database
-# ========================================
-postgres_data/
-*.sql.backup
-*.dump
-
-# Database backups (keep README only)
-backend/backups/*.sql
-!backend/backups/README.md
-
-# ========================================
-# Logs
-# ========================================
-logs/
-*.log
-
-# ========================================
-# Uploads and Media
-# ========================================
-uploads/*
-!uploads/.gitkeep
-
-# ========================================
-# Backup files
-# ========================================
-*.bak
-*.backup
-*.old
-*.tmp
-*.temp
-
-# ========================================
+# =====================================
 # Project Specific - LIXO
-# ========================================
+# =====================================
 LIXO/
 *.accdb
 
-# ========================================
-# Test files and results
-# ========================================
+# =====================================
+# Test Files and Results
+# =====================================
 test_*.py
 *_test.py
 *.json.result
@@ -116,19 +161,28 @@ ocr_rirekisho_results.json
 !backend/tests/
 !backend/tests/test_*.py
 
-# ========================================
-# Access Import Data (Large Files tracked by LFS)
-# ========================================
-# access_photo_mappings.json - Now tracked by Git LFS
-# access_candidates_data.json - Now tracked by Git LFS
-# backend/access_photo_mappings.json - Now tracked by Git LFS
-# backend/access_candidates_data.json - Now tracked by Git LFS
-# candidate-photos-*.png - Now tracked by Git LFS
-stuck_request.txt
-reinstalar_log.txt
-scripts/reinstalar_log.txt 
-
-
+# =====================================
+# Access Import Data
+# =====================================
 # Large JSON files with photo data - too big for git
 access_photo_mappings.json
 backend/access_photo_mappings.json
+access_candidates_data.json
+backend/access_candidates_data.json
+
+# Script logs
+stuck_request.txt
+reinstalar_log.txt
+scripts/reinstalar_log.txt
+
+# =====================================
+# Research Cache
+# =====================================
+.research-cache/
+
+# =====================================
+# Playwright & Testing
+# =====================================
+test-results/
+playwright-report/
+playwright/.cache/

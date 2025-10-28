@@ -23,19 +23,52 @@ logger = logging.getLogger(__name__)
 
 
 class HybridOCRService:
-    """Servicio híbrido OCR que combina múltiples métodos para máxima precisión"""
-    
+    """Servicio híbrido OCR que combina múltiples métodos para máxima precisión.
+
+    Este servicio implementa una estrategia inteligente de procesamiento OCR que:
+    - Intenta múltiples proveedores OCR (Azure, EasyOCR)
+    - Combina resultados para máxima precisión
+    - Maneja fallbacks automáticos
+    - Proporciona scores de confianza
+
+    Attributes:
+        azure_available (bool): Indica si Azure OCR está disponible
+        easyocr_available (bool): Indica si EasyOCR está disponible
+        azure_service: Instancia del servicio Azure OCR
+        easyocr_service: Instancia del servicio EasyOCR
+
+    Examples:
+        >>> service = HybridOCRService()
+        >>> result = service.process_document_hybrid(image_bytes, "zairyu_card")
+        >>> print(result['method_used'])  # 'hybrid', 'azure', or 'easyocr'
+        >>> print(result['confidence_score'])  # 0.0 - 0.95
+    """
+
     def __init__(self):
+        """Inicializa el servicio híbrido OCR.
+
+        Intenta inicializar ambos servicios OCR (Azure y EasyOCR) y registra
+        cuáles están disponibles para su uso.
+        """
         self.azure_available = False
         self.easyocr_available = False
-        
+
         # Inicializar servicios disponibles
         self._init_services()
-        
+
         logger.info(f"HybridOCRService inicializado - Azure: {self.azure_available}, EasyOCR: {self.easyocr_available}")
     
     def _init_services(self):
-        """Inicializar servicios OCR disponibles"""
+        """Inicializa los servicios OCR disponibles.
+
+        Intenta importar y configurar Azure OCR y EasyOCR. Si alguno falla,
+        registra un warning pero continúa con los servicios disponibles.
+
+        Side Effects:
+            - Establece self.azure_service y self.azure_available
+            - Establece self.easyocr_service y self.easyocr_available
+            - Registra mensajes de log sobre disponibilidad
+        """
         # Inicializar Azure OCR
         try:
             from app.services.azure_ocr_service import azure_ocr_service
@@ -45,7 +78,7 @@ class HybridOCRService:
         except ImportError as e:
             logger.warning(f"Azure OCR no disponible: {e}")
             self.azure_service = None
-        
+
         # Inicializar EasyOCR
         try:
             from app.services.easyocr_service import easyocr_service
@@ -56,18 +89,71 @@ class HybridOCRService:
             logger.warning(f"EasyOCR no disponible: {e}")
             self.easyocr_service = None
     
-    def process_document_hybrid(self, image_data: bytes, document_type: str = "zairyu_card", 
+    def process_document_hybrid(self, image_data: bytes, document_type: str = "zairyu_card",
                                preferred_method: str = "auto") -> Dict[str, Any]:
-        """
-        Procesar documento usando método híbrido inteligente
-        
+        """Procesa un documento usando estrategia híbrida inteligente de OCR.
+
+        Este método implementa una estrategia sofisticada que:
+        1. Si preferred_method='azure': Usa Azure primero, EasyOCR como fallback
+        2. Si preferred_method='easyocr': Usa EasyOCR primero, Azure como fallback
+        3. Si preferred_method='auto': Ejecuta ambos y combina los mejores resultados
+
+        La estrategia automática proporciona la máxima precisión al combinar
+        resultados de múltiples proveedores OCR y completar campos faltantes.
+
         Args:
-            image_data: Bytes de la imagen
-            document_type: Tipo de documento (zairyu_card, rirekisho, license)
-            preferred_method: Método preferido (azure, easyocr, auto)
-        
+            image_data (bytes): Bytes de la imagen del documento a procesar
+            document_type (str): Tipo de documento. Opciones:
+                - "zairyu_card": Tarjeta de residencia
+                - "rirekisho": Curriculum vitae japonés
+                - "license": Licencia de conducir
+            preferred_method (str): Estrategia de procesamiento. Opciones:
+                - "azure": Priorizar Azure OCR
+                - "easyocr": Priorizar EasyOCR
+                - "auto": Estrategia híbrida automática (recomendado)
+
         Returns:
-            Diccionario con resultados combinados
+            Dict[str, Any]: Diccionario con estructura:
+                {
+                    "success": bool,  # True si al menos un método funcionó
+                    "method_used": str,  # "hybrid", "azure", "easyocr", "none"
+                    "confidence_score": float,  # 0.0-0.95 (mayor=mejor)
+                    "azure_result": Dict | None,  # Resultado de Azure
+                    "easyocr_result": Dict | None,  # Resultado de EasyOCR
+                    "combined_data": Dict,  # Datos combinados finales
+                    "document_type": str,
+                    # Campos extraídos (según tipo de documento):
+                    "name_kanji": str,
+                    "birthday": str,
+                    "nationality": str,
+                    # ... más campos según document_type
+                }
+
+        Raises:
+            Exception: Si ambos métodos OCR fallan completamente
+
+        Examples:
+            >>> # Estrategia automática (recomendado)
+            >>> result = service.process_document_hybrid(
+            ...     image_bytes,
+            ...     document_type="zairyu_card",
+            ...     preferred_method="auto"
+            ... )
+            >>> if result['success']:
+            ...     print(f"Método usado: {result['method_used']}")
+            ...     print(f"Confianza: {result['confidence_score']}")
+            ...     print(f"Nombre: {result['combined_data']['name_kanji']}")
+
+            >>> # Forzar uso de Azure con fallback a EasyOCR
+            >>> result = service.process_document_hybrid(
+            ...     image_bytes,
+            ...     preferred_method="azure"
+            ... )
+
+        Note:
+            - El score de confianza es mayor cuando se combinan múltiples métodos
+            - La estrategia 'auto' es la más precisa pero más lenta
+            - Si ningún método está disponible, success=False
         """
         try:
             logger.info(f"Procesando documento con método híbrido: {document_type}, preferencia: {preferred_method}")
@@ -231,7 +317,30 @@ class HybridOCRService:
             }
     
     def _process_with_azure(self, image_data: bytes, document_type: str) -> Optional[Dict[str, Any]]:
-        """Procesar con Azure OCR"""
+        """Procesa documento con Azure Computer Vision OCR.
+
+        Args:
+            image_data (bytes): Imagen del documento en bytes
+            document_type (str): Tipo de documento ("zairyu_card", "license", etc.)
+
+        Returns:
+            Optional[Dict[str, Any]]: Resultado de Azure OCR o None si no disponible.
+                Estructura del diccionario de éxito:
+                {
+                    "success": True,
+                    "raw_text": str,
+                    "name_kanji": str,
+                    # ... más campos extraídos
+                }
+
+        Raises:
+            Exception: Si Azure OCR falla durante el procesamiento
+
+        Note:
+            - Registra métricas de observabilidad (duración, errores)
+            - Crea archivo temporal para Azure OCR
+            - Limpia archivo temporal después del procesamiento
+        """
         if not self.azure_available:
             return None
 
@@ -259,7 +368,30 @@ class HybridOCRService:
             return {"success": False, "error": str(e)}
 
     def _process_with_easyocr(self, image_data: bytes, document_type: str) -> Optional[Dict[str, Any]]:
-        """Procesar con EasyOCR"""
+        """Procesa documento con EasyOCR.
+
+        Args:
+            image_data (bytes): Imagen del documento en bytes
+            document_type (str): Tipo de documento ("zairyu_card", "license", etc.)
+
+        Returns:
+            Optional[Dict[str, Any]]: Resultado de EasyOCR o None si no disponible.
+                Estructura del diccionario de éxito:
+                {
+                    "success": True,
+                    "raw_text": str,
+                    "detections": int,
+                    "ocr_method": "EasyOCR",
+                    # ... campos extraídos
+                }
+
+        Raises:
+            Exception: Si EasyOCR falla durante el procesamiento
+
+        Note:
+            - Registra métricas de observabilidad (duración, errores)
+            - No requiere archivo temporal (procesa bytes directamente)
+        """
         if not self.easyocr_available:
             return None
 
@@ -277,10 +409,28 @@ class HybridOCRService:
             return {"success": False, "error": str(e)}
     
     def _has_missing_fields(self, result: Dict[str, Any], document_type: str) -> bool:
-        """Verificar si faltan campos importantes"""
+        """Verifica si faltan campos críticos en el resultado OCR.
+
+        Determina si un resultado OCR necesita ser complementado con otro método
+        basándose en la presencia de campos críticos según el tipo de documento.
+
+        Args:
+            result (Dict[str, Any]): Resultado OCR a verificar
+            document_type (str): Tipo de documento para determinar campos críticos
+
+        Returns:
+            bool: True si faltan más del 50% de campos críticos, False en caso contrario
+
+        Note:
+            Campos críticos por tipo de documento:
+            - zairyu_card: name_kanji, birthday, nationality
+            - rirekisho: name_kanji, birthday
+            - license: name_kanji, license_number
+            - otros: name_kanji
+        """
         if not result or not result.get("success"):
             return True
-        
+
         # Campos críticos por tipo de documento
         if document_type == "zairyu_card":
             critical_fields = ['name_kanji', 'birthday', 'nationality']
@@ -290,27 +440,45 @@ class HybridOCRService:
             critical_fields = ['name_kanji', 'license_number']
         else:
             critical_fields = ['name_kanji']
-        
+
         missing_count = 0
         for field in critical_fields:
             if not result.get(field):
                 missing_count += 1
-        
+
         # Si faltan más del 50% de campos críticos
         return missing_count > len(critical_fields) // 2
     
-    def _combine_results(self, primary_result: Dict[str, Any], secondary_result: Dict[str, Any], 
+    def _combine_results(self, primary_result: Dict[str, Any], secondary_result: Dict[str, Any],
                         primary_method: str) -> Dict[str, Any]:
-        """
-        Combinar resultados de dos métodos OCR
-        
+        """Combina resultados de dos métodos OCR para máxima precisión.
+
+        Implementa lógica inteligente para seleccionar los mejores valores de cada
+        método OCR, completando campos faltantes y mejorando la calidad general.
+
         Args:
-            primary_result: Resultado del método principal
-            secondary_result: Resultado del método secundario
-            primary_method: Método principal ('azure', 'easyocr', 'auto')
-        
+            primary_result (Dict[str, Any]): Resultado del método principal
+            secondary_result (Dict[str, Any]): Resultado del método secundario
+            primary_method (str): Método principal ('azure', 'easyocr', 'auto')
+
         Returns:
-            Resultado combinado con los mejores campos de cada método
+            Dict[str, Any]: Diccionario combinado con metadata adicional:
+                {
+                    # Todos los campos del primary_result
+                    # Campos completados/mejorados del secondary_result
+                    "ocr_method": "hybrid",
+                    "primary_method": str,  # Método que se priorizó
+                    "azure_available": bool,
+                    "easyocr_available": bool
+                }
+
+        Note:
+            Estrategias de combinación por tipo de campo:
+            - Nombres: Prefiere el valor más largo y completo
+            - Fechas: Prefiere formato japonés completo (YYYY年MM月DD日)
+            - Nacionalidad: EasyOCR tiene mejor normalización
+            - Números de tarjeta: Valida formato antes de seleccionar
+            - Texto crudo: Combina ambos sin duplicados
         """
         try:
             combined = primary_result.copy()
@@ -357,10 +525,29 @@ class HybridOCRService:
             logger.error(f"Error combinando resultados: {e}")
             return primary_result
     
-    def _select_best_field_value(self, field: str, primary_value: str, secondary_value: str, 
+    def _select_best_field_value(self, field: str, primary_value: str, secondary_value: str,
                                 primary_method: str) -> str:
-        """
-        Seleccionar el mejor valor para un campo específico
+        """Selecciona el mejor valor entre dos opciones para un campo específico.
+
+        Aplica heurísticas según el tipo de campo para determinar cuál valor
+        es más confiable o completo.
+
+        Args:
+            field (str): Nombre del campo a evaluar
+            primary_value (str): Valor del método principal
+            secondary_value (str): Valor del método secundario
+            primary_method (str): Método principal usado
+
+        Returns:
+            str: El mejor valor seleccionado (puede ser primary o secondary)
+
+        Note:
+            Heurísticas aplicadas:
+            - Nombres: Prefiere valores más largos (más completos)
+            - Fechas: Prefiere formato japonés (YYYY年MM月DD日)
+            - Nacionalidad: Prefiere método EasyOCR
+            - Números tarjeta: Valida con regex antes de seleccionar
+            - Texto crudo: Combina ambos valores sin duplicados
         """
         # Para nombres, preferir el más largo y completo
         if 'name' in field:
@@ -402,7 +589,17 @@ class HybridOCRService:
         return primary_value
     
     def _secondary_method(self, primary_method: str) -> str:
-        """Obtener el nombre del método secundario"""
+        """Obtiene el nombre legible del método OCR secundario.
+
+        Args:
+            primary_method (str): Nombre del método principal
+
+        Returns:
+            str: Nombre descriptivo del método secundario:
+                - "EasyOCR" si primary_method="azure"
+                - "Azure OCR" si primary_method="easyocr"
+                - "OCR secundario" en otros casos
+        """
         if primary_method == "azure":
             return "EasyOCR"
         elif primary_method == "easyocr":
