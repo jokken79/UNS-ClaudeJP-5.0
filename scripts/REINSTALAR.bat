@@ -213,7 +213,7 @@ for /r "..\config\factories\backup" %%F in (*.json) do (
 echo      [OK] Datos de factories copiados.
 echo.
 
-echo [Paso 4/7] Reconstruyendo imagenes desde cero
+echo [Paso 4/8] Reconstruyendo imagenes desde cero
 echo      Primera instalacion: 30-40 mins (descarga dependencias ML)
 echo      Reinstalaciones: 5-8 mins (usa cache de Docker)
 set DOCKER_BUILDKIT=1
@@ -226,7 +226,7 @@ if !errorlevel! neq 0 (
 echo      [OK] Imagenes reconstruidas.
 echo.
 
-echo [Paso 5/7] Iniciando servicios
+echo [Paso 5/8] Iniciando servicios
 echo      [5.1] Iniciando PostgreSQL
 %DOCKER_COMPOSE_CMD% --profile dev up -d db --remove-orphans
 echo      [5.2] Esperando 60s a que la base de datos se estabilice
@@ -241,7 +241,7 @@ if !errorlevel! neq 0 (
 echo      [OK] Servicios iniciados.
 echo.
 
-echo [Paso 6/7] Esperando y verificando
+echo [Paso 6/8] Esperando y verificando
 echo      [6.1] Esperando 120s para la compilacion del frontend
 echo         (Next.js puede tardar 90-120s en primera compilacion)
 timeout /t 120 /nobreak >nul
@@ -269,7 +269,7 @@ if exist "%~dp0\..\backend\backups\production_backup.sql" (
 )
 echo.
 
-echo [Paso 6.3/7] Auto-extrayendo fotos desde carpeta DATABASEJP
+echo [Paso 6.3/8] Auto-extrayendo fotos desde carpeta DATABASEJP
 cd /d "%~dp0\.."
 set "PHOTO_JSON=access_photo_mappings.json"
 set "PHOTO_GENERATED=0"
@@ -316,7 +316,7 @@ if exist "!PHOTO_JSON!" (
 )
 echo.
 
-echo [Paso 6.4/7] Ejecutando migraciones de base de datos
+echo [Paso 6.4/8] Ejecutando migraciones de base de datos
 docker exec uns-claudejp-backend alembic upgrade head >nul 2>&1
 if !errorlevel! EQU 0 (
     echo      [OK] Migraciones ejecutadas.
@@ -325,7 +325,7 @@ if !errorlevel! EQU 0 (
 )
 echo.
 
-echo [Paso 6.5/7] Sincronizando fotos y estados de candidatos a empleados
+echo [Paso 6.5/8] Sincronizando fotos y estados de candidatos a empleados
 docker exec uns-claudejp-backend python scripts/sync_employee_data_advanced.py >nul 2>&1
 if !errorlevel! EQU 0 (
     echo      [OK] Sincronizacion de datos completada.
@@ -334,7 +334,7 @@ if !errorlevel! EQU 0 (
 )
 echo.
 
-echo [Paso 6.6/7] Importando datos completos (Candidatos + Empleados + Fabricas)
+echo [Paso 6.6/8] Importando datos completos (Candidatos + Empleados + Fabricas)
 echo      [i] Este proceso puede tardar 15-30 minutos
 echo      [i] Importara desde DATABASEJP y employee_master.xlsm
 echo.
@@ -369,9 +369,23 @@ if !errorlevel! EQU 0 (
 )
 echo.
 
-echo [Paso 6.7/7] Verificacion de datos importados
+echo [Paso 6.7/8] Verificacion de datos importados
 echo      [>] Contando registros en base de datos...
 docker exec uns-claudejp-backend python -c "from app.core.database import SessionLocal; from app.models.models import Candidate, Employee, ContractWorker, Staff, Factory; db = SessionLocal(); print(f'  Candidatos: {db.query(Candidate).count()}'); print(f'  Empleados (派遣): {db.query(Employee).count()}'); print(f'  Empleados (請負): {db.query(ContractWorker).count()}'); print(f'  Staff: {db.query(Staff).count()}'); print(f'  Fabricas: {db.query(Factory).count()}'); db.close()"
+echo.
+
+echo [Paso 6.8/8] Verificacion de correcciones implementadas
+echo      [i] Ejecutando script de verificacion completa...
+echo      [i] Esto validara: Status, Fotos, rirekisho_id, Factory matching
+echo.
+docker exec uns-claudejp-backend python scripts/verify_import_fixes.py
+if !errorlevel! EQU 0 (
+    echo.
+    echo      [OK] Todas las verificaciones completadas.
+) else (
+    echo.
+    echo      [AVISO] Algunas verificaciones fallaron. Revisa el reporte arriba.
+)
 echo.
 
 echo [FASE 3 de 3] Verificacion final
