@@ -1,0 +1,36 @@
+{
+  "$schema": "https://sculpt-ui.com/schema.json",
+  "version": "1.0",
+  "theme": {
+    "colors": {
+      "primary": "#3B82F6",
+      "secondary": "#F0F4F8",
+      "background": "#FFFFFF",
+      "foreground": "#080A25",
+      "accent": "#6366F1",
+      "destructive": "#EF4444",
+      "muted": "#F0F4F8",
+      "border": "#E5E9EF",
+      "input": "#E5E9EF",
+      "ring": "#080A25"
+    },
+    "darkMode": {
+      "primary": "#F8FAFC",
+      "secondary": "#1E2937",
+      "background": "#080A25",
+      "foreground": "#F8FAFC",
+      "accent": "#334155",
+      "destructive": "#991B1B",
+      "muted": "#1E2937",
+      "border": "#1E2937",
+      "input": "#1E2937",
+      "ring": "#D4E4F7"
+    }
+  },
+  "components": {
+    "path": "./components",
+    "ui": "./components/ui"
+  },
+  "framework": "nextjs",
+  "tailwindConfig": "./tailwind.config.ts"
+}

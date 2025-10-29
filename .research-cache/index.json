@@ -1,0 +1,129 @@
+{
+  "research_sessions": [
+    {
+      "id": "access-migration-1729785600",
+      "technology": "Microsoft Access Database Migration to PostgreSQL",
+      "timestamp": "2025-10-24T12:00:00Z",
+      "file": "microsoft-access-python-migration-2025-10-24.md",
+      "summary": "Comprehensive guide for reading Microsoft Access .accdb files in Python 3.11+, extracting table schemas, handling BLOB/OLE Object fields (especially images), and migrating data to PostgreSQL. Covers pyodbc, pypyodbc, pandas, pywin32 libraries, Docker container considerations, and complete migration examples with image extraction.",
+      "topics": [
+        "pyodbc library and connection strings",
+        "Microsoft Access ODBC drivers (32-bit vs 64-bit)",
+        "Table schema extraction and data migration",
+        "OLE Object field handling and image extraction",
+        "BLOB/binary data processing",
+        "Access to PostgreSQL type mapping",
+        "Docker Windows container limitations",
+        "mdbtools Linux alternative",
+        "Complete migration script examples"
+      ],
+      "key_libraries": [
+        "pyodbc",
+        "pypyodbc",
+        "pandas",
+        "pywin32",
+        "psycopg2",
+        "Pillow (PIL)",
+        "sqlalchemy"
+      ],
+      "platforms": [
+        "Windows (primary)",
+        "Docker on Windows host",
+        "Linux (with mdbtools)"
+      ]
+    },
+    {
+      "id": "olmocr-20251026",
+      "technology": "OlmOCR - AllenAI Vision Language Model for Document OCR",
+      "timestamp": "2025-10-26T16:15:00Z",
+      "file": "olmocr-complete-documentation-2025-10-26.md",
+      "summary": "Complete documentation for OlmOCR v0.4.2, an open-source toolkit using a 7B Vision Language Model for converting PDFs to clean markdown. Achieves 82.4 score on olmOCR-Bench, outperforming GPT-4o, with costs of $176/million pages vs $6,240 for GPT-4o. Requires 15GB GPU VRAM. Excellent for English documents; Japanese support needs testing (base model supports it but training was English-focused).",
+      "topics": [
+        "Installation requirements (Python 3.11, CUDA 12.8, 15GB VRAM)",
+        "Basic usage and CLI interface",
+        "Python API and async processing patterns",
+        "Input/output formats (PDF, PNG, JPEG → Markdown/Dolma)",
+        "Model capabilities and accuracy metrics",
+        "Speed and performance benchmarks",
+        "Batch processing and distributed processing",
+        "Error handling and retry mechanisms",
+        "Configuration options and external inference providers",
+        "Comparison with Azure Computer Vision, EasyOCR, Tesseract",
+        "Japanese language support analysis",
+        "Limitations and production considerations",
+        "Integration examples (FastAPI, async batch processing)",
+        "Cost-benefit analysis for UNS-ClaudeJP project"
+      ],
+      "key_features": [
+        "7B parameter VLM (Qwen2-VL-7B base, fine-tuned)",
+        "State-of-the-art accuracy on English documents (82.4 score)",
+        "Excellent layout understanding (multi-column, tables, equations)",
+        "Automatic header/footer removal",
+        "Natural reading order preservation",
+        "Cost-effective ($176/M pages vs $6,240 GPT-4o)",
+        "Self-hosted (privacy compliant)",
+        "vLLM/SGLang inference backends",
+        "S3-based distributed processing",
+        "Supports external API providers (DeepInfra, Parasail)"
+      ],
+      "hardware_requirements": {
+        "gpu": "NVIDIA with 15GB+ VRAM (RTX 4090, L40S, A100, H100)",
+        "cpu": "Multi-core recommended for PDF rendering",
+        "ram": "16GB+ system RAM",
+        "disk": "30GB+ (15GB model + workspace)",
+        "cuda": "CUDA 12.8"
+      },
+      "key_libraries": [
+        "torch>=2.7.0",
+        "vllm>=0.7.3",
+        "transformers>=4.47.1",
+        "Pillow>=11.0.0",
+        "pypdf>=5.1.0",
+        "httpx>=0.28.1",
+        "boto3>=1.35.93"
+      ],
+      "accuracy_comparison": {
+        "olmOCR_v0.4.0": "82.4±1.1",
+        "Chandra_OCR": "83.1±0.9",
+        "Infinity_Parser_7B": "82.5",
+        "PaddleOCR_VL": "80.0±1.0",
+        "DeepSeek_OCR": "75.7±1.0",
+        "Marker": "76.1±1.1",
+        "GPT_4o": "<82.4 (beaten by olmOCR)"
+      },
+      "japanese_support_status": "NEEDS_TESTING",
+      "japanese_notes": [
+        "Base model (Qwen2-VL) supports Japanese",
+        "Training data (olmOCR-mix-0225) was English-focused",
+        "Expected good performance on modern printed Japanese",
+        "Handwritten Japanese likely poor",
+        "Recommended: Test on sample 履歴書 before full integration",
+        "Consider hybrid approach with Azure Computer Vision"
+      ],
+      "use_cases": [
+        "Academic paper processing (ArXiv documents)",
+        "Technical documentation conversion",
+        "Book digitization",
+        "Historical document scanning",
+        "Table extraction from PDFs",
+        "Mathematical equation preservation",
+        "Multi-column layout processing"
+      ],
+      "deployment_options": [
+        "Local GPU (self-hosted)",
+        "Docker container",
+        "Multi-node cluster (S3 coordination)",
+        "External API providers (DeepInfra, Parasail)",
+        "Hybrid (local + cloud API)"
+      ],
+      "recommendations_for_uns_claudejp": {
+        "evaluation_phase": "Test on 100+ Japanese 履歴書 samples",
+        "strategy": "Hybrid approach recommended",
+        "rationale": "Use Azure for handwritten/poor quality Japanese, OlmOCR for clean documents and English text",
+        "infrastructure": "1x RTX 4090 ($1,600) for initial testing",
+        "cost_savings": "Potential 90%+ cost reduction on English/clean documents",
+        "risk": "Medium - Japanese performance unproven, requires GPU investment"
+      }
+    }
+  ]
+}

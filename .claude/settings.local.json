@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude --dangerously-skip-permissions)",
+      "Bash(dir:*)",
+      "Bash(git clone:*)",
+      "Bash(if not exist \"D:\\UNS-ClaudeJP-5.0\\.claude\\agents\\es\" mkdir \"D:\\UNS-ClaudeJP-5.0\\.claude\\agents\\es\")",
+      "Bash(where cmd)",
+      "Bash(test:*)",
+      "Bash(powershell -Command \"Get-Content ''D:\\UNS-ClaudeJP-5.0\\scripts\\REINSTALAR.bat'' | Out-File -Encoding ASCII ''D:\\UNS-ClaudeJP-5.0\\scripts\\REINSTALAR.bat''\")",
+      "Bash(powershell -Command \"$content = Get-Content ''REINSTALAR_TEMP.bat'' -Raw; [System.IO.File]::WriteAllText(''REINSTALAR.bat'', $content, [System.Text.Encoding]::ASCII)\")",
+      "Bash(powershell -Command \"[System.IO.File]::WriteAllText(''REINSTALAR.bat'', [System.IO.File]::ReadAllText(''REINSTALAR_temp.txt'', [System.Text.Encoding]::UTF8), [System.Text.Encoding]::ASCII)\")",
+      "Bash(cmd /c \"echo Testing batch file syntax...\")",
+      "Bash(cmd /c \"echo N | REINSTALAR.bat > test_output.txt 2>&1\")",
+      "Bash(cat:*)",
+      "Bash(cmd /c:*)",
+      "Bash(powershell -Command \"Get-Content REINSTALAR.bat | Select-Object -First 5\")",
+      "Bash(powershell -Command:*)",
+      "Bash(xxd:*)",
+      "Bash(unix2dos:*)",
+      "Read(//d/**)",
+      "Bash(git config:*)",
+      "Bash(git reset:*)",
+      "Bash(GIT_LFS_SKIP_SMUDGE=1 git clone:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: UNS-ClaudeJP 5.0 HR Management System\n\nComplete HR management system for Japanese staffing agencies with:\n\nBackend:\n- FastAPI 0.115.6 with Python 3.11+\n- SQLAlchemy 2.0.36 ORM\n- PostgreSQL 15 database\n- 15 API routers (auth, candidates, employees, factories, etc.)\n- Hybrid OCR (Azure + EasyOCR + Tesseract)\n- JWT authentication with role-based access\n\nFrontend:\n- Next.js 16.0.0 with React 19.0.0\n- TypeScript 5.6 with strict mode\n- Tailwind CSS 3.4\n- 45+ functional pages across 8 modules\n- 12 predefined themes + custom theme system\n- Professional template designer\n\nFeatures:\n- Candidate management (Rirekisho/履歴書)\n- Employee tracking (派遣社員)\n- Factory/client management\n- Attendance (タイムカード)\n- Payroll (給与)\n- Request workflow (申請)\n- OCR document processing for Japanese documents\n- Docker Compose orchestration\n\nDocker Services:\n- PostgreSQL 15 (database)\n- FastAPI backend with hot reload\n- Next.js frontend with Turbopack\n- Adminer (database UI)\n- Data importer service\n\nGenerated with Claude Code\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git lfs uninstall:*)",
+      "Bash(assets/images/candidate-photos-logged-in.png )",
+      "Bash(docs/archive/migrations/access_photo_mappings.json )",
+      "Bash(docs/archive/migrations/access_candidates_data.json )",
+      "Bash(docs/archive/testing/candidate-photos-test.png)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

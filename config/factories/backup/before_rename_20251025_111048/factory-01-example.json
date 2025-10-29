@@ -1,0 +1,373 @@
+{
+  "factory_id": "Factory-01",
+  "client_company": null,
+  "plant": null,
+  "lines": [
+    {
+      "line_id": "Factory-01",
+      "assignment": null,
+      "job": null
+    },
+    {
+      "line_id": "Factory-03",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-05",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-07",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-09",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-101",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-13",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-26",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-27",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-29",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-33",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-36",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-38",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-47",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-61",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-68",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-69",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-76",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-82",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-83",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-97",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    },
+    {
+      "line_id": "Factory-99",
+      "assignment": {
+        "department": "",
+        "line": "",
+        "supervisor": {
+          "department": "",
+          "name": "",
+          "phone": ""
+        }
+      },
+      "job": {
+        "description": "",
+        "description2": "",
+        "hourly_rate": 0.0
+      }
+    }
+  ],
+  "dispatch_company": null,
+  "schedule": null,
+  "payment": null,
+  "agreement": null
+}
